@@ -138,7 +138,6 @@ export default class DpaUpdater extends Vue {
 	}
 
 	private handleResponse(response: any): void {
-		console.error(response);
 		const result = response.data.rsp.result;
 		this.osBuild = this.convertVersion(result.osBuild);
 		this.trType = result.trMcuType;

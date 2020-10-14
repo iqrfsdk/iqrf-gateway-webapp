@@ -67,6 +67,7 @@ import {CButton, CCard} from '@coreui/vue/src';
 import ServiceService from '../../services/ServiceService';
 import {AxiosError} from 'axios';
 import { NavigationGuardNext, Route } from 'vue-router';
+import { MetaInfo } from 'vue-meta';
 
 const whitelisted = [
 	'iqrf-gateway-controller',
@@ -106,7 +107,7 @@ interface IService {
 			}
 		});
 	},
-	metaInfo() {
+	metaInfo(): MetaInfo {
 		return {
 			title: (this as unknown as ServiceControl).pageTitle
 		};

@@ -18,20 +18,22 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Vue} from 'vue-property-decorator';
 import {CContainer, CWrapper} from '@coreui/vue/src';
-import LoadingSpinner from './LoadingSpinner';
-import TheHeader from './TheHeader';
-import TheSidebar from './TheSidebar';
+import LoadingSpinner from './LoadingSpinner.vue';
+import TheHeader from './TheHeader.vue';
+import TheSidebar from './TheSidebar.vue';
 
-export default {
-	name: 'TheDashboard',
+@Component({
 	components: {
 		CContainer,
 		CWrapper,
 		LoadingSpinner,
 		TheHeader,
 		TheSidebar,
-	},
-};
+	}
+})
+
+export default class TheDashboard extends Vue {}
 </script>

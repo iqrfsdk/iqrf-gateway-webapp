@@ -44,81 +44,75 @@
 	</CDataTable>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import {CButton, CDataTable, CIcon} from '@coreui/vue/src';
 import {cilLink, cilLinkBroken, cilPencil, cilPlus, cilTrash} from '@coreui/icons';
 import NetworkConnectionService from '../../services/NetworkConnectionService';
+import { Dictionary } from 'vue-router/types/router';
+import { IField } from '../../interfaces/IField';
 
-export default {
-	name: 'EthernetConnections',
+@Component({
 	components: {
 		CButton,
 		CDataTable,
 		CIcon,
-	},
-	props: {
-		interfaceName: {
-			type: [String, null],
-			required: false,
-			default: null,
+	}
+})
+
+export default class EthernetConnections extends Vue {
+	private fields: Array<IField> = [
+		{
+			key: 'name',
+			label: this.$t('network.connection.name'),
 		},
-		connections: {
-			type: [Array, null,],
-			required: true,
+		{
+			key: 'actions',
+			label: this.$t('table.actions.title'),
+			sorter: false,
+			filter: false,
 		}
-	},
-	data() {
-		return {
-			fields: [
-				{
-					key: 'name',
-					label: this.$t('network.connection.name'),
-				},
-				{
-					key: 'actions',
-					label: this.$t('table.actions.title'),
-					sorter: false,
-					filter: false,
-				},
-			],
-		};
-	},
-	methods: {
-		connect(connection) {
-			this.$store.commit('spinner/SHOW');
-			NetworkConnectionService.connect(connection.uuid, this.interfaceName)
-				.then(() => {
-					this.$store.commit('spinner/HIDE');
-					this.$toast.success(
-						this.$t(
-							'network.connection.messages.connect.success',
-							{interface: this.interfaceName, connection: connection.name}
-						).toString());
-					this.$emit('update-connection');
-				})
-				.catch(() => this.$store.commit('spinner/HIDE'));
-		},
-		disconnect(connection) {
-			this.$store.commit('spinner/SHOW');
-			NetworkConnectionService.disconnect(connection.uuid)
-				.then(() => {
-					this.$store.commit('spinner/HIDE');
-					this.$toast.success(
-						this.$t(
-							'network.connection.messages.disconnect.success',
-							{interface: this.interfaceName, connection: connection.name}
-						).toString());
-					this.$emit('update-connection');
-				})
-				.catch(() => this.$store.commit('spinner/HIDE'));
-		}
-	},
-	icons: {
+	]
+	private icons: Dictionary<string[]> = {
 		add: cilPlus,
 		connect: cilLink,
 		delete: cilTrash,
 		disconnect: cilLinkBroken,
 		edit: cilPencil,
-	},
-};
+	}
+
+	@Prop({required: true}) connections: Array<unknown>|null = null
+	@Prop({required: false, default: null}) interfaceName: string|null = null
+
+	private connect(connection): void {
+		this.$store.commit('spinner/SHOW');
+		NetworkConnectionService.connect(connection.uuid, this.interfaceName)
+			.then(() => {
+				this.$store.commit('spinner/HIDE');
+				this.$toast.success(
+					this.$t(
+						'network.connection.messages.connect.success',
+						{interface: this.interfaceName, connection: connection.name}
+					).toString());
+				this.$emit('update-connection');
+			})
+			.catch(() => this.$store.commit('spinner/HIDE'));
+	}
+
+	private disconnect(connection): void {
+		this.$store.commit('spinner/SHOW');
+		NetworkConnectionService.disconnect(connection.uuid)
+			.then(() => {
+				this.$store.commit('spinner/HIDE');
+				this.$toast.success(
+					this.$t(
+						'network.connection.messages.disconnect.success',
+						{interface: this.interfaceName, connection: connection.name}
+					).toString());
+				this.$emit('update-connection');
+			})
+			.catch(() => this.$store.commit('spinner/HIDE'));
+	}
+
+}
 </script>

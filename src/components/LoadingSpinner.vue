@@ -10,18 +10,19 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Vue} from 'vue-property-decorator';
 import { mapGetters } from 'vuex';
 
-export default Vue.extend({
-	name: 'LoadingSpinner',
+@Component({
 	computed: {
 		...mapGetters({
 			enabled: 'spinner/isEnabled',
 			text: 'spinner/text',
 		}),
-	},
-});
+	}
+})
+
+export default class LoadingSpinner extends Vue {}
 </script>
 
 <style scoped lang='scss'>

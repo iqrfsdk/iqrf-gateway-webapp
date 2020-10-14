@@ -27,7 +27,7 @@
 					</CHeaderNavLink>
 				</template>
 				<CDropdownItem @click='signOut'>
-					<CIcon :content='$options.icons.cilLockLocked' />
+					<CIcon :content='icons.logout' />
 					{{ $t('core.sign.out.title') }}
 				</CDropdownItem>
 			</CDropdown>
@@ -35,7 +35,8 @@
 	</CHeader>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Vue} from 'vue-property-decorator';
 import {
 	CDropdown,
 	CHeader,
@@ -45,12 +46,11 @@ import {
 	CIcon,
 	CToggler,
 } from '@coreui/vue/src';
-
 import LogoBig from '../assets/logo-big.svg';
 import {cilLockLocked} from '@coreui/icons';
+import { Dictionary } from 'vue-router/types/router';
 
-export default {
-	name: 'TheHeader',
+@Component({
 	components: {
 		CDropdown,
 		CHeader,
@@ -60,18 +60,20 @@ export default {
 		CIcon,
 		CToggler,
 		LogoBig,
-	},
-	icons: {
-		cilLockLocked,
-	},
-	methods: {
-		signOut() {
-			this.$store.dispatch('user/signOut')
-				.then(() => {
-					this.$router.push('/sign/in');
-					this.$toast.success(this.$t('core.sign.out.message').toString());
-				});
-		}
 	}
-};
+})
+
+export default class TheHeader extends Vue {
+	private icons: Dictionary<string[]> = {
+		logout: cilLockLocked
+	}
+	
+	private signOut(): void {
+		this.$store.dispatch('user/signOut')
+			.then(() => {
+				this.$router.push('/sign/in');
+				this.$toast.success(this.$t('core.sign.out.message').toString());
+			});
+	}
+}
 </script>

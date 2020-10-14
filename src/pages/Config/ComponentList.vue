@@ -14,7 +14,7 @@
 					class='float-right'
 					to='/config/component/add'
 				>
-					<CIcon :content='$options.icons.add' size='sm' />
+					<CIcon :content='icons.add' size='sm' />
 					{{ $t('table.actions.add') }}
 				</CButton>
 			</CCardHeader>
@@ -54,15 +54,15 @@
 								size='sm'
 								:to='"/config/component/edit/" + item.name'
 							>
-								<CIcon :content='$options.icons.edit' size='sm' />
+								<CIcon :content='icons.edit' size='sm' />
 								{{ $t('table.actions.edit') }}
 							</CButton>
 							<CButton
 								color='danger'
 								size='sm'
-								@click='modals.component = item.name'
+								@click='component = item.name'
 							>
-								<CIcon :content='$options.icons.remove' size='sm' />
+								<CIcon :content='icons.remove' size='sm' />
 								{{ $t('table.actions.delete') }}
 							</CButton>
 						</td>
@@ -72,16 +72,16 @@
 		</CCard>
 		<CModal
 			color='danger'
-			:show='modals.component !== null'
+			:show='component !== ""'
 		>
 			<template #header>
 				<h5 class='modal-title'>
 					{{ $t('config.components.form.messages.deleteTitle') }}
 				</h5>
 			</template>
-			{{ $t('config.components.form.messages.deletePrompt', {component: modals.component}) }}
+			{{ $t('config.components.form.messages.deletePrompt', {component: component}) }}
 			<template #footer>
-				<CButton color='danger' @click='modals.component = null'>
+				<CButton color='danger' @click='component = ""'>
 					{{ $t('forms.no') }}
 				</CButton>
 				<CButton color='success' @click='removeComponent'>
@@ -92,14 +92,26 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CCardHeader, CDataTable, CDropdown, CDropdownItem, CIcon, CModal} from '@coreui/vue/src';
 import {cilPencil, cilPlus, cilTrash} from '@coreui/icons';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
+import { MetaInfo } from 'vue-meta';
+import { IField } from '../../interfaces/IField';
+import { AxiosResponse } from 'axios';
+import { Dictionary } from 'vue-router/types/router';
 
-export default {
-	name: 'ComponentList',
+interface ComponentItem {
+	enabled: boolean
+	libraryName: string
+	libraryPath: string
+	name: string
+	startLevel: number
+}
+
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -111,107 +123,111 @@ export default {
 		CIcon,
 		CModal,
 	},
-	data() {
+	metaInfo(): MetaInfo {
 		return {
-			components: null,
-			fields: [
-				{
-					key: 'name',
-					label: this.$t('config.components.form.name'),
-				},
-				{
-					key: 'startlevel',
-					label: this.$t('config.components.form.startLevel'),
-				},
-				{
-					key: 'libraryPath',
-					label: this.$t('config.components.form.libraryPath'),
-				},
-				{
-					key: 'libraryName',
-					label: this.$t('config.components.form.libraryName'),
-				},
-				{
-					key: 'enabled',
-					label: this.$t('config.components.form.enabled'),
-					filter: false,
-				},
-				{
-					key: 'actions',
-					label: this.$t('table.actions.title'),
-					filter: false,
-					sorter: false,
-				},
-			],
-			modals: {
-				component: null,
-			},
+			title: (this as unknown as ComponentList).pageTitle
 		};
 	},
-	created() {
-		this.getConfig();
-	},
-	mounted() {
-		const titleEl = document.getElementById('title');
-		if (titleEl !== null) {
-			titleEl.innerText = this.$t(this.$metaInfo.title).toString();
+})
+
+export default class ComponentList extends Vue {
+	private component = ''
+	private components: Array<ComponentItem>|null = null
+	private fields: Array<IField> = [
+		{
+			key: 'name',
+			label: this.$t('config.components.form.name'),
+		},
+		{
+			key: 'startlevel',
+			label: this.$t('config.components.form.startLevel'),
+		},
+		{
+			key: 'libraryPath',
+			label: this.$t('config.components.form.libraryPath'),
+		},
+		{
+			key: 'libraryName',
+			label: this.$t('config.components.form.libraryName'),
+		},
+		{
+			key: 'enabled',
+			label: this.$t('config.components.form.enabled'),
+			filter: false,
+		},
+		{
+			key: 'actions',
+			label: this.$t('table.actions.title'),
+			filter: false,
+			sorter: false,
 		}
-	},
-	methods: {
-		getConfig() {
-			this.$store.commit('spinner/SHOW');
-			return DaemonConfigurationService.getComponent('')
-				.then((response) => {
-					this.$store.commit('spinner/HIDE');
-					if (this.$store.getters['user/getRole'] === 'power') {
-						this.components = response.data.components;
-					} else {
-						const whitelistedComponents = ['iqrf::IqrfCdc', 'iqrf::IqrfSpi', 'iqrf::IqrfUart'];
-						this.components = response.data.components.filter((component) => {
-							if (whitelistedComponents.includes(component.name)) {
-								return component;
-							}
-						});
-					}
-				})
-				.catch((error) => FormErrorHandler.configError(error));
-		},
-		changeEnabled(component, enabled) {
-			if (component.enabled !== enabled) {
-				component.enabled = enabled;
-				DaemonConfigurationService.updateComponent(component.name, component)
-					.then(() => {
-						this.getConfig().then(() => {
-							this.$toast.success(this.$t('config.components.form.messages.editSuccess', {component: component.name}).toString());
-						});
-					})
-					.catch((error) => FormErrorHandler.configError(error));
-			}
-		},
-		removeComponent() {
-			this.$store.commit('spinner/SHOW');
-			const component = this.modals.component;
-			this.modals.component = null;
-			DaemonConfigurationService.deleteComponent(component)
-				.then(() => {
-					this.getConfig().then(() => {
-						this.$toast.success(this.$t('config.components.form.messages.deleteSuccess', {component: component}).toString());
-					});
-				})
-				.catch((error) => FormErrorHandler.configError(error));
-		},
-	},
-	icons: {
+	]
+	private icons: Dictionary<Array<string>> = {
 		add: cilPlus,
 		edit: cilPencil,
 		remove: cilTrash
-	},
-	metaInfo() {
-		return {
-			title: this.$store.getters['user/getRole'] === 'power' ?
-				'config.components.title' :
-				'config.selectedComponents.title',
-		};
-	},
-};
+	}
+	
+	get pageTitle(): string {
+		return this.$store.getters['user/getRole'] === 'power' ? 
+			this.$t('config.components.title').toString() : this.$t('config.selectedComponents.title').toString();
+	}
+
+	created(): void {
+		this.getConfig();
+	}
+
+	mounted(): void {
+		const titleEl = document.getElementById('title');
+		if (titleEl !== null) {
+			titleEl.innerText = this.pageTitle;
+		}
+	}
+
+	private getConfig(): Promise<AxiosResponse|void> {
+		this.$store.commit('spinner/SHOW');
+		return DaemonConfigurationService.getComponent('')
+			.then((response) => {
+				this.$store.commit('spinner/HIDE');
+				if (this.$store.getters['user/getRole'] === 'power') {
+					this.components = response.data.components;
+				} else {
+					const whitelistedComponents = ['iqrf::IqrfCdc', 'iqrf::IqrfSpi', 'iqrf::IqrfUart'];
+					this.components = response.data.components.filter((component) => {
+						if (whitelistedComponents.includes(component.name)) {
+							return component;
+						}
+					});
+				}
+			})
+			.catch((error) => FormErrorHandler.configError(error));
+	}
+
+	private changeEnabled(component, enabled): void {
+		if (component.enabled !== enabled) {
+			component.enabled = enabled;
+			DaemonConfigurationService.updateComponent(component.name, component)
+				.then(() => {
+					this.getConfig().then(() => {
+						this.$toast.success(this.$t('config.components.form.messages.editSuccess', {component: component.name}).toString());
+					});
+				})
+				.catch((error) => FormErrorHandler.configError(error));
+		}
+	}
+	
+	private removeComponent(): void {
+		this.$store.commit('spinner/SHOW');
+		const component = this.component;
+		this.component = '';
+		DaemonConfigurationService.deleteComponent(component)
+			.then(() => {
+				this.getConfig().then(() => {
+					this.$toast.success(this.$t('config.components.form.messages.deleteSuccess', {component: component}).toString());
+				});
+			})
+			.catch((error) => FormErrorHandler.configError(error));
+	}
+
+}
 </script>
