@@ -30,7 +30,7 @@ export class WebSocketMessage {
 /**
  * WebSocket state
  */
-interface WebSocketState {
+export interface WebSocketState {
 
 	/**
 	 * Is WebSocket client connected to the server?
@@ -52,7 +52,7 @@ interface WebSocketState {
 /**
  * WebSocket client state
  */
-interface WebSocketClientState {
+export interface WebSocketClientState {
 
 	/**
 	 * WebSocket state

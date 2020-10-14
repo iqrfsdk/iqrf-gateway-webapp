@@ -6,24 +6,25 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
-import {Getter, MutationPayload} from 'vuex';
+import {Component, Vue} from 'vue-property-decorator';
+import {MutationPayload} from 'vuex';
 import DaemonModeService, {DaemonMode} from '../../services/DaemonModeService';
+import {WebSocketClientState} from '../../store/modules/webSocketClient.module';
 
-export default Vue.extend({
-	name: 'DaemonModeInfo',
-	data(): any {
-		return {
-			mode: DaemonMode.unknown,
-			allowedMTypes: [
-				'mngDaemon_Mode',
-				'messageError'
-			],
-			msgId: null,
-			requestRunning: false,
-		};
-	},
-	created() {
+@Component({})
+
+export default class DaemonModeInfo extends Vue {
+	private allowedMTypes: Array<string> = [
+		'mngDaemon_Mode',
+		'messageError'
+	]
+	private mode: DaemonMode = DaemonMode.unknown
+	private msgId: string|null = null
+	private requestRunning = false
+	private unsubscribe: CallableFunction = () => {return;}
+	private unwatch: CallableFunction = () => {return;}
+
+	created(): void {
 		this.unsubscribe = this.$store.subscribe((mutation: MutationPayload) => {
 			if (mutation.type === 'SOCKET_ONMESSAGE') {
 				if (!this.allowedMTypes.includes(mutation.payload.mType)) {
@@ -41,7 +42,7 @@ export default Vue.extend({
 			this.getMode();
 		} else {
 			this.unwatch = this.$store.watch(
-				(state: any, getter: any) => getter.isSocketConnected,
+				(state: WebSocketClientState, getter: any) => getter.isSocketConnected,
 				(newVal: boolean, oldVal: boolean) => {
 					if (!oldVal && newVal) {
 						this.getMode();
@@ -50,27 +51,28 @@ export default Vue.extend({
 				}
 			);
 		}
-	},
-	beforeDestroy() {
+	}
+
+	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		if (this.unwatch !== undefined) {
 			this.unwatch();
 		}
 		this.unsubscribe();
-	},
-	methods: {
-		getMode() {
-			DaemonModeService.get(5000, 'gateway.mode.modes.unknown', () => this.timedOut())
-				.then((msgId: string) => this.msgId = msgId);
-			this.requestRunning = true;
-		},
-		timedOut() {
-			this.requestRunning = false;
-			this.msgId = null;
-			this.$emit('notify-cinfo');
-		}
 	}
-});
+
+	private getMode(): void {
+		DaemonModeService.get(5000, 'gateway.mode.modes.unknown', () => this.timedOut())
+			.then((msgId: string) => this.msgId = msgId);
+		this.requestRunning = true;
+	}
+
+	private timedOut(): void {
+		this.requestRunning = false;
+		this.msgId = null;
+		this.$emit('notify-cinfo');
+	}
+}
 </script>
 
 <style scoped>

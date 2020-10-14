@@ -31,31 +31,34 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
-import {Getter, MutationPayload} from 'vuex';
+import {Component, Vue} from 'vue-property-decorator';
+import {MutationPayload} from 'vuex';
 import IqrfNetService from '../../services/IqrfNetService';
 import {CSpinner} from '@coreui/vue/src';
+import {WebSocketClientState} from '../../store/modules/webSocketClient.module';
+import {PeripheralEnumeration, OsInfo, TrMcu} from '../../interfaces/dpa';
 
-export default Vue.extend({
-	name: 'CoordinatorInfo',
+@Component({
 	components: {
 		CSpinner,
 	},
-	data(): any {
-		return {
-			enumeration: null,
-			hasData: false,
-			osInfo: null,
-			trMcuType: null,
-			requestRunning: false,
-			allowedMTypes: [
-				'iqmeshNetwork_EnumerateDevice',
-				'messageError'
-			],
-			msgId: null,
-		};
-	},
-	created() {
+})
+
+export default class CoordinatorInfo extends Vue {
+	private allowedMTypes: Array<string> = [
+		'iqmeshNetwork_EnumerateDevice',
+		'messageError'
+	]
+	private enumeration: PeripheralEnumeration|null = null
+	private hasData = false
+	private msgId: string|null = null
+	private osInfo: OsInfo|null = null
+	private requestRunning = false
+	private trMcuType: TrMcu|null = null 
+	private unwatch: CallableFunction = () => {return;}
+	private unsubscribe: CallableFunction = () => {return;}
+
+	created(): void {
 		this.unsubscribe = this.$store.subscribe((mutation: MutationPayload) => {
 			if (mutation.type === 'SOCKET_ONMESSAGE') {
 				if (!this.allowedMTypes.includes(mutation.payload.mType)) {
@@ -68,8 +71,11 @@ export default Vue.extend({
 						const data = mutation.payload.data.rsp;
 						this.enumeration = data.peripheralEnumeration;
 						this.osInfo = data.osRead;
-						this.trMcuType = this.osInfo.trMcuType;
 						this.hasData = true;
+						if (this.osInfo === null) {
+							return;
+						}
+						this.trMcuType = this.osInfo.trMcuType;
 					} catch (e) {
 						this.hasData = false;
 					}
@@ -81,7 +87,7 @@ export default Vue.extend({
 			this.enumerate();
 		} else {
 			this.unwatch = this.$store.watch(
-				(state: any, getter: any) => getter.isSocketConnected,
+				(state: WebSocketClientState, getter: any) => getter.isSocketConnected,
 				(newVal: boolean, oldVal: boolean) => {
 					if (!oldVal && newVal) {
 						this.enumerate();
@@ -90,26 +96,27 @@ export default Vue.extend({
 				}
 			);
 		}
-	},
-	beforeDestroy() {
+	}
+
+	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		if (this.unwatch !== undefined) {
 			this.unwatch();
 		}
 		this.unsubscribe();
-	},
-	methods: {
-		enumerate() {
-			IqrfNetService.enumerateDevice(0, 5000, 'iqrfnet.enumeration.messages.failure', () => this.timedOut())
-				.then((msgId: string) => this.msgId = msgId);
-			this.requestRunning = true;
-		},
-		timedOut() {
-			this.requestRunning = false;
-			this.msgId = null;
-		}
 	}
-});
+
+	private enumerate(): void {
+		IqrfNetService.enumerateDevice(0, 5000, 'iqrfnet.enumeration.messages.failure', () => this.timedOut())
+			.then((msgId: string) => this.msgId = msgId);
+		this.requestRunning = true;
+	}
+
+	private timedOut(): void {
+		this.requestRunning = false;
+		this.msgId = null;
+	}
+}
 </script>
 
 <style scoped>

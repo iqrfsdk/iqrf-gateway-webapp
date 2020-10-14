@@ -254,17 +254,24 @@
 	</CCard>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Vue} from 'vue-property-decorator';
 import {CAlert, CButton, CCard, CCardBody, CForm, CInput, CInputCheckbox} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import compareVersions from 'compare-versions';
 import {between, integer, required} from 'vee-validate/dist/rules';
 import IqrfNetService from '../../services/IqrfNetService';
 import VersionService from '../../services/VersionService';
-import { WebSocketOptions } from '../../store/modules/webSocketClient.module';
+import {WebSocketOptions} from '../../store/modules/webSocketClient.module';
+import VueI18n from 'vue-i18n';
+import {AutoNetworkBase, AutoNetworkOverlappingNetworks, AutoNetworkStopConditions} from '../../interfaces/autonetwork';
 
-export default {
-	name: 'AutoNetwork',
+interface NodeMessages {
+	nodesNew: string
+	nodesTotal: string
+}
+
+@Component({
 	components: {
 		CAlert,
 		CButton,
@@ -275,61 +282,63 @@ export default {
 		CInputCheckbox,
 		ValidationObserver,
 		ValidationProvider
-	},
-	data() {
-		return {
-			autoAddress: false,
-			autoNetwork: {
-				discoveryTxPower: 7,
-				discoveryBeforeStart: false,
-				skipDiscoveryEachWave: false,
-				actionRetries: 1,
-			},
-			stopConditions: {
-				waves: 10,
-				emptyWaves: 2,
-				numberOfTotalNodes: 1,
-				numberOfNewNodes: 1,
-				abortOnTooManyNodesFound: false,
-			},
-			overlappingNetworks: {
-				networks: 1,
-				network: 1
-			},
-			hwpidFiltering: '',
-			useHwpidFiltering: false,
-			useOverlappingNetworks: false,
-			useWaves: false,
-			useNodes: true,
-			nodeCondition: 'new',
-			messages: {
-				nodesTotal: '',
-				nodesNew: '',
-			},
-			daemonVersion: null,
-			msgId: null,
-		};
-	},
-	computed: {
-		invalidVersionBody() {
-			if (this.daemonVersion === null) {
-				return this.$t('iqrfnet.networkManager.messages.autoNetwork.versionMissing').toString();
-			} else {
-				return this.$t('iqrfnet.networkManager.messages.autoNetwork.versionInvalid').toString();
-			}
-		},
-		versionValid() {
-			if (this.daemonVersion === null) {
-				return false;
-			} else {
-				if (compareVersions.compare(this.daemonVersion, '2.3.0', '>=')) {
-					return true;
-				}
-				return false;
-			}
+	}
+})
+
+export default class AutoNetwork extends Vue {
+	private autoAddress = false
+	private autoNetwork: AutoNetworkBase = {
+		actionRetries: 1,
+		discoveryBeforeStart: false,
+		discoveryTxPower: 7,
+		skipDiscoveryEachWave: false
+	}
+	private daemonVersion: string|null = null
+	private hwpidFiltering = ''
+	private messages: NodeMessages = {
+		nodesNew: '',
+		nodesTotal: ''
+	}
+	private msgId: string|null = null
+	private nodeCondition = 'new'
+	private overlappingNetworks: AutoNetworkOverlappingNetworks = {
+		network: 1,
+		networks: 1
+	}
+	private stopConditions: AutoNetworkStopConditions = {
+		abortOnTooManyNodesFound: false,
+		emptyWaves: 2,
+		numberOfNewNodes: 1,
+		numberOfTotalNodes: 1,
+		waves: 10
+	}
+	private useHwpidFiltering = false
+	private useNodes = true
+	private useOverlappingNetworks = false
+	private useWaves = false
+	private unsubscribe: CallableFunction = () => {return;}
+	private unwatch: CallableFunction = () => {return;}
+
+	get invalidVersionBody(): VueI18n.TranslateResult {
+		if (this.daemonVersion === null) {
+			return this.$t('iqrfnet.networkManager.messages.autoNetwork.versionMissing').toString();
+		} else {
+			return this.$t('iqrfnet.networkManager.messages.autoNetwork.versionInvalid').toString();
 		}
-	},
-	created() {
+	}
+
+	get versionValid(): boolean {
+		if (this.daemonVersion === null) {
+			return false;
+		} else {
+			if (compareVersions.compare(this.daemonVersion, '2.3.0', '>=')) {
+				return true;
+			}
+			return false;
+		}
+	}
+
+	created(): void {
 		extend('between', between);
 		extend('integer', integer);
 		extend('required', required);
@@ -391,67 +400,69 @@ export default {
 				}
 			}
 		});
-	},
-	beforeDestroy() {
+	}
+
+	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		if (this.unwatch !== undefined) {
 			this.unwatch();
 		}
 		this.unsubscribe();
-	},
-	methods: {
-		getVersion() {
-			this.$store.dispatch('spinner/show', {timeout: 10000});
-			VersionService.getVersion(new WebSocketOptions(null, 10000, 'iqrfnet.networkManager.messages.autoNetwork.versionFailure', () => this.msgId = null))
-				.then((msgId) => this.msgId = msgId);
-		},
-		autoNetworkProgress(response) {
-			let message = '\n' + this.$t('iqrfnet.networkManager.messages.autoNetwork.statusWave') + response.rsp.wave;
-			if (this.useWaves) {
-				message += '/' + this.stopConditions.waves;
-			}
-			message += '\n[' + response.rsp.progress + '%] ';
-			if (response.rsp.waveState) {
-				message += response.rsp.waveState;
-			}
-			if (response.rsp.nodesNr) {
-				this.messages.nodesTotal = '\n' + this.$t('iqrfnet.networkManager.messages.autoNetwork.statusTotalNodes').toString() + response.rsp.nodesNr;
-			}
-			if (response.rsp.newNodesNr) {
-				this.messages.nodesNew = '\n' + this.$t('iqrfnet.networkManager.messages.autoNetwork.statusAddedNodes').toString() + response.rsp.newNodesNr;
-			}
-			message += this.messages.nodesTotal + this.messages.nodesNew;
-			return message;
-		},
-		processSubmitAutoNetwork() {
-			this.messages.nodesTotal = this.messages.nodesNew = '';
-			let submitData = this.autoNetwork;
-			let stopConditions = {};
-			stopConditions['emptyWaves'] = this.stopConditions.emptyWaves;
-			if (this.useWaves) {
-				stopConditions['waves'] = this.stopConditions.waves;
-			}
-			if (this.useNodes) {
-				stopConditions['abortOnTooManyNodesFound'] = this.stopConditions.abortOnTooManyNodesFound;
-				if (this.nodeCondition === 'total') {
-					stopConditions['numberOfTotalNodes'] = this.stopConditions.numberOfTotalNodes;
-				} else {
-					stopConditions['numberOfNewNodes'] = this.stopConditions.numberOfNewNodes;
-				}
-			}
-			if (Object.keys(stopConditions).length > 0) {
-				submitData['stopConditions'] = stopConditions;
-			}
-			if (this.useOverlappingNetworks) {
-				submitData['overlappingNetworks'] = this.overlappingNetworks;
-			}
-			if (this.useHwpidFiltering && this.hwpidFiltering.length > 0) {
-				submitData['hwpidFiltering'] = this.hwpidFiltering.split(', ').map((i) => parseInt(i));
-			}
-			this.$store.commit('spinner/SHOW');
-			IqrfNetService.autoNetwork(submitData, new WebSocketOptions(null))
-				.then((msgId) => this.msgId = msgId);
-		}
 	}
-};
+
+	private getVersion(): void {
+		this.$store.dispatch('spinner/show', {timeout: 10000});
+		VersionService.getVersion(new WebSocketOptions(null, 10000, 'iqrfnet.networkManager.messages.autoNetwork.versionFailure', () => this.msgId = null))
+			.then((msgId) => this.msgId = msgId);
+	}
+
+	private autoNetworkProgress(response): string {
+		let message = '\nWave ' + response.rsp.wave;
+		if (this.useWaves) {
+			message += '/ ' + this.stopConditions.waves;
+		}
+		message += '\n[' + response.rsp.progress + '%] ';
+		if (response.rsp.waveState) {
+			message += response.rsp.waveState;
+		}
+		if (response.rsp.nodesNr) {
+			this.messages.nodesTotal = '\nTotal number of nodes in network: ' + response.rsp.nodesNr;
+		}
+		if (response.rsp.newNodesNr) {
+			this.messages.nodesNew = '\nNumber of nodes added in last wave: ' + response.rsp.newNodesNr;
+		}
+		message += this.messages.nodesTotal + this.messages.nodesNew;
+		return message;
+	}
+
+	private processSubmitAutoNetwork(): void {
+		this.messages.nodesTotal = this.messages.nodesNew = '';
+		let submitData = this.autoNetwork;
+		let stopConditions = {};
+		stopConditions['emptyWaves'] = this.stopConditions.emptyWaves;
+		if (this.useWaves) {
+			stopConditions['waves'] = this.stopConditions.waves;
+		}
+		if (this.useNodes) {
+			stopConditions['abortOnTooManyNodesFound'] = this.stopConditions.abortOnTooManyNodesFound;
+			if (this.nodeCondition === 'total') {
+				stopConditions['numberOfTotalNodes'] = this.stopConditions.numberOfTotalNodes;
+			} else {
+				stopConditions['numberOfNewNodes'] = this.stopConditions.numberOfNewNodes;
+			}
+		}
+		if (Object.keys(stopConditions).length > 0) {
+			submitData['stopConditions'] = stopConditions;
+		}
+		if (this.useOverlappingNetworks) {
+			submitData['overlappingNetworks'] = this.overlappingNetworks;
+		}
+		if (this.useHwpidFiltering && this.hwpidFiltering.length > 0) {
+			submitData['hwpidFiltering'] = this.hwpidFiltering.split(', ').map((i) => parseInt(i));
+		}
+		this.$store.commit('spinner/SHOW');
+		IqrfNetService.autoNetwork(submitData, new WebSocketOptions(null))
+			.then((msgId) => this.msgId = msgId);
+	}
+}
 </script>

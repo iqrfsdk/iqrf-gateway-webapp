@@ -15,15 +15,12 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Prop, Vue} from 'vue-property-decorator';
+import { Dictionary } from 'vue-router/types/router';
 
-export default Vue.extend({
-	name: 'ResourceUsage',
-	props: {
-		usage: {
-			type: Object,
-			required: true,
-		}
-	},
-});
+@Component({})
+
+export default class ResourceUsage extends Vue {
+	@Prop({ required: true }) usage!: Dictionary<string>
+}
 </script>

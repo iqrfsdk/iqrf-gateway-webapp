@@ -35,17 +35,12 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import {between, integer, required} from 'vee-validate/dist/rules';
 
-interface IAddressChanger {
-	address: number|null
-}
-
-export default Vue.extend({
-	name: 'AddressChanger',
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -55,28 +50,23 @@ export default Vue.extend({
 		CInput,
 		ValidationObserver,
 		ValidationProvider,
-	},
-	props: {
-		currentAddress: {
-			type: Number,
-			required: true
-		},
-	},
-	data(): IAddressChanger {
-		return {
-			address: null,
-		};
-	},
-	created() {
+	}
+})
+
+export default class AddressChanger extends Vue {
+	private address: number|null = null
+
+	@Prop({required: true}) currentAddress!: number
+
+	created(): void {
 		extend('between', between);
 		extend('integer', integer);
 		extend('required', required);
 		this.address = this.currentAddress;
-	},
-	methods: {
-		changeAddress(): void {
-			this.$router.push('/iqrfnet/tr-config/' + this.address);
-		},
-	},
-});
+	}
+
+	private changeAddress(): void {
+		this.$router.push('/iqrfnet/tr-config/' + this.address);
+	}
+}
 </script>
