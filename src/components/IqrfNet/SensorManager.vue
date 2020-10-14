@@ -70,7 +70,7 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Vue} from 'vue-property-decorator';
 import {MutationPayload} from 'vuex';
 import {CButton, CCard, CCardBody, CCardFooter, CCardHeader, CForm, CInput} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
@@ -78,8 +78,25 @@ import {between, integer, required} from 'vee-validate/dist/rules';
 import StandardSensorService from '../../services/DaemonApi/StandardSensorService';
 import { WebSocketOptions } from '../../store/modules/webSocketClient.module';
 
-export default Vue.extend({
-	name: 'SensorManager',
+interface Sensor {
+	type: string
+	value?: number
+	unit: string
+}
+
+interface StandardSensor {
+	breakdown?: StandardSensor
+	decimalPlaces: number
+	frcs: Array<number>
+	id: string
+	name: string
+	shortName: string
+	type: number
+	unit: string
+	value: number
+}
+
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -90,20 +107,21 @@ export default Vue.extend({
 		CInput,
 		ValidationObserver,
 		ValidationProvider
-	},
-	data(): any {
-		return {
-			address: 1,
-			allowedMTypes: [
-				'iqrfSensor_Enumerate',
-				'iqrfSensor_ReadSensorsWithTypes'
-			],
-			responseType: null,
-			sensors: null,
-			msgId: null,
-		};
-	},
-	created() {
+	}
+})
+
+export default class SensorManager extends Vue {
+	private address = 1
+	private allowedMTypes: Array<string> = [
+		'iqrfSensor_Enumerate',
+		'iqrfSensor_ReadSensorsWithTypes'
+	]
+	private msgId: string|null = null
+	private responseType: string|null = null
+	private sensors: Array<Sensor> = []
+	private unsubscribe: CallableFunction = () => {return;}
+
+	created(): void {
 		extend('between', between);
 		extend('integer', integer);
 		extend('required', required);
@@ -148,45 +166,49 @@ export default Vue.extend({
 				}
 			}
 		});
-	},
-	beforeDestroy() {
+	}
+
+	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		this.unsubscribe();
-	},
-	methods: {
-		parseEnumerate(sensors: any) {
-			this.sensors = [];
-			sensors.forEach((item: any) => {
-				if (item.id === 'BINARYDATA7' || item.id === 'BINARYDATA30') {
-					item = item.breakdown[0];
-				}
-				this.sensors.push({'type': item.name, 'unit': item.unit});
-			});
-		},
-		parseReadAll(sensors: any) {
-			this.sensors = [];
-			sensors.forEach((item: any) => {
-				if (item.id === 'BINARYDATA7' || item.id === 'BINARYDATA30') {
-					item = item.breakdown[0];
-				}
-				this.sensors.push({'type': item.name, 'value': item.value, 'unit': item.unit});
-			});
-		},
-		buildOptions() {
-			return new WebSocketOptions(null, 30000, 'iqrfnet.standard.sensor.messages.timeout', () => this.msgId = null);
-		},
-		submitReadAll() {
-			this.$store.dispatch('spinner/show', {timeout: 30000});
-			StandardSensorService.readAll(this.address, this.buildOptions())
-				.then((msgId: string) => this.msgId = msgId);
-		},
-		submitEnumerate() {
-			this.$store.dispatch('spinner/show', {timeout: 30000});
-			StandardSensorService.enumerate(this.address, this.buildOptions())
-				.then((msgId: string) => this.msgId = msgId);
-		},
 	}
-});
+
+	private parseEnumerate(sensors: Array<StandardSensor>): void {
+		this.sensors = [];
+		sensors.forEach((item: StandardSensor) => {
+			if (item.breakdown !== undefined && (item.id === 'BINARYDATA7' || item.id === 'BINARYDATA30')) {
+				item = item.breakdown[0];
+			}
+			this.sensors.push({'type': item.name, 'unit': item.unit});
+		});
+	}
+
+	private parseReadAll(sensors: Array<StandardSensor>): void {
+		this.sensors = [];
+		sensors.forEach((item: StandardSensor) => {
+			if (item.breakdown !== undefined && (item.id === 'BINARYDATA7' || item.id === 'BINARYDATA30')) {
+				item = item.breakdown[0];
+			}
+			this.sensors.push({'type': item.name, 'value': item.value, 'unit': item.unit});
+		});
+	}
+
+	private buildOptions(): WebSocketOptions {
+		return new WebSocketOptions(null, 30000, 'iqrfnet.standard.sensor.messages.timeout', () => this.msgId = null);
+	}
+
+	private submitReadAll(): void {
+		this.$store.dispatch('spinner/show', {timeout: 30000});
+		StandardSensorService.readAll(this.address, this.buildOptions())
+			.then((msgId: string) => this.msgId = msgId);
+	}
+
+	private submitEnumerate(): void {
+		this.$store.dispatch('spinner/show', {timeout: 30000});
+		StandardSensorService.enumerate(this.address, this.buildOptions())
+			.then((msgId: string) => this.msgId = msgId);
+	}
+}
 </script>
 
 <style scoped>

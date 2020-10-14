@@ -107,12 +107,12 @@
 							<CIcon
 								v-if='states[ind] === true'
 								class='text-success'
-								:content='$options.icons.on'
+								:content='icons.on'
 							/>
 							<CIcon
 								v-if='states[ind] === false'
 								class='text-danger'
-								:content='$options.icons.off'
+								:content='icons.off'
 							/>
 						</td>
 					</tr>
@@ -122,16 +122,17 @@
 	</CCard>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CCardHeader, CForm, CIcon, CInput, CSwitch} from '@coreui/vue/src';
 import {cilCheckAlt, cilX} from '@coreui/icons';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import {between, integer, required} from 'vee-validate/dist/rules';
 import StandardBinaryOutputService, {StandardBinaryOutput} from '../../services/DaemonApi/StandardBinaryOutputService';
 import { WebSocketOptions } from '../../store/modules/webSocketClient.module';
+import { Dictionary } from 'vue-router/types/router';
 
-export default {
-	name: 'BinaryOutputManager',
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -143,23 +144,28 @@ export default {
 		CSwitch,
 		ValidationObserver,
 		ValidationProvider
-	},
-	data() {
-		return {
-			address: 1,
-			allowedMTypes: [
-				'iqrfBinaryoutput_Enumerate',
-				'iqrfBinaryoutput_SetOutput'
-			],
-			index: 0,
-			numOutputs: 0,
-			responseType: null,
-			state: false,
-			states: null,
-			msgId: null,
-		};
-	},
-	created() {
+	}
+})
+
+export default class BinaryOutputManager extends Vue {
+	private address = 1
+	private allowedMTypes: Array<string> = [
+		'iqrfBinaryoutput_Enumerate',
+		'iqrfBinaryoutput_SetOutput'
+	]
+	private icons: Dictionary<string[]> = {
+		on: cilCheckAlt,
+		off: cilX
+	}
+	private index = 0
+	private msgId: string|null = null
+	private numOutputs = 0
+	private responseType: string|null = null
+	private state = false
+	private states: Array<number> = []
+	private unsubscribe: CallableFunction = () => {return;}
+
+	created(): void {
 		extend('integer', integer);
 		extend('required', required);
 		extend('between', between);
@@ -216,45 +222,46 @@ export default {
 			}
 		});
 		this.generateStates();
-	},
-	beforeDestroy() {
+	}
+
+	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		this.unsubscribe();
-	},
-	methods: {
-		generateStates() {
-			this.states = new Array(60).fill(false);
-		},
-		parseSetOutput(states) {
-			for(let i = 0; i < states.length; ++i) {
-				this.states[i] = states[i];
-			}
-		},
-		buildOptions() {
-			return new WebSocketOptions(null, 30000, 'iqrfnet.standard.binaryOutput.messages.timeout', () => this.msgId = null);
-		},
-		submitEnumerate() {
-			this.$store.dispatch('spinner/show', {timeout: 30000});
-			StandardBinaryOutputService.enumerate(this.address, this.buildOptions())
-				.then((msgId) => this.msgId = msgId);
-		},
-		submitGetStates() {
-			this.$store.dispatch('spinner/show', {timeout: 30000});
-			StandardBinaryOutputService.getOutputs(this.address, this.buildOptions())
-				.then((msgId) => this.msgId = msgId);
-		},
-		submitSetState() {
-			this.$store.dispatch('spinner/show', {timeout: 30000});
-			const output = new StandardBinaryOutput(this.index, this.state);
-			StandardBinaryOutputService.setOutputs(this.address, [output], this.buildOptions())
-				.then((msgId) => this.msgId = msgId);
-		},
-	},
-	icons: {
-		on: cilCheckAlt,
-		off: cilX,
-	},
-};
+	}
+
+	private generateStates(): void {
+		this.states = new Array(60).fill(false);
+	}
+
+	private parseSetOutput(states): void {
+		for(let i = 0; i < states.length; ++i) {
+			this.states[i] = states[i];
+		}
+	}
+
+	private buildOptions(): WebSocketOptions {
+		return new WebSocketOptions(null, 30000, 'iqrfnet.standard.binaryOutput.messages.timeout', () => this.msgId = null);
+	}
+
+	private submitEnumerate(): void {
+		this.$store.dispatch('spinner/show', {timeout: 30000});
+		StandardBinaryOutputService.enumerate(this.address, this.buildOptions())
+			.then((msgId) => this.msgId = msgId);
+	}
+
+	private submitGetStates(): void {
+		this.$store.dispatch('spinner/show', {timeout: 30000});
+		StandardBinaryOutputService.getOutputs(this.address, this.buildOptions())
+			.then((msgId) => this.msgId = msgId);
+	}
+
+	private submitSetState(): void {
+		this.$store.dispatch('spinner/show', {timeout: 30000});
+		const output = new StandardBinaryOutput(this.index, this.state);
+		StandardBinaryOutputService.setOutputs(this.address, [output], this.buildOptions())
+			.then((msgId) => this.msgId = msgId);
+	}
+}
 </script>
 
 <style scoped>

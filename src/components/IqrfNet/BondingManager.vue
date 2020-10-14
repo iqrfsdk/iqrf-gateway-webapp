@@ -143,7 +143,7 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Vue} from 'vue-property-decorator';
 import {MutationPayload} from 'vuex';
 import {CButton, CCard, CCardBody, CForm, CInput, CInputCheckbox, CModal, CSelect} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
@@ -151,8 +151,7 @@ import {between, integer, required} from 'vee-validate/dist/rules';
 import IqrfNetService from '../../services/IqrfNetService';
 import { WebSocketOptions } from '../../store/modules/webSocketClient.module';
 
-export default Vue.extend({
-	name: 'BondingManager',
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -164,21 +163,22 @@ export default Vue.extend({
 		CSelect,
 		ValidationObserver,
 		ValidationProvider
-	},
-	data(): any {
-		return {
-			address: 1,
-			autoAddress: false,
-			bondMethod: 'local',
-			bondingRetries: 1,
-			modalClear: false,
-			modalUnbond: false,
-			unbondCoordinatorOnly: false,
-			scCode: '',
-			msgId: null,
-		};
-	},
-	created() {
+	}
+})
+
+export default class BondingManager extends Vue {
+	private address = 1
+	private autoAddress = false
+	private bondMethod = 'local'
+	private bondingRetries = 1
+	private modalClear = false
+	private modalUnbond = false
+	private msgId: string|null = null
+	private scCode = ''
+	private unbondCoordinatorOnly = false
+	private unsubscribe: CallableFunction = () => {return;}
+
+	created(): void {
 		extend('between', between);
 		extend('integer', integer);
 		extend('required', required);
@@ -267,39 +267,42 @@ export default Vue.extend({
 				}
 			}
 		});
-	},
-	beforeDestroy() {
+	}
+
+	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		this.unsubscribe();
-	},
-	methods: {
-		buildOptions(timeout: number, message: string): WebSocketOptions {
-			return new WebSocketOptions(null, timeout, message, () => this.msgId = null);
-		},
-		processSubmitBond() {
-			this.$store.dispatch('spinner/show', {timeout: 30000});
-			const address = this.autoAddress ? 0 : this.address;
-			if (this.bondMethod === 'local') {
-				IqrfNetService.bondLocal(address, this.buildOptions(30000, 'iqrfnet.networkManager.messages.submit.timeout'))
-					.then((msgId: string) => this.msgId = msgId);
+	}
 
-			} else if (this.bondMethod === 'smartConnect') {
-				IqrfNetService.bondSmartConnect(address, this.scCode, this.bondingRetries, this.buildOptions(30000, 'iqrfnet.networkManager.messages.submit.timeout'))
-					.then((msgId: string) => this.msgId = msgId);
-			}
-		},
-		processSubmitUnbond() {
-			this.modalUnbond = false;
-			this.$store.dispatch('spinner/show', {timeout: 30000});
-			IqrfNetService.removeBond(this.address, this.unbondCoordinatorOnly, this.buildOptions(30000, 'iqrfnet.networkManager.messages.submit.timeout'))
+	private buildOptions(timeout: number, message: string): WebSocketOptions {
+		return new WebSocketOptions(null, timeout, message, () => this.msgId = null);
+	}
+
+	private processSubmitBond(): void {
+		this.$store.dispatch('spinner/show', {timeout: 30000});
+		const address = this.autoAddress ? 0 : this.address;
+		if (this.bondMethod === 'local') {
+			IqrfNetService.bondLocal(address, this.buildOptions(30000, 'iqrfnet.networkManager.messages.submit.timeout'))
 				.then((msgId: string) => this.msgId = msgId);
-		},
-		processSubmitClearAll() {
-			this.modalClear = false;
-			this.$store.dispatch('spinner/show', {timeout: 30000});
-			IqrfNetService.clearAllBonds(this.unbondCoordinatorOnly, this.buildOptions(30000, 'iqrfnet.networkManager.messages.submit.timeout'))
+
+		} else if (this.bondMethod === 'smartConnect') {
+			IqrfNetService.bondSmartConnect(address, this.scCode, this.bondingRetries, this.buildOptions(30000, 'iqrfnet.networkManager.messages.submit.timeout'))
 				.then((msgId: string) => this.msgId = msgId);
 		}
 	}
-});
+
+	private processSubmitUnbond(): void {
+		this.modalUnbond = false;
+		this.$store.dispatch('spinner/show', {timeout: 30000});
+		IqrfNetService.removeBond(this.address, this.unbondCoordinatorOnly, this.buildOptions(30000, 'iqrfnet.networkManager.messages.submit.timeout'))
+			.then((msgId: string) => this.msgId = msgId);
+	}
+
+	private processSubmitClearAll(): void {
+		this.modalClear = false;
+		this.$store.dispatch('spinner/show', {timeout: 30000});
+		IqrfNetService.clearAllBonds(this.unbondCoordinatorOnly, this.buildOptions(30000, 'iqrfnet.networkManager.messages.submit.timeout'))
+			.then((msgId: string) => this.msgId = msgId);
+	}
+}
 </script>

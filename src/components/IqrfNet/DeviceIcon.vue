@@ -9,20 +9,17 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import Device from '../../helpers/Device';
 import {CIcon} from '@coreui/vue/src';
 
-export default Vue.extend({
-	name: 'DeviceIcon',
+@Component({
 	components: {
 		CIcon
-	},
-	props: {
-		device: {
-			type: Device,
-			required: true,
-		},
-	},
-});
+	}
+})
+
+export default class DeviceIcon extends Vue {
+	@Prop({required: true}) device!: Device
+}
 </script>

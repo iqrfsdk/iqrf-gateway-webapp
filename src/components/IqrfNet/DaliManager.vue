@@ -68,7 +68,7 @@
 				</CForm>
 			</ValidationObserver>
 		</CCardBody>
-		<CCardFooter v-if='answers !== null'>
+		<CCardFooter v-if='answers.length > 0'>
 			<table class='table'>
 				<thead>
 					{{ $t('iqrfnet.standard.dali.answers') }}
@@ -89,7 +89,7 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Vue} from 'vue-property-decorator';
 import {MutationPayload} from 'vuex';
 import {CButton, CCard, CCardBody, CCardFooter, CCardHeader, CForm, CInput} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
@@ -97,8 +97,12 @@ import {between, integer, required} from 'vee-validate/dist/rules';
 import StandardDaliService from '../../services/DaemonApi/StandardDaliService';
 import { WebSocketOptions } from '../../store/modules/webSocketClient.module';
 
-export default Vue.extend({
-	name: 'DaliManager',
+interface DaliAnswers {
+	status: number
+	value: number
+}
+
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -109,16 +113,17 @@ export default Vue.extend({
 		CInput,
 		ValidationObserver,
 		ValidationProvider
-	},
-	data(): any {
-		return {
-			address: 1,
-			answers: null,
-			commands: [null],
-			msgId: null,
-		};
-	},
-	created() {
+	}
+})
+
+export default class DaliManager extends Vue {
+	private address = 1
+	private answers: Array<DaliAnswers> = []
+	private commands: Array<number> = [0]
+	private msgId: string|null = null
+	private unsubscribe: CallableFunction = () => {return;}
+
+	created(): void {
 		extend('between', between);
 		extend('integer', integer);
 		extend('required', required);
@@ -138,7 +143,6 @@ export default Vue.extend({
 								this.$t('iqrfnet.standard.dali.messages.success').toString()
 							);
 							this.answers = mutation.payload.data.rsp.result.answers;
-							this.responseReceived = true;
 							break;
 						case 3:
 							this.$toast.error(
@@ -154,23 +158,25 @@ export default Vue.extend({
 				}
 			}
 		});
-	},
-	beforeDestroy() {
+	}
+
+	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		this.unsubscribe();
-	},
-	methods: {
-		addDaliCommand() {
-			this.commands.push(null);
-		},
-		removeDaliCommand(index: number) {
-			this.commands.splice(index, 1);
-		},
-		sendDali() {
-			this.$store.dispatch('spinner/show', {timeout: 30000});
-			StandardDaliService.send(this.address, this.commands, new WebSocketOptions(null, 30000, 'iqrfnet.standard.dali.messages.timeout', () => this.msgId = null))
-				.then((msgId: string) => this.msgId = msgId);
-		},
 	}
-});
+
+	private addDaliCommand(): void {
+		this.commands.push(0);
+	}
+
+	private removeDaliCommand(index: number): void {
+		this.commands.splice(index, 1);
+	}
+
+	private sendDali(): void {
+		this.$store.dispatch('spinner/show', {timeout: 30000});
+		StandardDaliService.send(this.address, this.commands, new WebSocketOptions(null, 30000, 'iqrfnet.standard.dali.messages.timeout', () => this.msgId = null))
+			.then((msgId: string) => this.msgId = msgId);
+	}
+}
 </script>

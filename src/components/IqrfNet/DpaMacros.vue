@@ -26,13 +26,27 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Vue} from 'vue-property-decorator';
 import {AxiosResponse} from 'axios';
 import {CButtonGroup, CCard, CCardBody, CCardHeader, CDropdown, CDropdownItem} from '@coreui/vue/src';
 import IqrfService from '../../services/IqrfService';
 
-export default Vue.extend({
-	name: 'DpaMacros',
+interface IDpaMacro {
+	confirmation: boolean
+	enabled: boolean
+	name: string
+	note: string
+	request: string
+}
+
+interface IDpaMacros {
+	enabled: boolean
+	id: number
+	macros: Array<IDpaMacro>
+	name: string
+}
+
+@Component({
 	components: {
 		CButtonGroup,
 		CCard,
@@ -40,20 +54,20 @@ export default Vue.extend({
 		CCardHeader,
 		CDropdown,
 		CDropdownItem,
-	},
-	data(): any {
-		return {
-			macros: null,
-		};
-	},
-	created() {
+	}
+})
+
+export default class DpaMacros extends Vue {
+	private macros: Array<IDpaMacros> = []
+
+	created(): void {
 		IqrfService.getMacros()
 			.then((response: AxiosResponse) => {
-				this.macros = response.data.filter((group: any) => {
+				this.macros = response.data.filter((group: IDpaMacros) => {
 					if (!group.enabled) {
 						return null;
 					}
-					group.macros = group.macros.filter((packet: any) => {
+					group.macros = group.macros.filter((packet: IDpaMacro) => {
 						if (packet.enabled) {
 							return packet;
 						}
@@ -61,6 +75,6 @@ export default Vue.extend({
 					return group;
 				});
 			});
-	},
-});
+	}
+}
 </script>

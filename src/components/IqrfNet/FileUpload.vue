@@ -35,14 +35,14 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Vue} from 'vue-property-decorator';
 import {MutationPayload} from 'vuex';
 import {CButton, CCard, CCardBody, CCardHeader, CForm, CInputFile, CSelect} from '@coreui/vue/src';
 import {FileFormat} from '../../iqrfNet/fileFormat';
 import NativeUploadService from '../../services/NativeUploadService';
+import {IOption} from '../../interfaces/IOption';
 
-export default Vue.extend({
-	name: 'FileUpload',
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -51,23 +51,24 @@ export default Vue.extend({
 		CForm,
 		CInputFile,
 		CSelect
-	},
-	data(): any {
-		return {
-			fileEmpty: true,
-			fileUntouched: true,
-			selectOptions: [
-				{value: null, label: this.$t('iqrfnet.trUpload.messages.fileFormat')},
-				{value: FileFormat.HEX, label: this.$t('iqrfnet.trUpload.fileFormats.hex')},
-				{value: FileFormat.IQRF, label: this.$t('iqrfnet.trUpload.fileFormats.iqrf')},
-				{value: FileFormat.TRCNFG, label: this.$t('iqrfnet.trUpload.fileFormats.trcnfg')}
-			],
-			failed: false,
-			format: null,
-			msgId: null,
-		};
-	},
-	created() {
+	}
+})
+
+export default class FileUpload extends Vue {
+	private failed = false
+	private fileEmpty = true
+	private fileUntouched = true
+	private format: FileFormat|null = null
+	private msgId: string|null = null
+	private selectOptions: Array<IOption> = [
+		{value: null, label: this.$t('iqrfnet.trUpload.messages.fileFormat')},
+		{value: FileFormat.HEX, label: this.$t('iqrfnet.trUpload.fileFormats.hex')},
+		{value: FileFormat.IQRF, label: this.$t('iqrfnet.trUpload.fileFormats.iqrf')},
+		{value: FileFormat.TRCNFG, label: this.$t('iqrfnet.trUpload.fileFormats.trcnfg')}
+	]
+	private unsubscribe: CallableFunction = () => {return;}
+
+	created(): void {
 		this.unsubscribe = this.$store.subscribe((mutation: MutationPayload) => {
 			if (mutation.type === 'SOCKET_ONMESSAGE') {
 				if (this.failed) {
@@ -88,49 +89,50 @@ export default Vue.extend({
 				}
 			}
 		});
-	},
-	beforeDestroy() {
+	}
+
+	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		this.unsubscribe();
-	},
-	methods: {
-		getFiles(): FileList|null {
-			const input = (this.$refs.fileUpload as CInputFile).$el.children[1] as HTMLInputElement;
-			return input.files;
-		},
-		submitUpload() {
-			this.$store.commit('spinner/SHOW');
-			const formData = new FormData();
-			if (this.$store.getters['user/getRole'] === 'power' && this.format !== null) {
-				formData.append('format', this.format);
-			}
-			const files = this.getFiles();
-			if (files == null || files.length === 0) {
-				this.$toast.error(this.$t('iqrfnet.trUpload.messages.file').toString());
-				return;
-			}
-			formData.append('file', this.getFiles()[0]);
-			this.requestSent = true;
-			NativeUploadService.uploadREST(formData)
-				.then((response) => {
-					this.$store.dispatch('spinner/show', {timeout: 30000});
-					NativeUploadService.upload(response.data.fileName, response.data.format, 30000, 'iqrfnet.trUpload.messages.timeout', () => this.msgId = null)
-						.then((msgId: string) => this.msgId = msgId);
-				})
-				.catch(() => {
-					this.$store.commit('spinner/HIDE');
-					this.$toast.error(
-						this.$t('iqrfnet.trUpload.messages.failure').toString()
-					);
-				});
-		},
-		isEmpty() {
-			if (this.fileUntouched) {
-				this.fileUntouched = false;
-			}
-			const files = this.getFiles();
-			this.fileEmpty = files === null || files.length === 0;
+	}
+
+	private getFiles(): FileList {
+		const input = (this.$refs.fileUpload as CInputFile).$el.children[1] as HTMLInputElement;
+		return (input.files as FileList);
+	}
+
+	private submitUpload(): void {
+		this.$store.commit('spinner/SHOW');
+		const formData = new FormData();
+		if (this.$store.getters['user/getRole'] === 'power' && this.format !== null) {
+			formData.append('format', this.format);
 		}
-	},
-});
+		const files = this.getFiles();
+		if (files == null || files.length === 0) {
+			this.$toast.error(this.$t('iqrfnet.trUpload.messages.file').toString());
+			return;
+		}
+		formData.append('file', this.getFiles()[0]);
+		NativeUploadService.uploadREST(formData)
+			.then((response) => {
+				this.$store.dispatch('spinner/show', {timeout: 30000});
+				NativeUploadService.upload(response.data.fileName, response.data.format, 30000, 'iqrfnet.trUpload.messages.timeout', () => this.msgId = null)
+					.then((msgId: string) => this.msgId = msgId);
+			})
+			.catch(() => {
+				this.$store.commit('spinner/HIDE');
+				this.$toast.error(
+					this.$t('iqrfnet.trUpload.messages.failure').toString()
+				);
+			});
+	}
+
+	private isEmpty(): void {
+		if (this.fileUntouched) {
+			this.fileUntouched = false;
+		}
+		const files = this.getFiles();
+		this.fileEmpty = files === null || files.length === 0;
+	}
+}
 </script>
