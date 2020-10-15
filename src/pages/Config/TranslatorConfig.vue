@@ -161,16 +161,38 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CForm, CIcon, CInput} from '@coreui/vue/src';
 import {cilLockLocked, cilLockUnlocked} from '@coreui/icons';
 import {between, integer, required} from 'vee-validate/dist/rules';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import FeatureConfigService from '../../services/FeatureConfigService';
+import { NavigationGuardNext, Route } from 'vue-router';
+import { Dictionary } from 'vue-router/types/router';
 
-export default {
-	name: 'TranslatorConfig',
+interface TranslatorMqtt {
+	addr: string
+	cid: string
+	port: number
+	pw: string
+	topic: string
+	user: string
+}
+
+interface TranslatorRest {
+	addr: string
+	api_key: string
+	port: number
+}
+
+interface Translator {
+	mqtt: TranslatorMqtt
+	rest: TranslatorRest
+}
+
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -180,7 +202,7 @@ export default {
 		ValidationObserver,
 		ValidationProvider
 	},
-	beforeRouteEnter(to, from, next) {
+	beforeRouteEnter(to: Route, from: Route, next: NavigationGuardNext): void {
 		next(vm => {
 			if (!vm.$store.getters['features/isEnabled']('iqrfGatewayTranslator')) {
 				vm.$toast.error(
@@ -190,14 +212,21 @@ export default {
 			}
 		});
 	},
-	data() {
-		return {
-			name: 'translator',
-			visibility: 'password',
-			config: null,
-		};
+	metaInfo: {
+		title: 'translatorConfig.description',
 	},
-	created() {
+})
+
+export default class TranslatorConfig extends Vue {
+	private name = 'translator'
+	private visibility = 'password'
+	private config: Translator|null = null
+	private icons: Dictionary<Array<string>> = {
+		hidden: cilLockLocked,
+		shown: cilLockUnlocked
+	}
+
+	created(): void {
 		extend('between', between);
 		extend('integer', integer);
 		extend('required', required);
@@ -214,41 +243,34 @@ export default {
 			return regex.test(topic);
 		});
 		this.getConfig();
-	},
-	methods: {
-		getConfig() {
-			this.$store.commit('spinner/SHOW');
-			FeatureConfigService.getConfig(this.name)
-				.then((response) => {
-					this.$store.commit('spinner/HIDE');
-					this.config = response.data;
-				})
-				.catch((error) => {
-					FormErrorHandler.configError(error);
-				});
-		},
-		processSubmit() {
-			this.$store.commit('spinner/SHOW');
-			FeatureConfigService.saveConfig(this.name, this.config)
-				.then(() => {
-					this.$store.commit('spinner/HIDE');
-					this.$toast.success(this.$t('forms.messages.saveSuccess').toString());
-				})
-				.catch((error) => {
-					FormErrorHandler.configError(error);
-				});
-		},
-		changeVisibility() {
-			this.visibility = this.visibility === 'password' ? 'text' : 'password';
-		},
-	},
-	icons: {
-		hidden: cilLockLocked,
-		shown: cilLockUnlocked
-	},
-	metaInfo: {
-		title: 'translatorConfig.description',
-	},
-};
+	}
 
+	private getConfig(): void {
+		this.$store.commit('spinner/SHOW');
+		FeatureConfigService.getConfig(this.name)
+			.then((response) => {
+				this.$store.commit('spinner/HIDE');
+				this.config = response.data;
+			})
+			.catch((error) => {
+				FormErrorHandler.configError(error);
+			});
+	}
+
+	private processSubmit(): void {
+		this.$store.commit('spinner/SHOW');
+		FeatureConfigService.saveConfig(this.name, this.config)
+			.then(() => {
+				this.$store.commit('spinner/HIDE');
+				this.$toast.success(this.$t('forms.messages.saveSuccess').toString());
+			})
+			.catch((error) => {
+				FormErrorHandler.configError(error);
+			});
+	}
+
+	private changeVisibility(): void {
+		this.visibility = this.visibility === 'password' ? 'text' : 'password';
+	}
+}
 </script>

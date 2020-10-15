@@ -219,15 +219,18 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CForm, CInput, CInputCheckbox} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {between, integer, min_value, required} from 'vee-validate/dist/rules';
+import { MqttInstance } from '../../interfaces/messagingInterfaces';
+import { MetaInfo } from 'vue-meta';
+import { IOption } from '../../interfaces/coreui';
 
-export default {
-	name: 'MqttMessagingForm',
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -237,57 +240,62 @@ export default {
 		ValidationObserver,
 		ValidationProvider,
 	},
-	props: {
-		instance: {
-			type: String,
-			required: false,
-			default: null,
-		},
-	},
-	data() {
+	metaInfo(): MetaInfo {
 		return {
-			componentName: 'iqrf::MqttMessaging',
-			configuration: {
-				instance: null,
-				BrokerAddr: null,
-				ClientId: null,
-				Persistence: 1,
-				Qos: 1,
-				TopicRequest: null,
-				TopicResponse: null,
-				User: null,
-				Password: null,
-				EnabledSSL: false,
-				KeepAliveInterval: 20,
-				ConnectTimeout: 5,
-				MinReconnect: 1,
-				MaxReconnect: 64,
-				TrustStore: null,
-				KeyStore: null,
-				PrivateKey: null,
-				PrivateKeyPassword: null,
-				EnabledCipherSuites: null,
-				EnableServerCertAuth: false,
-				acceptAsyncMsg: false,
-			}
+			title: (this as unknown as MqttMessagingForm).pageTitle
 		};
-	},
-	computed: {
-		qosOptions() {
-			const options = [0, 1, 2];
-			return options.map((option) => {
-				return {
-					value: option,
-					label: this.$t('config.mqtt.form.QoSes.' + option).toString(),
-				};
-			});
-		},
-		submitButton() {
-			return this.$route.path === '/config/mqtt/add' ?
-				this.$t('forms.add') : this.$t('forms.save');
-		},
-	},
-	created() {
+	}
+})
+
+export default class MqttMessagingForm extends Vue {
+	private componentName = 'iqrf::MqttMessaging'
+	private configuration: MqttInstance = {
+		component: '',
+		instance: '',
+		BrokerAddr: '',
+		ClientId: '',
+		Persistence: 1,
+		Qos: 1,
+		TopicRequest: '',
+		TopicResponse: '',
+		User: '',
+		Password: '',
+		EnabledSSL: false,
+		KeepAliveInterval: 20,
+		ConnectTimeout: 5,
+		MinReconnect: 1,
+		MaxReconnect: 64,
+		TrustStore: '',
+		KeyStore: '',
+		PrivateKey: '',
+		PrivateKeyPassword: '',
+		EnabledCipherSuites: '',
+		EnableServerCertAuth: false,
+		acceptAsyncMsg: false,
+	}
+	@Prop({required: false, default: null}) instance!: string
+
+	get pageTitle(): string {
+		return this.$route.path === '/config/mqtt/add' ?
+			this.$t('config.mqtt.add').toString() : this.$t('config.mqtt.edit').toString();
+	}
+
+	get qosOptions(): Array<IOption> {
+		const options = [0, 1, 2];
+		return options.map((option) => {
+			return {
+				value: option,
+				label: this.$t('config.mqtt.form.QoSes.' + option).toString(),
+			};
+		});
+	}
+	
+	get submitButton(): string {
+		return this.$route.path === '/config/mqtt/add' ?
+			this.$t('forms.add').toString() : this.$t('forms.save').toString();
+	}
+
+	created(): void {
 		extend('between', between);
 		extend('integer', integer);
 		extend('min', min_value);
@@ -295,54 +303,49 @@ export default {
 		if (this.instance !== null) {
 			this.getConfig();
 		}
-	},
-	methods: {
-		getConfig() {
-			this.$store.commit('spinner/SHOW');
-			DaemonConfigurationService.getInstance(this.componentName, this.instance)
-				.then((response) => {
-					this.$store.commit('spinner/HIDE');
-					this.configuration = response.data;
-				})
-				.catch((error) => {
-					this.$store.commit('spinner/HIDE');
-					this.$router.push('/config/mqtt/');
-					FormErrorHandler.configError(error);
-				});
-		},
-		saveConfig() {
-			this.$store.commit('spinner/SHOW');
-			if (this.instance !== null) {
-				DaemonConfigurationService.updateInstance(this.componentName, this.instance, this.configuration)
-					.then(() => this.successfulSave())
-					.catch((error) => FormErrorHandler.configError(error));
-			} else {
-				DaemonConfigurationService.createInstance(this.componentName, this.configuration)
-					.then(() => this.successfulSave())
-					.catch((error) => FormErrorHandler.configError(error));
-			}
-		},
-		successfulSave() {
-			this.$router.push('/config/mqtt/');
-			this.$store.commit('spinner/HIDE');
-			if (this.$route.path === '/config/mqtt/add') {
-				this.$toast.success(
-					this.$t('config.mqtt.messages.add.success', {instance: this.configuration.instance})
-						.toString()
-				);
-			} else {
-				this.$toast.success(
-					this.$t('config.mqtt.messages.edit.success', {instance: this.configuration.instance})
-						.toString()
-				);
-			}
-		},
-	},
-	metaInfo() {
-		return {
-			title: this.$route.path === '/config/mqtt/add' ?
-				'config.mqtt.add' : 'config.mqtt.edit',
-		};
-	},
-};
+	}
+
+	private getConfig(): void {
+		this.$store.commit('spinner/SHOW');
+		DaemonConfigurationService.getInstance(this.componentName, this.instance)
+			.then((response) => {
+				this.$store.commit('spinner/HIDE');
+				this.configuration = response.data;
+			})
+			.catch((error) => {
+				this.$store.commit('spinner/HIDE');
+				this.$router.push('/config/mqtt/');
+				FormErrorHandler.configError(error);
+			});
+	}
+
+	private saveConfig(): void {
+		this.$store.commit('spinner/SHOW');
+		if (this.instance !== null) {
+			DaemonConfigurationService.updateInstance(this.componentName, this.instance, this.configuration)
+				.then(() => this.successfulSave())
+				.catch((error) => FormErrorHandler.configError(error));
+		} else {
+			DaemonConfigurationService.createInstance(this.componentName, this.configuration)
+				.then(() => this.successfulSave())
+				.catch((error) => FormErrorHandler.configError(error));
+		}
+	}
+
+	private successfulSave(): void {
+		this.$router.push('/config/mqtt/');
+		this.$store.commit('spinner/HIDE');
+		if (this.$route.path === '/config/mqtt/add') {
+			this.$toast.success(
+				this.$t('config.mqtt.messages.add.success', {instance: this.configuration.instance})
+					.toString()
+			);
+		} else {
+			this.$toast.success(
+				this.$t('config.mqtt.messages.edit.success', {instance: this.configuration.instance})
+					.toString()
+			);
+		}
+	}
+}
 </script>

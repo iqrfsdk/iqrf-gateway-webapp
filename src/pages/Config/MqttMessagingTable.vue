@@ -9,7 +9,7 @@
 					size='sm'
 					class='float-right'
 				>
-					<CIcon :content='$options.icons.add' size='sm' />
+					<CIcon :content='icons.add' size='sm' />
 					{{ $t('table.actions.add') }}
 				</CButton>
 			</CCardHeader>
@@ -67,11 +67,11 @@
 								:to='"/config/mqtt/edit/" + item.instance'
 								size='sm'
 							>
-								<CIcon :content='$options.icons.edit' size='sm' />
+								<CIcon :content='icons.edit' size='sm' />
 								{{ $t('table.actions.edit') }}
 							</CButton>
 							<CButton color='danger' size='sm' @click='confirmDelete(item)'>
-								<CIcon :content='$options.icons.delete' size='sm' />
+								<CIcon :content='icons.delete' size='sm' />
 								{{ $t('table.actions.delete') }}
 							</CButton>
 						</td>
@@ -81,19 +81,19 @@
 		</CCard>
 		<CModal
 			color='danger'
-			:show='modals.delete.instance !== null'
+			:show='deleteInstance !== ""'
 		>
 			<template #header>
 				<h5 class='modal-title'>
 					{{ $t('config.mqtt.messages.delete.confirmTitle') }}
 				</h5>
-				<CButtonClose class='text-white' @click='modals.delete.instance = null' />
+				<CButtonClose class='text-white' @click='deleteInstance = ""' />
 			</template>
-			<span v-if='modals.delete.instance !== null'>
-				{{ $t('config.mqtt.messages.delete.confirm', {instance: modals.delete.instance}) }}
+			<span v-if='deleteInstance !== ""'>
+				{{ $t('config.mqtt.messages.delete.confirm', {instance: deleteInstance}) }}
 			</span>
 			<template #footer>
-				<CButton color='danger' @click='modals.delete.instance = null'>
+				<CButton color='danger' @click='deleteInstance = ""'>
 					{{ $t('forms.no') }}
 				</CButton>
 				<CButton color='success' @click='performDelete'>
@@ -104,7 +104,8 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Vue} from 'vue-property-decorator';
 import {
 	CButton,
 	CButtonClose,
@@ -120,9 +121,12 @@ import {
 import {cilPencil, cilPlus, cilTrash} from '@coreui/icons';
 import DaemonConfigurationService
 	from '../../services/DaemonConfigurationService';
+import { Dictionary } from 'vue-router/types/router';
+import { IField } from '../../interfaces/coreui';
+import { MqttInstance } from '../../interfaces/messagingInterfaces';
+import { AxiosResponse } from 'axios';
 
-export default {
-	name: 'MqttMessagingTable',
+@Component({
 	components: {
 		CButton,
 		CButtonClose,
@@ -135,116 +139,116 @@ export default {
 		CIcon,
 		CModal,
 	},
-	data() {
-		return {
-			componentName: 'iqrf::MqttMessaging',
-			fields: [
-				{
-					key: 'instance',
-					label: this.$t('config.mqtt.form.instance'),
-				},
-				{
-					key: 'BrokerAddr',
-					label: this.$t('config.mqtt.form.BrokerAddr'),
-				},
-				{
-					key: 'ClientId',
-					label: this.$t('config.mqtt.form.ClientId'),
-				},
-				{
-					key: 'TopicRequest',
-					label: this.$t('config.mqtt.form.TopicRequest'),
-				},
-				{
-					key: 'TopicResponse',
-					label: this.$t('config.mqtt.form.TopicResponse'),
-				},
-				{
-					key: 'EnabledSSL',
-					label: this.$t('config.mqtt.form.EnabledSSL'),
-					filter: false,
-				},
-				{
-					key: 'acceptAsyncMsg',
-					label: this.$t('config.mqtt.form.acceptAsyncMsg'),
-					filter: false,
-				},
-				{
-					key: 'actions',
-					label: this.$t('table.actions.title'),
-					sorter: false,
-					filter: false,
-				},
-			],
-			instances: [],
-			modals: {
-				delete: {
-					instance: null,
-				}
-			},
-		};
-	},
-	created() {
-		this.$store.commit('spinner/SHOW');
-		this.getInstances();
-	},
-	methods: {
-		confirmDelete(instance) {
-			this.modals.delete.instance = instance.instance;
+	metaInfo: {
+		title: 'config.mqtt.title',
+	}
+})
+
+export default class MqttMessagingTable extends Vue {
+	private componentName = 'iqrf::MqttMessaging'
+	private deleteInstance = ''
+	private fields: Array<IField> = [
+		{
+			key: 'instance',
+			label: this.$t('config.mqtt.form.instance'),
 		},
-		changeAcceptAsyncMsg(instance, acceptAsyncMsg) {
-			this.edit(instance, {acceptAsyncMsg: acceptAsyncMsg});
+		{
+			key: 'BrokerAddr',
+			label: this.$t('config.mqtt.form.BrokerAddr'),
 		},
-		changeEnabledSSL(instance, enabledSsl) {
-			this.edit(instance, {EnabledSSL: enabledSsl});
+		{
+			key: 'ClientId',
+			label: this.$t('config.mqtt.form.ClientId'),
 		},
-		edit(instance, newSettings) {
-			this.$store.commit('spinner/SHOW');
-			let settings = {
-				...instance,
-				...newSettings,
-			};
-			return DaemonConfigurationService.updateInstance(this.componentName, settings.instance, settings)
-				.then(() => {
-					this.getInstances().then(() => {
-						this.$toast.success(
-							this.$t('config.mqtt.messages.edit.success', {instance: settings.instance})
-								.toString()
-						);
-					});
-				});
+		{
+			key: 'TopicRequest',
+			label: this.$t('config.mqtt.form.TopicRequest'),
 		},
-		getInstances() {
-			return DaemonConfigurationService.getComponent(this.componentName)
-				.then((response) => {
-					this.$store.commit('spinner/HIDE');
-					this.instances = response.data.instances;
-				})
-				.catch(() => this.$store.commit('spinner/HIDE'));
+		{
+			key: 'TopicResponse',
+			label: this.$t('config.mqtt.form.TopicResponse'),
 		},
-		performDelete() {
-			this.$store.commit('spinner/SHOW');
-			const instance = this.modals.delete.instance;
-			this.modals.delete.instance = null;
-			DaemonConfigurationService.deleteInstance(this.componentName, instance)
-				.then(() => {
-					this.getInstances().then(() => {
-						this.$toast.success(
-							this.$t('config.mqtt.messages.delete.success', {instance: instance})
-								.toString()
-						);
-					});
-				})
-				.catch(() => this.$store.commit('spinner/HIDE'));
+		{
+			key: 'EnabledSSL',
+			label: this.$t('config.mqtt.form.EnabledSSL'),
+			filter: false,
 		},
-	},
-	icons: {
+		{
+			key: 'acceptAsyncMsg',
+			label: this.$t('config.mqtt.form.acceptAsyncMsg'),
+			filter: false,
+		},
+		{
+			key: 'actions',
+			label: this.$t('table.actions.title'),
+			sorter: false,
+			filter: false,
+		},
+	]
+	private icons: Dictionary<Array<string>> = {
 		add: cilPlus,
 		delete: cilTrash,
 		edit: cilPencil,
-	},
-	metaInfo: {
-		title: 'config.mqtt.title',
-	},
-};
+	}
+	private instances: Array<MqttInstance> = []
+
+	created(): void {
+		this.$store.commit('spinner/SHOW');
+		this.getInstances();
+	}
+
+	private confirmDelete(instance): void {
+		this.deleteInstance = instance.instance;
+	}
+
+	private changeAcceptAsyncMsg(instance, acceptAsyncMsg): void {
+		this.edit(instance, {acceptAsyncMsg: acceptAsyncMsg});
+	}
+
+	private changeEnabledSSL(instance, enabledSsl) : void{
+		this.edit(instance, {EnabledSSL: enabledSsl});
+	}
+
+	private edit(instance, newSettings): Promise<AxiosResponse|void> {
+		this.$store.commit('spinner/SHOW');
+		let settings = {
+			...instance,
+			...newSettings,
+		};
+		return DaemonConfigurationService.updateInstance(this.componentName, settings.instance, settings)
+			.then(() => {
+				this.getInstances().then(() => {
+					this.$toast.success(
+						this.$t('config.mqtt.messages.edit.success', {instance: settings.instance})
+							.toString()
+					);
+				});
+			});
+	}
+
+	private getInstances(): Promise<AxiosResponse|void> {
+		return DaemonConfigurationService.getComponent(this.componentName)
+			.then((response) => {
+				this.$store.commit('spinner/HIDE');
+				this.instances = response.data.instances;
+			})
+			.catch(() => this.$store.commit('spinner/HIDE'));
+	}
+
+	private performDelete(): void {
+		this.$store.commit('spinner/SHOW');
+		const instance = this.deleteInstance;
+		this.deleteInstance = '';
+		DaemonConfigurationService.deleteInstance(this.componentName, instance)
+			.then(() => {
+				this.getInstances().then(() => {
+					this.$toast.success(
+						this.$t('config.mqtt.messages.delete.success', {instance: instance})
+							.toString()
+					);
+				});
+			})
+			.catch(() => this.$store.commit('spinner/HIDE'));
+	}
+}
 </script>

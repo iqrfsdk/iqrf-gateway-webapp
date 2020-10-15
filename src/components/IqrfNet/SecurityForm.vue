@@ -34,7 +34,7 @@ import {MutationPayload} from 'vuex';
 import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput, CSelect} from '@coreui/vue/src';
 import SecurityService from '../../services/SecurityService';
 import {SecurityFormat} from '../../iqrfNet/securityFormat';
-import { IOption } from '../../interfaces/IOption';
+import { IOption } from '../../interfaces/coreui';
 
 @Component({
 	components: {

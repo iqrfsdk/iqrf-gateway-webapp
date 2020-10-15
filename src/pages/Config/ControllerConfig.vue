@@ -272,7 +272,8 @@ import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import {between, integer, required} from 'vee-validate/dist/rules';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import FeatureConfigService from '../../services/FeatureConfigService';
-import { Dictionary, NavigationGuardNext, Route } from 'vue-router/types/router';
+import {NavigationGuardNext, Route} from 'vue-router/types/router';
+import {ControllerBase} from '../../interfaces/controller';
 
 @Component({
 	components: {
@@ -302,7 +303,7 @@ import { Dictionary, NavigationGuardNext, Route } from 'vue-router/types/router'
 
 export default class ControllerConfig extends Vue {
 	private name = 'controller'
-	private config: Dictionary<unknown>|null = null
+	private config: ControllerBase|null = null
 
 	created(): void {
 		extend('between', between);

@@ -80,7 +80,7 @@ import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CCardHeader, CDataTable, CIcon, CModal} from '@coreui/vue/src';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
-import {IField} from '../../interfaces/IField';
+import {IField} from '../../interfaces/coreui';
 import {getCoreIcon} from '../../helpers/icons';
 import { AxiosResponse } from 'axios';
 import { Dictionary } from 'vue-router/types/router';

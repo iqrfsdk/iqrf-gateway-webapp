@@ -88,15 +88,40 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CForm, CInput, CInputCheckbox, CSelect} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {required} from 'vee-validate/dist/rules';
+import { ModalInstance, WsService } from '../../interfaces/messagingInterfaces';
+import { AxiosError, AxiosResponse } from 'axios';
+import { MetaInfo } from 'vue-meta';
+import { RequiredInterface } from '../../interfaces/requiredInterfaces';
 
-export default {
-	name: 'WebsocketMessagingForm',
+interface ServiceInstance {
+	label: string
+	value: string
+}
+
+interface ServiceInstances {
+	service: Array<ServiceInstance>
+}
+
+interface LocalRequiredInterface {
+	instance: string
+	name: string
+}
+
+interface LocalWsMessaging {
+	component: string
+	instance: string
+	acceptAsyncMsg: boolean
+	RequiredInterfaces: Array<LocalRequiredInterface>
+}
+
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -108,120 +133,127 @@ export default {
 		ValidationObserver,
 		ValidationProvider,
 	},
-	props: {
-		instance: {
-			type: String,
-			required: false,
-			default: null,
-		},
-	},
-	data() {
+	metaInfo(): MetaInfo {
 		return {
-			componentNames: {
-				messaging: 'iqrf::WebsocketMessaging',
-				service: 'shape::WebsocketCppService',
-			},
-			instances: {
-				service: [],
-			},
-			configuration: {
-				instance: null,
-				acceptAsyncMsg: false,
-				RequiredInterfaces: [{}],
-			}
+			title: (this as unknown as WebsocketMessagingForm).pageTitle
 		};
-	},
-	computed: {
-		submitButton() {
-			return this.$route.path === '/config/websocket/add-messaging' ?
-				this.$t('forms.add') : this.$t('forms.edit');
-		},
-	},
-	created() {
+	}
+})
+
+export default class WebsocketMessagingForm extends Vue {
+	private componentNames: ModalInstance = {
+		messaging: 'iqrf::WebsocketMessaging',
+		service: 'shape::WebsocketCppService',
+	}
+	private configuration: LocalWsMessaging = {
+		component: '',
+		instance: '',
+		acceptAsyncMsg: false,
+		RequiredInterfaces: [{instance: '', name: ''}],
+	}
+	private instances: ServiceInstances = {
+		service: []
+	}
+
+	@Prop({required: false, default: null}) instance!: string
+
+	get pageTitle(): string {
+		return this.$route.path === '/config/websocket/add-messaging' ?
+			this.$t('config.websocket.messaging.add').toString() : this.$t('config.websocket.messaging.edit').toString();
+	}
+
+	get submitButton(): string {
+		return this.$route.path === '/config/websocket/add-messaging' ?
+			this.$t('forms.add').toString() : this.$t('forms.edit').toString();
+	}
+
+	created(): void {
 		extend('required', required);
 		if (this.instance) {
 			this.getConfig();
 		} else {
 			this.getServices();
 		}
-	},
-	methods: {
-		addInterface() {
-			this.configuration.RequiredInterfaces.push({});
-		},
-		removeInterface(index) {
-			this.configuration.RequiredInterfaces.splice(index, 1);
-		},
-		getConfig() {
-			this.$store.commit('spinner/SHOW');
-			return Promise.all([
-				DaemonConfigurationService.getInstance(this.componentNames.messaging, this.instance),
-				DaemonConfigurationService.getComponent(this.componentNames.service),
-			])
-				.then((responses) => {
-					this.$store.commit('spinner/HIDE');
-					let interfaces = [];
-					let configuration = responses[0].data;
-					configuration.RequiredInterfaces.forEach(item => {
-						interfaces.push({name: item.name, instance: item.target.instance});
-					});
-					configuration.RequiredInterfaces = interfaces;
-					this.configuration = configuration;
-					responses[1].data.instances.forEach(item => {
-						this.instances.service.push({value: item.instance, label: item.instance});
-					});
-				});
-		},
-		getServices() {
-			this.$store.commit('spinner/SHOW');
-			DaemonConfigurationService.getComponent(this.componentNames.service)
-				.then((response) => {
-					this.$store.commit('spinner/HIDE');
-					response.data.instances.forEach(item => {
-						this.instances.service.push({value: item.instance, label: item.instance});
-					});
-				});
-		},
-		saveInstance() {
-			let instance = this.configuration;
-			let RequiredInterfaces = [];
-			this.configuration.RequiredInterfaces.forEach(item => {
-				RequiredInterfaces.push({name: item.name, target: {instance: item.instance}});
-			});
-			instance.RequiredInterfaces = RequiredInterfaces;
-			this.$store.commit('spinner/SHOW');
-			if (this.instance !== null) {
-				DaemonConfigurationService.updateInstance(this.componentNames.messaging, this.instance, instance)
-					.then(() => this.successfulSave())
-					.catch((error) => FormErrorHandler.configError(error));
-			} else {
-				DaemonConfigurationService.createInstance(this.componentNames.messaging, instance)
-					.then(() => this.successfulSave())
-					.catch((error) => FormErrorHandler.configError(error));
-			}
-		},
-		successfulSave() {
-			this.$router.push('/config/websocket/');
-			this.$store.commit('spinner/HIDE');
-			if (this.$route.path === '/config/websocket/add-messaging') {
-				this.$toast.success(
-					this.$t('config.websocket.messaging.messages.addSuccess', {messaging: this.configuration.instance})
-						.toString()
-				);
-			} else {
-				this.$toast.success(
-					this.$t('config.websocket.messaging.messages.editSuccess', {messaging: this.instance})
-						.toString()
-				);
-			}
-		},
-	},
-	metaInfo() {
-		return {
-			title: this.$route.path === '/config/websocket/add-messaging' ?
-				this.$t('config.websocket.messaging.add') :
-				this.$t('config.websocket.messaging.edit')
-		};
 	}
-};
+
+	private addInterface(): void  {
+		this.configuration.RequiredInterfaces.push({instance: '', name: ''});
+	}
+
+	private removeInterface(index: number) {
+		this.configuration.RequiredInterfaces.splice(index, 1);
+	}
+
+	private getConfig() {
+		this.$store.commit('spinner/SHOW');
+		return Promise.all([
+			DaemonConfigurationService.getInstance(this.componentNames.messaging, this.instance),
+			DaemonConfigurationService.getComponent(this.componentNames.service),
+		])
+			.then((responses: Array<AxiosResponse>) => {
+				this.$store.commit('spinner/HIDE');
+				let interfaces: Array<LocalRequiredInterface> = [];
+				let configuration = responses[0].data;
+				configuration.RequiredInterfaces.forEach((item: RequiredInterface) => {
+					interfaces.push({name: item.name, instance: item.target.instance});
+				});
+				configuration.RequiredInterfaces = interfaces;
+				this.configuration = configuration;
+				responses[1].data.instances.forEach((item: WsService) => {
+					this.instances.service.push({value: item.instance, label: item.instance});
+				});
+			});
+	}
+
+	private getServices(): void {
+		this.$store.commit('spinner/SHOW');
+		DaemonConfigurationService.getComponent(this.componentNames.service)
+			.then((response: AxiosResponse) => {
+				this.$store.commit('spinner/HIDE');
+				response.data.instances.forEach((item: WsService) => {
+					this.instances.service.push({value: item.instance, label: item.instance});
+				});
+			});
+	}
+
+	private saveInstance(): void {
+		let instance = {
+			component: this.configuration.component,
+			instance: this.configuration.instance,
+			acceptAsyncMsg: this.configuration.acceptAsyncMsg,
+			RequiredInterfaces: []
+		};
+		let RequiredInterfaces: Array<RequiredInterface> = [];
+		this.configuration.RequiredInterfaces.forEach((item: LocalRequiredInterface) => {
+			RequiredInterfaces.push({name: item.name, target: {instance: item.instance}});
+		});
+		Object.assign(instance.RequiredInterfaces, RequiredInterfaces);
+		this.$store.commit('spinner/SHOW');
+		if (this.instance !== null) {
+			DaemonConfigurationService.updateInstance(this.componentNames.messaging, this.instance, instance)
+				.then(() => this.successfulSave())
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
+		} else {
+			DaemonConfigurationService.createInstance(this.componentNames.messaging, instance)
+				.then(() => this.successfulSave())
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
+		}
+	}
+
+	private successfulSave(): void {
+		this.$router.push('/config/websocket/');
+		this.$store.commit('spinner/HIDE');
+		if (this.$route.path === '/config/websocket/add-messaging') {
+			this.$toast.success(
+				this.$t('config.websocket.messaging.messages.addSuccess', {messaging: this.configuration.instance})
+					.toString()
+			);
+		} else {
+			this.$toast.success(
+				this.$t('config.websocket.messaging.messages.editSuccess', {messaging: this.instance})
+					.toString()
+			);
+		}
+	}
+}
 </script>

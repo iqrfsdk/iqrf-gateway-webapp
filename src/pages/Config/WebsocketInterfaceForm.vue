@@ -50,15 +50,18 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CForm, CInput, CInputCheckbox} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {integer, required} from 'vee-validate/dist/rules';
+import { WsMessaging, ModalInstance, WsService } from '../../interfaces/messagingInterfaces';
+import { MetaInfo } from 'vue-meta';
+import { AxiosError, AxiosResponse } from 'axios';
 
-export default {
-	name: 'MonitorForm',
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -68,119 +71,116 @@ export default {
 		ValidationObserver,
 		ValidationProvider,
 	},
-	props: {
-		instance: {
-			type: String,
-			required: false,
-			default: null,
-		},
-	},
-	data() {
+	metaInfo(): MetaInfo {
 		return {
-			componentNames: {
-				messaging: 'iqrf::WebsocketMessaging',
-				service: 'shape::WebsocketCppService',
-			},
-			instances: {
-				messaging: null,
-				service: null,
-			},
-			messaging: {
-				instance: null,
-				acceptAsyncMsg: false,
-				RequiredInterfaces: [],
-			},
-			service: {
-				instance: null,
-				WebsocketPort: null,
-				acceptOnlyLocalhost: false,
-			},
+			title: (this as unknown as MonitorForm).pageTitle
 		};
-	},
-	computed: {
-		submitButton() {
-			return this.$route.path === '/config/mq/add' ?
-				this.$t('forms.add') :
-				this.$t('forms.save');
-		},
-	},
-	created() {
+	}
+})
+
+export default class MonitorForm extends Vue {
+	private componentNames: ModalInstance = {
+		messaging: 'iqrf::WebsocketMessaging',
+		service: 'shape::WebsocketCppService',
+	}
+	private instances: ModalInstance = {
+		messaging: '',
+		service: '',
+	}
+	private messaging: WsMessaging = {
+		component: '',
+		instance: '',
+		acceptAsyncMsg: false,
+		RequiredInterfaces: [],
+	}
+	private service: WsService = {
+		component: '',
+		instance: '',
+		WebsocketPort: 1338,
+		acceptOnlyLocalhost: false,
+	}
+	@Prop({required: false, default: null}) instance!: string
+
+	get pageTitle(): string {
+		return this.$route.path === '/config/websocket/add' ?
+			this.$t('config.websocket.interface.add').toString() : this.$t('config.websocket.interface.edit').toString();
+	}
+	
+	get submitButton(): string {
+		return this.$route.path === '/config/mq/add' ?
+			this.$t('forms.add').toString() : this.$t('forms.save').toString();
+	}
+
+	created(): void {
 		extend('integer', integer);
 		extend('required', required);
 		if (this.instance !== null) {
 			this.getConfig();
 		}
-	},
-	methods: {
-		getConfig() {
-			this.$store.commit('spinner/SHOW');
-			DaemonConfigurationService.getInstance(this.componentNames.messaging, this.instance)
-				.then((response) => {
-					this.messaging = response.data;
-					this.instances.messaging = this.instance;
-					this.instances.service = this.messaging.RequiredInterfaces[0].target.instance;
-					DaemonConfigurationService.getInstance(this.componentNames.service, this.instances.service)
-						.then((response) => {
-							this.service = response.data;
-							this.$store.commit('spinner/HIDE');
-						});
-				})
-				.catch((error) => {
-					this.$router.push('/config/websocket/');
-					FormErrorHandler.configError(error);
-				});
-		},
-		saveConfig() {
-			this.$store.commit('spinner/SHOW');
-			this.service.instance = this.messaging.instance;
-			if (this.messaging.RequiredInterfaces.length === 0) {
-				this.messaging.RequiredInterfaces[0] = {
-					name: 'shape::IWebsocketService',
-					target: {
-						instance: this.service.instance,
-					},
-				};
-			} else {
-				this.messaging.RequiredInterfaces[0].target.instance = this.messaging.instance;
-			}
-			if (this.instance === null) {
-				Promise.all([
-					DaemonConfigurationService.createInstance(this.componentNames.service, this.service),
-					DaemonConfigurationService.createInstance(this.componentNames.messaging, this.messaging),
-				])
-					.then(() => this.successfulSave())
-					.catch((error) => FormErrorHandler.configError(error));
-			} else {
-				Promise.all([
-					DaemonConfigurationService.updateInstance(this.componentNames.service, this.instances.service, this.service),
-					DaemonConfigurationService.updateInstance(this.componentNames.messaging, this.instances.messaging, this.messaging),
-				])
-					.then(() => this.successfulSave())
-					.catch((error) => FormErrorHandler.configError(error));
-			}
-		},
-		successfulSave() {
-			this.$router.push('/config/websocket/');
-			this.$store.commit('spinner/HIDE');
-			if (this.$route.path === '/config/websocket/add') {
-				this.$toast.success(
-					this.$t('config.websocket.messages.add.success', {instance: this.messaging.instance})
-						.toString()
-				);
-			} else {
-				this.$toast.success(
-					this.$t('config.websocket.messages.edit.success', {instance: this.messaging.instance})
-						.toString()
-				);
-			}
-		},
-	},
-	metaInfo() {
-		return {
-			title: this.$route.path === '/config/websocket/add' ?
-				'config.websocket.interface.add' :
-				'config.websocket.interface.edit',
-		};
-	},
-};
+	}
+
+	private getConfig(): void {
+		this.$store.commit('spinner/SHOW');
+		DaemonConfigurationService.getInstance(this.componentNames.messaging, this.instance)
+			.then((response: AxiosResponse) => {
+				this.messaging = response.data;
+				this.instances.messaging = this.instance;
+				this.instances.service = this.messaging.RequiredInterfaces[0].target.instance;
+				DaemonConfigurationService.getInstance(this.componentNames.service, this.instances.service)
+					.then((response: AxiosResponse) => {
+						this.service = response.data;
+						this.$store.commit('spinner/HIDE');
+					});
+			})
+			.catch((error: AxiosError) => {
+				this.$router.push('/config/websocket/');
+				FormErrorHandler.configError(error);
+			});
+	}
+	
+	private saveConfig(): void {
+		this.$store.commit('spinner/SHOW');
+		this.service.instance = this.messaging.instance;
+		if (this.messaging.RequiredInterfaces.length === 0) {
+			this.messaging.RequiredInterfaces[0] = {
+				name: 'shape::IWebsocketService',
+				target: {
+					instance: this.service.instance,
+				},
+			};
+		} else {
+			this.messaging.RequiredInterfaces[0].target.instance = this.messaging.instance;
+		}
+		if (this.instance === null) {
+			Promise.all([
+				DaemonConfigurationService.createInstance(this.componentNames.service, this.service),
+				DaemonConfigurationService.createInstance(this.componentNames.messaging, this.messaging),
+			])
+				.then(() => this.successfulSave())
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
+		} else {
+			Promise.all([
+				DaemonConfigurationService.updateInstance(this.componentNames.service, this.instances.service, this.service),
+				DaemonConfigurationService.updateInstance(this.componentNames.messaging, this.instances.messaging, this.messaging),
+			])
+				.then(() => this.successfulSave())
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
+		}
+	}
+	private successfulSave(): void {
+		this.$router.push('/config/websocket/');
+		this.$store.commit('spinner/HIDE');
+		if (this.$route.path === '/config/websocket/add') {
+			this.$toast.success(
+				this.$t('config.websocket.messages.add.success', {instance: this.messaging.instance})
+					.toString()
+			);
+		} else {
+			this.$toast.success(
+				this.$t('config.websocket.messages.edit.success', {instance: this.messaging.instance})
+					.toString()
+			);
+		}
+	}
+}
 </script>

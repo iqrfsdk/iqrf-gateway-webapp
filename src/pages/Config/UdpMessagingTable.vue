@@ -9,7 +9,7 @@
 					size='sm'
 					class='float-right'
 				>
-					<CIcon :content='$options.icons.add' size='sm' />
+					<CIcon :content='icons.add' size='sm' />
 					{{ $t('table.actions.add') }}
 				</CButton>
 			</CCardHeader>
@@ -33,14 +33,14 @@
 								:to='"/config/udp/edit/" + item.instance'
 								size='sm'
 							>
-								<CIcon :content='$options.icons.edit' size='sm' />
+								<CIcon :content='icons.edit' size='sm' />
 								{{ $t('table.actions.edit') }}
 							</CButton> <CButton
 								color='danger'
 								size='sm'
 								@click='confirmDelete(item)'
 							>
-								<CIcon :content='$options.icons.delete' size='sm' />
+								<CIcon :content='icons.delete' size='sm' />
 								{{ $t('table.actions.delete') }}
 							</CButton>
 						</td>
@@ -50,7 +50,7 @@
 		</CCard>
 		<CModal
 			color='danger'
-			:show='modals.delete.instance !== null'
+			:show='deleteInstance !== ""'
 		>
 			<template #header>
 				<h5 class='modal-title'>
@@ -58,16 +58,16 @@
 				</h5>
 				<CButtonClose
 					class='text-white'
-					@click='modals.delete.instance = null'
+					@click='deleteInstance = ""'
 				/>
 			</template>
-			<span v-if='modals.delete.instance !== null'>
+			<span v-if='deleteInstance !== ""'>
 				{{ $t('config.udp.messages.delete.confirm', {instance: modals.delete.instance}) }}
 			</span>
 			<template #footer>
-				<CButton
-					color='danger'
-					@click='modals.delete.instance = null'
+				<CButton 
+					color='danger' 
+					@click='deleteInstance = ""'
 				>
 					{{ $t('forms.no') }}
 				</CButton> <CButton
@@ -81,7 +81,8 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Vue} from 'vue-property-decorator';
 import {
 	CButton,
 	CButtonClose,
@@ -95,9 +96,12 @@ import {
 import {cilPencil, cilPlus, cilTrash} from '@coreui/icons';
 import DaemonConfigurationService
 	from '../../services/DaemonConfigurationService';
+import { IField } from '../../interfaces/coreui';
+import { Dictionary } from 'vue-router/types/router';
+import { AxiosResponse } from 'axios';
+import { UdpInstance } from '../../interfaces/messagingInterfaces';
 
-export default {
-	name: 'UdpMessagingTable',
+@Component({
 	components: {
 		CButton,
 		CButtonClose,
@@ -108,89 +112,73 @@ export default {
 		CIcon,
 		CModal,
 	},
-	data() {
-		return {
-			componentName: 'iqrf::UdpMessaging',
-			fields: [
-				{
-					key: 'instance',
-					label: this.$t('config.udp.form.instance'),
-				},
-				{
-					key: 'RemotePort',
-					label: this.$t('config.udp.form.RemotePort'),
-				},
-				{
-					key: 'LocalPort',
-					label: this.$t('config.udp.form.LocalPort'),
-				},
-				{
-					key: 'actions',
-					label: this.$t('table.actions.title'),
-					sorter: false,
-					filter: false,
-				},
-			],
-			instances: [],
-			modals: {
-				delete: {
-					instance: null,
-				}
-			},
-		};
-	},
-	created() {
-		this.$store.commit('spinner/SHOW');
-		this.getInstances();
-	},
-	methods: {
-		confirmDelete(instance) {
-			this.modals.delete.instance = instance.instance;
+	metaInfo: {
+		title: 'config.udp.title',
+	}
+})
+
+export default class UdpMessagingTable extends Vue {
+	private componentName = 'iqrf::UdpMessaging'
+	private deleteInstance = ''
+	private fields: Array<IField> = [
+		{
+			key: 'instance',
+			label: this.$t('config.udp.form.instance'),
 		},
-		changeAcceptAsyncMsg(instance, acceptAsyncMsg) {
-			this.$store.commit('spinner/SHOW');
-			instance.acceptAsyncMsg = acceptAsyncMsg;
-			return DaemonConfigurationService.updateInstance(this.componentName, instance.instance, instance)
-				.then(() => {
-					this.getInstances().then(() => {
-						this.$toast.success(
-							this.$t('config.udp.messages.edit.success', {instance: instance.instance})
-								.toString()
-						);
-					});
-				});
+		{
+			key: 'RemotePort',
+			label: this.$t('config.udp.form.RemotePort'),
 		},
-		getInstances() {
-			return DaemonConfigurationService.getComponent(this.componentName)
-				.then((response) => {
-					this.$store.commit('spinner/HIDE');
-					this.instances = response.data.instances;
-				})
-				.catch(() => this.$store.commit('spinner/HIDE'));
+		{
+			key: 'LocalPort',
+			label: this.$t('config.udp.form.LocalPort'),
 		},
-		performDelete() {
-			this.$store.commit('spinner/SHOW');
-			const instance = this.modals.delete.instance;
-			this.modals.delete.instance = null;
-			DaemonConfigurationService.deleteInstance(this.componentName, instance)
-				.then(() => {
-					this.getInstances().then(() => {
-						this.$toast.success(
-							this.$t('config.udp.messages.delete.success', {instance: instance})
-								.toString()
-						);
-					});
-				})
-				.catch(() => this.$store.commit('spinner/HIDE'));
+		{
+			key: 'actions',
+			label: this.$t('table.actions.title'),
+			sorter: false,
+			filter: false,
 		},
-	},
-	icons: {
+	]
+	private icons: Dictionary<Array<string>> = {
 		add: cilPlus,
 		delete: cilTrash,
 		edit: cilPencil,
-	},
-	metaInfo: {
-		title: 'config.udp.title',
-	},
-};
+	}
+	private instances: Array<UdpInstance> = []
+
+	created(): void {
+		this.$store.commit('spinner/SHOW');
+		this.getInstances();
+	}
+
+	private confirmDelete(instance): void {
+		this.deleteInstance = instance.instance;
+	}
+
+	private getInstances(): Promise<void> {
+		return DaemonConfigurationService.getComponent(this.componentName)
+			.then((response: AxiosResponse) => {
+				this.$store.commit('spinner/HIDE');
+				this.instances = response.data.instances;
+			})
+			.catch(() => this.$store.commit('spinner/HIDE'));
+	}
+
+	private performDelete(): void {
+		this.$store.commit('spinner/SHOW');
+		const instance = this.deleteInstance;
+		this.deleteInstance = '';
+		DaemonConfigurationService.deleteInstance(this.componentName, instance)
+			.then(() => {
+				this.getInstances().then(() => {
+					this.$toast.success(
+						this.$t('config.udp.messages.delete.success', {instance: instance})
+							.toString()
+					);
+				});
+			})
+			.catch(() => this.$store.commit('spinner/HIDE'));
+	}
+}
 </script>

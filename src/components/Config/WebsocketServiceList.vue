@@ -97,9 +97,9 @@ import {CButton, CCard, CCardBody, CCardHeader, CDataTable, CDropdown, CDropdown
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {getCoreIcon} from '../../helpers/icons';
-import {IField} from '../../interfaces/IField';
+import {IField} from '../../interfaces/coreui';
 import { AxiosError, AxiosResponse } from 'axios';
-import { WsService } from '../../interfaces/websocket';
+import { WsService } from '../../interfaces/messagingInterfaces';
 
 @Component({
 	components: {

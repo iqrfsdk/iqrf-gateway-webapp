@@ -111,6 +111,7 @@ export default class ComponentForm extends Vue {
 		enabled: false,
 		startlevel: null
 	}
+	
 	@Prop({ required: false,default: null })
 	component!: string;
 	

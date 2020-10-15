@@ -101,8 +101,8 @@ import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CCardHeader, CDataTable, CDropdown, CDropdownItem, CIcon, CModal} from '@coreui/vue/src';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
-import {IField} from '../../interfaces/IField';
-import {WsMessaging} from '../../interfaces/websocket';
+import {IField} from '../../interfaces/coreui';
+import {WsMessaging} from '../../interfaces/messagingInterfaces';
 import {getCoreIcon} from '../../helpers/icons';
 import { AxiosError, AxiosResponse } from 'axios';
 

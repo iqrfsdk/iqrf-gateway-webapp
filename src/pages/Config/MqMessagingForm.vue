@@ -58,15 +58,17 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CForm, CInput, CInputCheckbox} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {required} from 'vee-validate/dist/rules';
+import { MqInstance } from '../../interfaces/messagingInterfaces';
+import { MetaInfo } from 'vue-meta';
 
-export default {
-	name: 'MqMessagingForm',
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -76,82 +78,82 @@ export default {
 		ValidationObserver,
 		ValidationProvider,
 	},
-	props: {
-		instance: {
-			type: String,
-			required: false,
-			default: null,
-		},
-	},
-	data() {
+	metaInfo(): MetaInfo {
 		return {
-			componentName: 'iqrf::MqMessaging',
-			configuration: {
-				instance: null,
-				LocalMqName: null,
-				RemoteMqName: null,
-				acceptAsyncMsg: false,
-			}
+			title: (this as unknown as MqMessagingForm).pageTitle
 		};
 	},
-	computed: {
-		submitButton() {
-			return this.$route.path === '/config/mq/add' ?
-				this.$t('forms.add') : this.$t('forms.save');
-		},
-	},
-	created() {
+})
+
+export default class MqMessagingForm extends Vue {
+	private componentName = 'iqrf::MqMessaging'
+	private configuration: MqInstance = {
+		component: '',
+		instance: '',
+		LocalMqName: '',
+		RemoteMqName: '',
+		acceptAsyncMsg: false,
+	}
+
+	@Prop({required: false, default: null}) instance!: string
+
+	get pageTitle(): string {
+		return this.$route.path === '/config/mq/add' ?
+			this.$t('config.mq.add').toString() : this.$t('config.mq.edit').toString();
+	}
+	
+	get submitButton(): string {
+		return this.$route.path === '/config/mq/add' ?
+			this.$t('forms.add').toString() : this.$t('forms.save').toString();
+	}
+
+	created(): void {
 		extend('required', required);
 		if (this.instance !== null) {
 			this.getConfig();
 		}
-	},
-	methods: {
-		getConfig() {
-			this.$store.commit('spinner/SHOW');
-			DaemonConfigurationService.getInstance(this.componentName, this.instance)
-				.then((response) => {
-					this.$store.commit('spinner/HIDE');
-					this.configuration = response.data;
-				})
-				.catch((error) => {
-					this.$router.push('/config/mq/');
-					FormErrorHandler.configError(error);
-				});
-		},
-		saveConfig() {
-			this.$store.commit('spinner/SHOW');
-			if (this.instance !== null) {
-				DaemonConfigurationService.updateInstance(this.componentName, this.instance, this.configuration)
-					.then(() => this.successfulSave())
-					.catch((error) => FormErrorHandler.configError(error));
-			} else {
-				DaemonConfigurationService.createInstance(this.componentName, this.configuration)
-					.then(() => this.successfulSave())
-					.catch((error) => FormErrorHandler.configError(error));
-			}
-		},
-		successfulSave() {
-			this.$router.push('/config/mq/');
-			this.$store.commit('spinner/HIDE');
-			if (this.$route.path === '/config/mq/add') {
-				this.$toast.success(
-					this.$t('config.mq.messages.add.success', {instance: this.configuration.instance})
-						.toString()
-				);
-			} else {
-				this.$toast.success(
-					this.$t('config.mq.messages.edit.success', {instance: this.configuration.instance})
-						.toString()
-				);
-			}
-		},
-	},
-	metaInfo() {
-		return {
-			title: this.$route.path === '/config/mq/add' ?
-				'config.mq.add' : 'config.mq.edit',
-		};
-	},
-};
+	}
+
+	private getConfig(): void  {
+		this.$store.commit('spinner/SHOW');
+		DaemonConfigurationService.getInstance(this.componentName, this.instance)
+			.then((response) => {
+				this.$store.commit('spinner/HIDE');
+				this.configuration = response.data;
+			})
+			.catch((error) => {
+				this.$router.push('/config/mq/');
+				FormErrorHandler.configError(error);
+			});
+	}
+
+	private saveConfig(): void  {
+		this.$store.commit('spinner/SHOW');
+		if (this.instance !== null) {
+			DaemonConfigurationService.updateInstance(this.componentName, this.instance, this.configuration)
+				.then(() => this.successfulSave())
+				.catch((error) => FormErrorHandler.configError(error));
+		} else {
+			DaemonConfigurationService.createInstance(this.componentName, this.configuration)
+				.then(() => this.successfulSave())
+				.catch((error) => FormErrorHandler.configError(error));
+		}
+	}
+
+	private successfulSave(): void  {
+		this.$router.push('/config/mq/');
+		this.$store.commit('spinner/HIDE');
+		if (this.$route.path === '/config/mq/add') {
+			this.$toast.success(
+				this.$t('config.mq.messages.add.success', {instance: this.configuration.instance})
+					.toString()
+			);
+		} else {
+			this.$toast.success(
+				this.$t('config.mq.messages.edit.success', {instance: this.configuration.instance})
+					.toString()
+			);
+		}
+	}
+}
 </script>

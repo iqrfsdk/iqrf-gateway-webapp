@@ -114,14 +114,9 @@ import {CButton, CCard, CCardBody, CCardHeader, CDataTable, CDropdown, CDropdown
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import { AxiosError, AxiosResponse } from 'axios';
-import {IField} from '../../interfaces/IField';
+import {IField} from '../../interfaces/coreui';
 import {getCoreIcon} from '../../helpers/icons';
-import {WsInterface} from '../../interfaces/websocket';
-
-interface ModalInstance {
-	messaging: string
-	service: string
-}
+import {WsInterface, ModalInstance} from '../../interfaces/messagingInterfaces';
 
 @Component({
 	components: {

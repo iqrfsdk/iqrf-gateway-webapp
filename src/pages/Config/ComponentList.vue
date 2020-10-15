@@ -99,7 +99,7 @@ import {cilPencil, cilPlus, cilTrash} from '@coreui/icons';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import { MetaInfo } from 'vue-meta';
-import { IField } from '../../interfaces/IField';
+import { IField } from '../../interfaces/coreui';
 import { AxiosResponse } from 'axios';
 import { Dictionary } from 'vue-router/types/router';
 

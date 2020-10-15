@@ -42,14 +42,23 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Vue} from 'vue-property-decorator';
 import {AxiosError, AxiosResponse} from 'axios';
 import {CButton, CCard, CCardBody, CForm, CInput} from '@coreui/vue/src';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 
-export default Vue.extend({
-	name: 'MainConfiguration',
+interface IMainConfig {
+	applicationName: string|null
+	resourceDir: string|null
+	cacheDir: string|null
+	configurationDir: string|null
+	dataDir: string|null
+	deploymentDir: string|null
+	userDir: string|null
+}
+
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -57,45 +66,46 @@ export default Vue.extend({
 		CForm,
 		CInput,
 	},
-	data(): any {
-		return {
-			configuration: {
-				applicationName: null,
-				resourceDir: null,
-				dataDir: null,
-				cacheDir: null,
-				userDir: null,
-				configurationDir: null,
-				deploymentDir: null,
-			},
-		};
-	},
-	created() {
-		this.getConfig();
-	},
-	methods: {
-		getConfig() {
-			this.$store.commit('spinner/SHOW');
-			DaemonConfigurationService.getComponent('')
-				.then((response: AxiosResponse) =>  {
-					this.$store.commit('spinner/HIDE');
-					this.configuration = response.data;
-				})
-				.catch((error: AxiosError) => FormErrorHandler.configError(error));
-		},
-		saveConfig() {
-			this.$store.commit('spinner/SHOW');
-			DaemonConfigurationService.updateComponent('', this.configuration)
-				.then(() => this.successfulSave())
-				.catch((error: AxiosError) => FormErrorHandler.configError(error));
-		},
-		successfulSave() {
-			this.$store.commit('spinner/HIDE');
-			this.$toast.success(this.$t('config.success').toString());
-		},
-	},
 	metaInfo: {
 		title: 'config.main.title',
-	},
-});
+	}
+})
+
+export default class MainConfiguration extends Vue {
+	private configuration: IMainConfig = {
+		applicationName: null,
+		resourceDir: null,
+		cacheDir: null,
+		configurationDir: null,
+		dataDir: null,
+		deploymentDir: null,
+		userDir: null
+	}
+	
+	created(): void {
+		this.getConfig();
+	}
+
+	private getConfig(): void {
+		this.$store.commit('spinner/SHOW');
+		DaemonConfigurationService.getComponent('')
+			.then((response: AxiosResponse) =>  {
+				this.$store.commit('spinner/HIDE');
+				this.configuration = response.data;
+			})
+			.catch((error: AxiosError) => FormErrorHandler.configError(error));
+	}
+
+	private saveConfig(): void {
+		this.$store.commit('spinner/SHOW');
+		DaemonConfigurationService.updateComponent('', this.configuration)
+			.then(() => this.successfulSave())
+			.catch((error: AxiosError) => FormErrorHandler.configError(error));
+	}
+
+	private successfulSave(): void {
+		this.$store.commit('spinner/HIDE');
+		this.$toast.success(this.$t('config.success').toString());
+	}
+}
 </script>
