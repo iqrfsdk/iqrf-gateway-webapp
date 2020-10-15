@@ -94,9 +94,9 @@
 										<span @click='changeVisibility'>
 											<CIcon
 												v-if='visibility ==="password"'
-												:content='$options.icons.hidden'
+												:content='icons.hidden'
 											/>
-											<CIcon v-else :content='$options.icons.shown' />
+											<CIcon v-else :content='icons.shown' />
 										</span>
 									</template>
 								</CInput>

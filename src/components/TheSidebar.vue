@@ -63,6 +63,7 @@ interface NavMember {
 	icon: NavMemberIcon
 	items?: Array<NavMemberItem>
 	name: VueI18n.TranslateResult
+	roles?: Array<string>
 	target?: string
 	to?: string
 }
@@ -446,8 +447,8 @@ export default class TheSidebar extends Vue {
 				],
 			},
 		];
-		return data.filter((element) => {
-			element._children = element._children.filter((element) => {
+		return data.filter((element: NavData) => {
+			element._children = element._children.filter((element: NavMember) => {
 				if (element.roles !== undefined &&
 						!element.roles.includes(this.$store.getters['user/getRole'])) {
 					return null;
@@ -456,18 +457,20 @@ export default class TheSidebar extends Vue {
 						!this.$store.getters['features/isEnabled'](element.feature)) {
 					return null;
 				}
-				if (element.items) {
-					element.items = element.items.filter((element: NavMemberItem) => {
-						if (element.roles !== undefined &&
-								!element.roles.includes(this.$store.getters['user/getRole'])) {
-							return null;
+				if (element.items !== undefined) {
+					let items: Array<NavMemberItem> = [];
+					element.items.forEach((item: NavMemberItem) => {
+						if (item.roles !== undefined &&
+								!item.roles.includes(this.$store.getters['user/getRole'])) {
+							return;
 						}
-						if (element.feature !== undefined &&
-								!this.$store.getters['features/isEnabled'](element.feature)) {
-							return null;
+						if (item.feature !== undefined &&
+							!this.$store.getters['features/isEnabled'](item.feature)) {
+							return;
 						}
-						return element;
+						items.push(item);
 					});
+					element.items = items;
 				}
 				return element;
 			});
