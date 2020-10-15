@@ -9,7 +9,7 @@
 					class='float-right'
 					to='/api-key/add'
 				>
-					<CIcon :content='$options.icons.add' size='sm' />
+					<CIcon :content='icons.add' size='sm' />
 					{{ $t('table.actions.add') }}
 				</CButton>
 			</CCardHeader>
@@ -41,14 +41,14 @@
 								size='sm'
 								:to='"/api-key/edit/" + item.id'
 							>
-								<CIcon :content='$options.icons.edit' size='sm' />
+								<CIcon :content='icons.edit' size='sm' />
 								{{ $t('table.actions.edit') }}
 							</CButton> <CButton
 								color='danger'
 								size='sm'
-								@click='modals.key = item.id'
+								@click='deleteKey = item.id'
 							>
-								<CIcon :content='$options.icons.remove' size='sm' />
+								<CIcon :content='icons.remove' size='sm' />
 								{{ $t('table.actions.delete') }}
 							</CButton>
 						</td>
@@ -58,18 +58,18 @@
 		</CCard>
 		<CModal
 			color='danger'
-			:show='modals.key !== null'
+			:show='deleteKey !== null'
 		>
 			<template #header>
 				<h5 class='modal-title'>
 					{{ $t('core.apiKey.messages.deleteTitle') }}
 				</h5>
 			</template>
-			{{ $t('core.apiKey.messages.deletePrompt', {key: modals.key}) }}
+			{{ $t('core.apiKey.messages.deletePrompt', {key: deleteKey}) }}
 			<template #footer>
 				<CButton
 					color='danger'
-					@click='modals.key = null'
+					@click='deleteKey = null'
 				>
 					{{ $t('forms.no') }}
 				</CButton> <CButton
@@ -83,15 +83,24 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CCardHeader, CDataTable, CIcon} from '@coreui/vue/src';
 import {cilPencil, cilPlus, cilTrash} from '@coreui/icons';
 import ApiKeyService from '../../services/ApiKeyService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {DateTime} from 'luxon';
+import { Dictionary } from 'vue-router/types/router';
+import { IField } from '../../interfaces/coreui';
+import { AxiosResponse } from 'axios';
 
-export default {
-	name: 'ApiKeyList',
+interface ApiKey {
+	description: string
+	expiration: string
+	id: number
+}
+
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -100,79 +109,82 @@ export default {
 		CDataTable,
 		CIcon
 	},
-	data() {
-		return {
-			keys: null,
-			fields: [
-				{
-					key: 'id',
-					label: this.$t('core.apiKey.form.id'),
-				},
-				{
-					key: 'description',
-					label: this.$t('core.apiKey.form.description'),
-				},
-				{
-					key: 'expiration',
-					label: this.$t('core.apiKey.form.expiration'),
-				},
-				{
-					key: 'actions',
-					label: this.$t('table.actions.title'),
-					filter: false,
-					sorter: false,
-				},
-			],
-			modals: {
-				key: null,
-			},
-			dateFormat: {
-				year: 'numeric',
-				month: 'short',
-				day: 'numeric',
-				hour12: false,
-				hour: 'numeric',
-				minute: 'numeric',
-				second: 'numeric',
-			}
-		};
-	},
-	created() {
-		this.getKeys();
-	},
-	methods: {
-		getKeys() {
-			this.$store.commit('spinner/SHOW');
-			return ApiKeyService.getApiKeys()
-				.then((response) => {
-					this.$store.commit('spinner/HIDE');
-					this.keys = response.data;
-				})
-				.catch((error) => FormErrorHandler.apiKeyError(error));
-		},
-		removeKey() {
-			this.$store.commit('spinner/SHOW');
-			const key = this.modals.key;
-			this.modals.key = null;
-			ApiKeyService.deleteApiKey(key)
-				.then(() => {
-					this.getKeys().then(() => {
-						this.$toast.success(this.$t('core.apiKey.messages.deleteSuccess', {key: key}).toString());
-					});
-				})
-				.catch((error) => FormErrorHandler.apiKeyError(error));
-		},
-		timeString(item) {
-			return DateTime.fromISO(item.expiration).toLocaleString(this.dateFormat);
-		}
-	},
-	icons: {
-		add: cilPlus,
-		edit: cilPencil,
-		remove: cilTrash
-	},
 	metaInfo: {
 		title: 'core.apiKey.title'
 	}
-};
+})
+
+export default class ApiKeyList extends Vue {
+	private dateFormat: Dictionary<string|boolean> = {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour12: false,
+		hour: 'numeric',
+		minute: 'numeric',
+		second: 'numeric',
+	}
+	private deleteKey: number|null = null
+	private fields: Array<IField> = [
+		{
+			key: 'id',
+			label: this.$t('core.apiKey.form.id'),
+		},
+		{
+			key: 'description',
+			label: this.$t('core.apiKey.form.description'),
+		},
+		{
+			key: 'expiration',
+			label: this.$t('core.apiKey.form.expiration'),
+		},
+		{
+			key: 'actions',
+			label: this.$t('table.actions.title'),
+			filter: false,
+			sorter: false,
+		},
+	]
+	private icons: Dictionary<Array<string>> = {
+		add: cilPlus,
+		edit: cilPencil,
+		remove: cilTrash
+	}
+	private keys: Array<ApiKey> = []
+
+	created(): void {
+		this.getKeys();
+	}
+
+	private getKeys(): Promise<void> {
+		this.$store.commit('spinner/SHOW');
+		return ApiKeyService.getApiKeys()
+			.then((response: AxiosResponse) => {
+				this.$store.commit('spinner/HIDE');
+				this.keys = response.data;
+			})
+			.catch((error) => FormErrorHandler.apiKeyError(error));
+	}
+
+	private removeKey(): void  {
+		if (this.deleteKey === null) {
+			return;
+		}
+		this.$store.commit('spinner/SHOW');
+		const key = this.deleteKey;
+		this.deleteKey = null;
+		ApiKeyService.deleteApiKey(key)
+			.then(() => {
+				this.getKeys().then(() => {
+					this.$toast.success(this.$t('core.apiKey.messages.deleteSuccess', {key: key}).toString());
+				});
+			})
+			.catch((error) => FormErrorHandler.apiKeyError(error));
+	}
+
+	private timeString(item): string {
+		return DateTime.fromISO(item.expiration).toLocaleString(this.dateFormat);
+	}
+
+}
 </script>

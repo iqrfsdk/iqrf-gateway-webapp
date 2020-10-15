@@ -8,7 +8,7 @@
 <script lang='ts'>
 import {Component, Vue} from 'vue-property-decorator';
 import {MutationPayload} from 'vuex';
-import DaemonModeService, {DaemonMode} from '../../services/DaemonModeService';
+import DaemonModeService, {DaemonModeEnum} from '../../services/DaemonModeService';
 import {WebSocketClientState} from '../../store/modules/webSocketClient.module';
 
 @Component({})
@@ -18,7 +18,7 @@ export default class DaemonModeInfo extends Vue {
 		'mngDaemon_Mode',
 		'messageError'
 	]
-	private mode: DaemonMode = DaemonMode.unknown
+	private mode: DaemonModeEnum = DaemonModeEnum.unknown
 	private msgId: string|null = null
 	private requestRunning = false
 	private unsubscribe: CallableFunction = () => {return;}

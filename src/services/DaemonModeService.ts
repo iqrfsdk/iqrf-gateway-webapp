@@ -1,7 +1,7 @@
 import store from '../store';
 import {WebSocketOptions} from '../store/modules/webSocketClient.module';
 
-export enum DaemonMode {
+export enum DaemonModeEnum {
 	getMode = '',
 	forwarding = 'forwarding',
 	operational = 'operational',
@@ -19,7 +19,7 @@ class DaemonModeService {
 	 * @return Message ID
 	 */
 	get(timeout: number, message: string|null = null, callback: CallableFunction = () => {return;}): Promise<string> {
-		return this.set(DaemonMode.getMode, timeout, message, callback);
+		return this.set(DaemonModeEnum.getMode, timeout, message, callback);
 	}
 
 	/**
@@ -30,7 +30,7 @@ class DaemonModeService {
 	 * @param callback Timeout callback
 	 * @return Message ID
 	 */
-	set(newMode: DaemonMode, timeout: number, message: string|null = null, callback: CallableFunction = () => {return;}): Promise<string> {
+	set(newMode: DaemonModeEnum, timeout: number, message: string|null = null, callback: CallableFunction = () => {return;}): Promise<string> {
 		const request = {
 			'mType': 'mngDaemon_Mode',
 			'data': {
@@ -49,11 +49,11 @@ class DaemonModeService {
 	 * @param response Response from IQRF Gateway Daemon
 	 * @return Daemon mode
 	 */
-	parse(response: any): DaemonMode {
+	parse(response: any): DaemonModeEnum {
 		try {
-			return response.data.rsp.operMode as DaemonMode;
+			return response.data.rsp.operMode as DaemonModeEnum;
 		} catch (e) {
-			return DaemonMode.unknown;
+			return DaemonModeEnum.unknown;
 		}
 	}
 }

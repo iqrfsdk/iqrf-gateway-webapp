@@ -52,16 +52,19 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CForm, CInput, CInputCheckbox} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import {required} from 'vee-validate/dist/rules';
 import ApiKeyService from '../../services/ApiKeyService';
 import {Datetime} from 'vue-datetime';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
+import { Dictionary } from 'vue-router/types/router';
+import { MetaInfo } from 'vue-meta';
+import { AxiosError, AxiosResponse } from 'axios';
 
-export default {
-	name: 'ApiKeyForm',
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -73,98 +76,97 @@ export default {
 		ValidationObserver,
 		ValidationProvider,
 	},
-	props: {
-		keyId: {
-			type: Number,
-			required: false,
-			default: null,
-		}
-	},
-	data() {
+	metaInfo(): MetaInfo {
 		return {
-			metadata: {
-				description: null,
-				expiration: null,
-			},
-			useExpiration: false,
-			dateFormat: {
-				year: 'numeric',
-				month: 'short',
-				day: 'numeric',
-				hour12: false,
-				hour: 'numeric',
-				minute: 'numeric',
-				second: 'numeric',
-			},
+			title: (this as unknown as ApiKeyForm).pageTitle
 		};
-	},
-	computed: {
-		submitButton() {
-			return this.$route.path === '/api-key/add' ?
-				this.$t('forms.add') : this.$t('forms.edit');
-		},
-	},
-	created() {
+	}
+})
+
+export default class ApiKeyForm extends Vue {
+	private dateFormat: Dictionary<string|boolean> = {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour12: false,
+		hour: 'numeric',
+		minute: 'numeric',
+		second: 'numeric',
+	}
+	private metadata: Dictionary<string> = {
+		description: '',
+		expiration: ''
+	}
+	private useExpiration = false
+	
+	@Prop({required: false, default: null}) keyId!: number
+
+	get pageTitle(): string {
+		return this.$route.path === '/api-key/add' ?
+			this.$t('core.apiKey.add').toString() : this.$t('core.apiKey.edit').toString();
+	}
+
+	get submitButton(): string {
+		return this.$route.path === '/api-key/add' ?
+			this.$t('forms.add').toString() : this.$t('forms.edit').toString();
+	}
+
+	created(): void {
 		extend('required', required);
 		if (this.keyId) {
 			this.getKey();
 		}
-	},
-	methods: {
-		clear() {
-			if (!this.useExpiration) {
-				this.metadata.expiration = null;
-			}
-		},
-		getKey() {
-			this.$store.commit('spinner/SHOW');
-			ApiKeyService.getApiKey(this.keyId)
-				.then((response) => {
-					this.$store.commit('spinner/HIDE');
-					this.metadata = response.data;
-					if (this.metadata.expiration !== null) {
-						this.useExpiration = true;
-					}
-				})
-				.catch((error) => {
-					this.$router.push('/api-key/');
-					FormErrorHandler.apiKeyError(error);
-				});
-		},
-		saveKey() {
-			this.$store.commit('spinner/SHOW');
-			if (this.keyId !== null) {
-				ApiKeyService.editApiKey(this.keyId, this.metadata)
-					.then(() => this.successfulSave())
-					.catch((error) => FormErrorHandler.apiKeyError(error));
-			} else {
-				ApiKeyService.addApiKey(this.metadata)
-					.then(() => this.successfulSave())
-					.catch((error) => FormErrorHandler.apiKeyError(error));
-			}
-		},
-		successfulSave() {
-			this.$router.push('/api-key');
-			this.$store.commit('spinner/HIDE');
-			if (this.$route.path === '/api-key/add') {
-				this.$toast.success(
-					this.$t('core.apiKey.messages.addSuccess')
-						.toString()
-				);
-			} else {
-				this.$toast.success(
-					this.$t('core.apiKey.messages.editSuccess', {key: this.keyId})
-						.toString()
-				);
-			}
-		}
-	},
-	metaInfo() {
-		return {
-			title: this.$route.path === '/api-key/add' ?
-				this.$t('core.apiKey.add').toString() :
-				this.$t('core.apiKey.edit').toString()
-		};
 	}
-};
+
+	private clear(): void {
+		if (!this.useExpiration) {
+			this.metadata.expiration = '';
+		}
+	}
+	
+	private getKey(): void {
+		this.$store.commit('spinner/SHOW');
+		ApiKeyService.getApiKey(this.keyId)
+			.then((response: AxiosResponse) => {
+				this.$store.commit('spinner/HIDE');
+				this.metadata = response.data;
+				if (this.metadata.expiration !== null) {
+					this.useExpiration = true;
+				}
+			})
+			.catch((error: AxiosError) => {
+				this.$router.push('/api-key/');
+				FormErrorHandler.apiKeyError(error);
+			});
+	}
+
+	private saveKey(): void {
+		this.$store.commit('spinner/SHOW');
+		if (this.keyId !== null) {
+			ApiKeyService.editApiKey(this.keyId, this.metadata)
+				.then(() => this.successfulSave())
+				.catch((error: AxiosError) => FormErrorHandler.apiKeyError(error));
+		} else {
+			ApiKeyService.addApiKey(this.metadata)
+				.then(() => this.successfulSave())
+				.catch((error: AxiosError) => FormErrorHandler.apiKeyError(error));
+		}
+	}
+
+	private successfulSave() {
+		this.$router.push('/api-key');
+		this.$store.commit('spinner/HIDE');
+		if (this.$route.path === '/api-key/add') {
+			this.$toast.success(
+				this.$t('core.apiKey.messages.addSuccess')
+					.toString()
+			);
+		} else {
+			this.$toast.success(
+				this.$t('core.apiKey.messages.editSuccess', {key: this.keyId})
+					.toString()
+			);
+		}
+	}
+}
 </script>

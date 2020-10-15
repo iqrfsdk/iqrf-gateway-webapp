@@ -92,78 +92,90 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard} from '@coreui/vue/src';
-import CoordinatorInfo from '../../components/Gateway/CoordinatorInfo';
-import DaemonModeInfo from '../../components/Gateway/DaemonModeInfo';
-import ResourceUsage from '../../components/Gateway/ResourceUsage';
+import CoordinatorInfo from '../../components/Gateway/CoordinatorInfo.vue';
+import DaemonModeInfo from '../../components/Gateway/DaemonModeInfo.vue';
+import ResourceUsage from '../../components/Gateway/ResourceUsage.vue';
 import GatewayService from '../../services/GatewayService';
 import {fileDownloader} from '../../helpers/fileDownloader';
+import {IGatewayInfo, IpAddress, MacAddress} from '../../interfaces/gatewayInfo';
+import { AxiosResponse } from 'axios';
 
-export default {
-	name: 'GatewayInfo',
-	components: {CButton, CCard, CoordinatorInfo, DaemonModeInfo, ResourceUsage},
-	data() {
-		return {
-			coordinator: null,
-			info: null,
-			mode: 'unknown',
-			showCoordinator: false,
-		};
+@Component({
+	components: {
+		CButton,
+		CCard,
+		CoordinatorInfo,
+		DaemonModeInfo,
+		ResourceUsage
 	},
-	computed: {
-		getIpAddresses() {
-			let addresses = [];
-			for (const nInterface of this.info.interfaces) {
-				if (nInterface.ipAddresses === null) {
-					continue;
-				}
-				addresses.push({
-					iface: nInterface.name,
-					addresses: nInterface.ipAddresses.join(', ')
-				});
-			}
-			return addresses;
-		},
-		getMacAddresses() {
-			let addresses = [];
-			for (const nInterface of this.info.interfaces) {
-				if (nInterface.macAddress === null) {
-					continue;
-				}
-				addresses.push({
-					iface: nInterface.name,
-					address: nInterface.macAddress
-				});
-			}
-			return addresses;
+	metaInfo: {
+		title: 'gateway.info.title',
+	},
+})
+
+export default class GatewayInfo extends Vue {
+	private info: IGatewayInfo|null = null
+	private mode = 'unknown'
+	private showCoordinator = false
+	
+	get getIpAddresses(): Array<IpAddress> {
+		if (this.info === null) {
+			return [];
 		}
-	},
-	created() {
+		let addresses: Array<IpAddress> = [];
+		for (const nInterface of this.info.interfaces) {
+			if (nInterface.ipAddresses === null) {
+				continue;
+			}
+			addresses.push({
+				iface: nInterface.name,
+				addresses: nInterface.ipAddresses.join(', ')
+			});
+		}
+		return addresses;
+	}
+
+	get getMacAddresses(): Array<MacAddress> {
+		if (this.info === null) {
+			return [];
+		}
+		let addresses: Array<MacAddress> = [];
+		for (const nInterface of this.info.interfaces) {
+			if (nInterface.macAddress === null) {
+				continue;
+			}
+			addresses.push({
+				iface: nInterface.name,
+				address: nInterface.macAddress
+			});
+		}
+		return addresses;
+	}
+
+	private created(): void {
 		this.$store.commit('spinner/SHOW');
 		GatewayService.getInfo()
 			.then(
-				(response) => {
+				(response: AxiosResponse) => {
 					this.info = response.data;
 					this.$store.commit('spinner/HIDE');
 				}
 			)
 			.catch(() => this.$store.commit('spinner/HIDE'));
-	},
-	methods: {
-		downloadDiagnostics() {
-			this.$store.commit('spinner/SHOW');
-			GatewayService.getDiagnosticsArchive().then(
-				(response) => {
-					const file = fileDownloader(response, 'application/zip', 'iqrf-gateway-diagnostics.zip');
-					this.$store.commit('spinner/HIDE');
-					file.click();
-				}
-			).catch(() => (this.$store.commit('spinner/HIDE')));
-		}
-	},
-	metaInfo: {
-		title: 'gateway.info.title',
-	},
-};
+	}
+
+	private downloadDiagnostics(): void {
+		this.$store.commit('spinner/SHOW');
+		GatewayService.getDiagnosticsArchive().then(
+			(response: AxiosResponse) => {
+				const file = fileDownloader(response, 'application/zip', 'iqrf-gateway-diagnostics.zip');
+				this.$store.commit('spinner/HIDE');
+				file.click();
+			}
+		).catch(() => (this.$store.commit('spinner/HIDE')));
+	}
+}
 </script>
