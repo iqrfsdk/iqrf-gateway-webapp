@@ -92,7 +92,7 @@
 								id='exactTime'
 								v-model='timeSpec.startTime'
 								type='datetime'
-								:format='$options.pickerSettings.dateFormat'
+								:format='dateFormat'
 								:min-datetime='new Date().toISOString()'
 								input-class='form-control'
 								:disabled='!timeSpec.exactTime || timeSpec.periodic'
@@ -155,7 +155,8 @@
 	</div>
 </template>
 
-<script>
+<script lang='ts'>
+import {Component, Prop, Vue} from 'vue-property-decorator';
 import {CBadge, CButton, CCard, CCardBody, CForm, CInput, CInputCheckbox, CSelect, CTextarea} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import {integer, required} from 'vee-validate/dist/rules';
@@ -166,9 +167,19 @@ import cronstrue from 'cronstrue';
 import {Datetime} from 'vue-datetime';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import { WebSocketOptions } from '../../store/modules/webSocketClient.module';
+import { Dictionary } from 'vue-router/types/router';
+import { IOption } from '../../interfaces/coreui';
+import { MetaInfo } from 'vue-meta';
+import { AxiosError, AxiosResponse } from 'axios';
+import { WsMessaging } from '../../interfaces/messagingInterfaces';
+import { TaskTimeSpec } from '../../interfaces/scheduler';
 
-export default {
-	name: 'SchedulerForm',
+interface LocalTask {
+	message: string
+	messaging: string
+}
+
+@Component({
 	components: {
 		CBadge,
 		CButton,
@@ -186,38 +197,48 @@ export default {
 	directives: {
 		'autogrow': TextareaAutogrowDirective
 	},
-	props: {
-		id: {
-			type: Number,
-			required: false,
-			default: null,
-		},
-	},
-	data() {
+	metaInfo(): MetaInfo {
 		return {
-			taskId: Math.floor(Date.now() / 1000),
-			clientId: null,
-			task: [{}],
-			timeSpec: {
-				cronTime: '',
-				periodic: false,
-				period: 0,
-				exactTime: false,
-				startTime: '',
-			},
-			components: {
-				mq: 'iqrf::MqMessaging',
-				mqtt: 'iqrf::MqttMessaging',
-				websocket: 'iqrf::WebsocketMessaging',
-			},
-			messagings: [],
-			cronMessage: null,
-			useRest: true,
-			untouched: true,
-			msgIds: []
+			title: (this as unknown as SchedulerForm).pageTitle
 		};
-	},
-	created() {
+	}
+})
+
+export default class SchedulerForm extends Vue {
+	private clientId = ''
+	private components: Dictionary<string> = {
+		mq: 'iqrf::MqMessaging',
+		mqtt: 'iqrf::MqttMessaging',
+		websocket: 'iqrf::WebsocketMessaging'
+	}
+	private cronMessage: string|null = null
+	private dateFormat: Dictionary<string|boolean> = {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour12: false,
+		hour: 'numeric',
+		minute: 'numeric',
+		second: 'numeric',
+	}
+	private messagings: Array<IOption> = []
+	private msgIds: Array<string> = []
+	private taskId = Math.floor(Date.now() / 1000)
+	private task: Array<LocalTask> = [{message: '', messaging: ''}]
+	private timeSpec: TaskTimeSpec = {
+		cronTime: '',
+		periodic: false,
+		period: 0,
+		exactTime: false,
+		startTime: ''
+	}
+	private unsubscribe: CallableFunction = () => {return;}
+	private untouched = true
+	private useRest = true
+
+	@Prop({required: false, default: null}) id!: number
+
+	created(): void {
 		this.$store.commit('spinner/SHOW');
 		setTimeout(() => {
 			if (this.$store.state.webSocketClient.socket.isConnected) {
@@ -260,9 +281,11 @@ export default {
 						this.taskId = rsp.taskId;
 						this.clientId = rsp.clientId;
 						this.timeSpec = rsp.timeSpec;
-						this.timeSpec.cronTime = this.timeSpec.cronTime.join(' ');
+						if (Array.isArray(this.timeSpec.cronTime)) {
+							this.timeSpec.cronTime = this.timeSpec.cronTime.join(' ');
+						}
 						if (Array.isArray(rsp.task)) {
-							let tasks = [];
+							let tasks: Array<LocalTask> = [];
 							rsp.task.forEach(item => {
 								tasks.push({
 									messaging: item.messaging,
@@ -308,189 +331,185 @@ export default {
 			}
 		});
 		this.getMessagings();
-	},
-	beforeDestroy() {
+	}
+
+	beforeDestroy(): void {
 		this.msgIds.forEach((item) => this.$store.dispatch('removeMessage', item));
 		this.unsubscribe();
-	},
-	methods: {
-		calculateCron() {
-			const cronTime = this.timeSpec.cronTime.split(' ');
-			const len = cronTime.length;
-			if (len === 1) {
-				const alias = this.getCronAlias(this.timeSpec.cronTime);
-				if (alias !== undefined) {
-					this.cronMessage = cronstrue.toString(alias);
-				} else {
-					this.cronMessage = null;
-				}
-			} else if (len > 4 && len < 8) {
-				this.cronMessage = cronstrue.toString(this.timeSpec.cronTime);
+	}
+
+	get pageTitle(): string {
+		return this.$route.path === '/config/scheduler/add' ?
+			this.$t('config.scheduler.add').toString() : this.$t('config.scheduler.edit').toString();
+	}
+
+	private calculateCron(): void {
+		const cronTime = (this.timeSpec.cronTime as string).split(' ');
+		const len = cronTime.length;
+		if (len === 1) {
+			const alias = this.getCronAlias(this.timeSpec.cronTime);
+			if (alias !== undefined) {
+				this.cronMessage = cronstrue.toString(alias);
 			} else {
 				this.cronMessage = null;
 			}
-		},
-		addMessage() {
-			this.task.push({});
-		},
-		removeMessage(index) {
-			this.task.splice(index, 1);
-		},
-		getTask(taskId) {
-			this.untouched = false;
-			this.$store.commit('spinner/SHOW');
-			if (this.useRest) {
-				SchedulerService.getTaskREST(taskId)
-					.then((response) => {
-						this.$store.commit('spinner/HIDE');
-						this.taskId = response.data.taskId;
-						this.clientId = response.data.clientId;
-						this.timeSpec = response.data.timeSpec;
-						let tasks = [];
-						response.data.task.forEach(item => {
-							tasks.push({messaging: item.messaging, message: JSON.stringify(item.message, null, 2)});
-						});
-						this.task = tasks;
-					})
-					.catch(() => {
-						this.$router.push('/config/scheduler/');
-						this.$toast.error(
-							this.$t('config.scheduler.messages.getFail', {task: this.id})
-								.toString()
-						);
-					});
-			} else {
-				SchedulerService.getTask(taskId, new WebSocketOptions(null, 30000, () => this.$router.push('/config/scheduler/')))
-					.then((msgId) => this.storeId(msgId));
-			}
-		},
-		storeId(msgId) {
-			this.msgIds.push(msgId);
-			setTimeout(() => {
-				if (this.msgIds.includes(msgId)) {
-					this.msgIds.splice(this.msgIds.indexOf(msgId), 1);
-				}
-			}, 30000);
-		},
-		getMessagings() {
-			this.$store.commit('spinner/SHOW');
-			Promise.all([
-				DaemonConfigurationService.getComponent(this.components.mq),
-				DaemonConfigurationService.getComponent(this.components.mqtt),
-				DaemonConfigurationService.getComponent(this.components.websocket),
-			])
-				.then((responses) => {
+		} else if (len > 4 && len < 8) {
+			this.cronMessage = cronstrue.toString((this.timeSpec.cronTime as string));
+		} else {
+			this.cronMessage = null;
+		}
+	}
+
+	private addMessage(): void {
+		this.task.push({message: '', messaging: ''});
+	}
+
+	private removeMessage(index): void {
+		this.task.splice(index, 1);
+	}
+
+	private getTask(taskId): void {
+		this.untouched = false;
+		this.$store.commit('spinner/SHOW');
+		if (this.useRest) {
+			SchedulerService.getTaskREST(taskId)
+				.then((response) => {
 					this.$store.commit('spinner/HIDE');
-					responses.forEach(item => {
-						if (item.data.instances) {
-							item.data.instances.forEach(messaging => {
-								this.messagings.push({
-									value: messaging.instance, label: messaging.instance,
-								});
-							});
-						}
+					this.taskId = response.data.taskId;
+					this.clientId = response.data.clientId;
+					this.timeSpec = response.data.timeSpec;
+					let tasks: Array<LocalTask> = [];
+					response.data.task.forEach(item => {
+						tasks.push({messaging: item.messaging, message: JSON.stringify(item.message, null, 2)});
 					});
+					this.task = tasks;
 				})
 				.catch(() => {
-					this.$store.commit('spinner/HIDE');
 					this.$router.push('/config/scheduler/');
 					this.$toast.error(
-						this.$t('config.scheduler.messages.rest.messagingFail').toString()
+						this.$t('config.scheduler.messages.getFail', {task: this.id})
+							.toString()
 					);
 				});
-		},
-		saveTask() {
-			this.$store.commit('spinner/SHOW');
-			let timeSpec = JSON.parse(JSON.stringify(this.timeSpec));
-			timeSpec.cronTime = timeSpec.cronTime.replace('?', '*');
-			timeSpec.cronTime = timeSpec.cronTime.split(' ');
-			if (timeSpec.cronTime.length === 1) {
-				const alias = this.getCronAlias(timeSpec.cronTime[0]);
-				if (alias !== undefined) {
-					timeSpec.cronTime = [alias, '', '', '', '', '', ''];
-				}
+		} else {
+			SchedulerService.getTask(taskId, new WebSocketOptions(null, 30000, null, () => this.$router.push('/config/scheduler/')))
+				.then((msgId) => this.storeId(msgId));
+		}
+	}
+
+	private storeId(msgId: string): void {
+		this.msgIds.push(msgId);
+		setTimeout(() => {
+			if (this.msgIds.includes(msgId)) {
+				this.msgIds.splice(this.msgIds.indexOf(msgId), 1);
 			}
-			switch(timeSpec.cronTime.length) {
-				case 5:
-					timeSpec.cronTime.unshift('0');
-					timeSpec.cronTime.push('*');
-					break;
-				case 6:
-					if (timeSpec.cronTime[5].length === 4) {
-						timeSpec.cronTime.unshift('0');
-					} else {
-						timeSpec.cronTime.push('*');
+		}, 30000);
+	}
+
+	private getMessagings(): void {
+		this.$store.commit('spinner/SHOW');
+		Promise.all([
+			DaemonConfigurationService.getComponent(this.components.mq),
+			DaemonConfigurationService.getComponent(this.components.mqtt),
+			DaemonConfigurationService.getComponent(this.components.websocket),
+		])
+			.then((responses: Array<AxiosResponse>) => {
+				this.$store.commit('spinner/HIDE');
+				responses.forEach((item: AxiosResponse) => {
+					if (item.data.instances) {
+						item.data.instances.forEach((messaging: WsMessaging) => {
+							this.messagings.push({
+								value: messaging.instance, label: messaging.instance,
+							});
+						});
 					}
-					break;
-				case 7:
-					break;
-				default:
-					timeSpec.cronTime = new Array(7).fill('');
+				});
+			})
+			.catch(() => {
+				this.$store.commit('spinner/HIDE');
+				this.$router.push('/config/scheduler/');
+				this.$toast.error(
+					this.$t('config.scheduler.messages.rest.messagingFail').toString()
+				);
+			});
+	}
+
+	private saveTask(): void {
+		this.$store.commit('spinner/SHOW');
+		let timeSpec = JSON.parse(JSON.stringify(this.timeSpec));
+		timeSpec.cronTime = timeSpec.cronTime.replace('?', '*');
+		timeSpec.cronTime = timeSpec.cronTime.split(' ');
+		if (timeSpec.cronTime.length === 1) {
+			const alias = this.getCronAlias(timeSpec.cronTime[0]);
+			if (alias !== undefined) {
+				timeSpec.cronTime = [alias, '', '', '', '', '', ''];
 			}
-			if (timeSpec.exactTime) {
-				let date = new Date(timeSpec.startTime);
-				date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-				timeSpec.startTime = date.toISOString().split('.')[0];
-			}
-			if (this.$route.path === '/config/scheduler/add') {
-				if (this.useRest) {
-					SchedulerService.addTaskREST(this.taskId, this.clientId, this.task, timeSpec)
-						.then(() => this.successfulSave())
-						.catch((error) => FormErrorHandler.schedulerError(error));
+		}
+		switch(timeSpec.cronTime.length) {
+			case 5:
+				timeSpec.cronTime.unshift('0');
+				timeSpec.cronTime.push('*');
+				break;
+			case 6:
+				if (timeSpec.cronTime[5].length === 4) {
+					timeSpec.cronTime.unshift('0');
 				} else {
-					SchedulerService.addTask(this.taskId, this.clientId, this.task, timeSpec, new WebSocketOptions(
-						null, 30000, 'config.scheduler.messagess.processError'))
-						.then((msgId) => this.storeId(msgId));
+					timeSpec.cronTime.push('*');
 				}
+				break;
+			case 7:
+				break;
+			default:
+				timeSpec.cronTime = new Array(7).fill('');
+		}
+		if (timeSpec.exactTime) {
+			let date = new Date(timeSpec.startTime);
+			date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+			timeSpec.startTime = date.toISOString().split('.')[0];
+		}
+		if (this.$route.path === '/config/scheduler/add') {
+			if (this.useRest) {
+				SchedulerService.addTaskREST(this.taskId, this.clientId, this.task, timeSpec)
+					.then(() => this.successfulSave())
+					.catch((error: AxiosError) => FormErrorHandler.schedulerError(error));
 			} else {
-				if (this.useRest) {
-					SchedulerService.editTaskREST(this.id, this.taskId, this.clientId, this.task, timeSpec)
-						.then(() => this.successfulSave())
-						.catch((error) => FormErrorHandler.schedulerError(error));
-				} else {
-					SchedulerService.removeTask(this.taskId, new WebSocketOptions(null, 30000, 'config.scheduler.messages.deleteFail'))
-						.then((msgId) => this.storeId(msgId));
-					SchedulerService.addTask(this.taskId, this.clientId, this.task, timeSpec, new WebSocketOptions(
-						null, 30000, 'config.scheduler.messagess.processError'))
-						.then((msgId) => this.storeId(msgId));
-				}
+				SchedulerService.addTask(this.taskId, this.clientId, this.task, timeSpec, new WebSocketOptions(
+					null, 30000, 'config.scheduler.messagess.processError'))
+					.then((msgId: string) => this.storeId(msgId));
 			}
-		},
-		getCronAlias(input) {
-			let aliases = new Map();
-			aliases.set('@reboot', '');
-			aliases.set('@yearly', '0 0 0 1 1 * *');
-			aliases.set('@annually', '0 0 0 1 1 * *');
-			aliases.set('@monthly', '0 0 0 1 * * *');
-			aliases.set('@weekly', '0 0 0 * * 0 *');
-			aliases.set('@daily', '0 0 0 * * * *');
-			aliases.set('@hourly', '0 0 * * * * *');
-			aliases.set('@minutely', '0 * * * * * *');
-			return aliases.get(input);
-		},
-		successfulSave() {
-			this.$router.push('/config/scheduler/');
-			this.$toast.success(
-				this.$t('config.scheduler.messages.addSuccess').toString()
-			);
-		},
-	},
-	pickerSettings: {
-		dateFormat: {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-			hour12: false,
-			hour: 'numeric',
-			minute: 'numeric',
-			second: 'numeric',
-		},
-	},
-	metaInfo() {
-		return {
-			title: this.$route.path === '/config/scheduler/add' ?
-				this.$t('config.scheduler.add') : this.$t('config.scheduler.edit')
-		};
-	},
-};
+		} else {
+			if (this.useRest) {
+				SchedulerService.editTaskREST(this.id, this.taskId, this.clientId, this.task, timeSpec)
+					.then(() => this.successfulSave())
+					.catch((error: AxiosError) => FormErrorHandler.schedulerError(error));
+			} else {
+				SchedulerService.removeTask(this.taskId, new WebSocketOptions(null, 30000, 'config.scheduler.messages.deleteFail'))
+					.then((msgId: string) => this.storeId(msgId));
+				SchedulerService.addTask(this.taskId, this.clientId, this.task, timeSpec, new WebSocketOptions(
+					null, 30000, 'config.scheduler.messagess.processError'))
+					.then((msgId: string) => this.storeId(msgId));
+			}
+		}
+	}
+
+	private getCronAlias(input) {
+		let aliases = new Map();
+		aliases.set('@reboot', '');
+		aliases.set('@yearly', '0 0 0 1 1 * *');
+		aliases.set('@annually', '0 0 0 1 1 * *');
+		aliases.set('@monthly', '0 0 0 1 * * *');
+		aliases.set('@weekly', '0 0 0 * * 0 *');
+		aliases.set('@daily', '0 0 0 * * * *');
+		aliases.set('@hourly', '0 0 * * * * *');
+		aliases.set('@minutely', '0 * * * * * *');
+		return aliases.get(input);
+	}
+
+	private successfulSave(): void {
+		this.$router.push('/config/scheduler/');
+		this.$toast.success(
+			this.$t('config.scheduler.messages.addSuccess').toString()
+		);
+	}
+}
 </script>
