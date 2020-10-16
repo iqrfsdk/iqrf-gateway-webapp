@@ -77,7 +77,16 @@
 			</ValidationObserver>
 		</CCard>
 		<DpaMacros @set-packet='setPacket($event)' />
-		<RequestAndResponse :request='request' :response='response' :source='"sendDpa"' />
+		<div>
+			<CRow>
+				<CCol v-if='request !== null' md='6'>
+					<JsonMessage :message='request' type='request' source='sendDpa' />
+				</CCol>
+				<CCol v-if='response !== null' md='6'>
+					<JsonMessage :message='response' type='response' source='sendDpa' />
+				</CCol>
+			</CRow>
+		</div>
 	</div>
 </template>
 
@@ -89,7 +98,7 @@ import DpaMacros from '../../components/IqrfNet/DpaMacros.vue';
 import {between, integer, min_value, required} from 'vee-validate/dist/rules';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import sendPacket from '../../iqrfNet/sendPacket';
-import RequestAndResponse from '../../components/IqrfNet/RequestAndResponse.vue';
+import JsonMessage from '../../components/IqrfNet/JsonMessage.vue';
 import {WebSocketOptions} from '../../store/modules/webSocketClient.module';
 import {RawMessage} from '../../interfaces/dpa';
 
@@ -105,7 +114,7 @@ import {RawMessage} from '../../interfaces/dpa';
 		CInputCheckbox,
 		CRow,
 		DpaMacros,
-		RequestAndResponse,
+		JsonMessage,
 		ValidationObserver,
 		ValidationProvider,
 	},

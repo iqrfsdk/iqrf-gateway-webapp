@@ -44,7 +44,16 @@
 				</CAlert>
 			</CCardBody>
 		</CCard>
-		<RequestAndResponse :request='request' :response='response' :source='"sendJson"' />
+		<div>
+			<CRow>
+				<CCol v-if='request !== null' md='6'>
+					<JsonMessage :message='request' type='request' source='sendJson' />
+				</CCol>
+				<CCol v-if='response !== null' md='6'>
+					<JsonMessage :message='response' type='response' source='sendJson' />
+				</CCol>
+			</CRow>
+		</div>
 	</div>
 </template>
 
@@ -54,7 +63,7 @@ import {MutationPayload} from 'vuex';
 import {CAlert, CButton, CCard, CCardBody, CCardHeader, CForm, CTextarea} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import {required} from 'vee-validate/dist/rules';
-import RequestAndResponse from '../../components/IqrfNet/RequestAndResponse.vue';
+import JsonMessage from '../../components/IqrfNet/JsonMessage.vue';
 
 import {TextareaAutogrowDirective} from 'vue-textarea-autogrow-directive/src/VueTextareaAutogrowDirective';
 import {StatusMessages} from '../../iqrfNet/sendJson';
@@ -70,7 +79,7 @@ import { WebSocketOptions } from '../../store/modules/webSocketClient.module';
 		CCardHeader,
 		CForm,
 		CTextarea,
-		RequestAndResponse,
+		JsonMessage,
 		ValidationObserver,
 		ValidationProvider,
 	},
@@ -139,6 +148,7 @@ export default class SendJsonRequest extends Vue {
 						}
 					} else if (mutation.payload.mType === 'iqmeshNetwork_AutoNetwork') {
 						this.response = JSON.stringify(mutation.payload, null, 4);
+						this.$store.commit('spinner/HIDE');
 					} else if (mutation.payload.mType === 'messageError') {
 						this.response = JSON.stringify(mutation.payload, null, 4);
 						if (mutation.payload.data.rsp.errorStr.includes('daemon overload')) {

@@ -1194,15 +1194,23 @@
 				}
 			}
 		},
-		"requestAndResponse": {
+		"jsonMessage": {
 			"request": "Request",
 			"response": "Response",
-			"copyRequest": "Copy request to the clipboard",
-			"copyResponse": "Copy response to the clipboard",
-			"dpaRequestCopied": "DPA request has been copied to the clipboard.",
-			"dpaResponseCopied": "DPA response has been copied to the clipboard.",
-			"jsonRequestCopied": "DPA request has been copied to the clipboard.",
-			"jsonResponseCopied": "DPA response has been copied to the clipboard."
+			"copy": {
+				"request": "Copy request to the clipboard",
+				"response": "Copy response to the clipboard"
+			},
+			"copySuccess": {
+				"dpa":{
+					"request": "DPA request has been copied to the clipboard.",
+					"response": "DPA response has been copied to the clipboard."
+				},
+				"json": {
+					"request": "JSON request has been copied to the clipboard.",
+					"response": "JSON response has been copied to the clipboard."
+				}
+			}
 		},
 		"standard": {
 			"title": "Standard manager",
