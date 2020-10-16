@@ -171,6 +171,7 @@ import FormErrorHandler from '../../helpers/FormErrorHandler';
 import FeatureConfigService from '../../services/FeatureConfigService';
 import { NavigationGuardNext, Route } from 'vue-router';
 import { Dictionary } from 'vue-router/types/router';
+import { AxiosError, AxiosResponse } from 'axios';
 
 interface TranslatorMqtt {
 	addr: string
@@ -203,7 +204,7 @@ interface Translator {
 		ValidationProvider
 	},
 	beforeRouteEnter(to: Route, from: Route, next: NavigationGuardNext): void {
-		next(vm => {
+		next((vm: Vue) => {
 			if (!vm.$store.getters['features/isEnabled']('iqrfGatewayTranslator')) {
 				vm.$toast.error(
 					vm.$t('translatorConfig.messages.disabled').toString()
@@ -248,11 +249,11 @@ export default class TranslatorConfig extends Vue {
 	private getConfig(): void {
 		this.$store.commit('spinner/SHOW');
 		FeatureConfigService.getConfig(this.name)
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.$store.commit('spinner/HIDE');
 				this.config = response.data;
 			})
-			.catch((error) => {
+			.catch((error: AxiosError) => {
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -264,7 +265,7 @@ export default class TranslatorConfig extends Vue {
 				this.$store.commit('spinner/HIDE');
 				this.$toast.success(this.$t('forms.messages.saveSuccess').toString());
 			})
-			.catch((error) => {
+			.catch((error: AxiosError) => {
 				FormErrorHandler.configError(error);
 			});
 	}

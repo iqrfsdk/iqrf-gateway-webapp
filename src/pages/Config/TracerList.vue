@@ -82,7 +82,7 @@ import DaemonConfigurationService from '../../services/DaemonConfigurationServic
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {IField} from '../../interfaces/coreui';
 import {getCoreIcon} from '../../helpers/icons';
-import { AxiosResponse } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 import { Dictionary } from 'vue-router/types/router';
 
 @Component({
@@ -131,11 +131,11 @@ export default class TracerList extends Vue {
 	private getConfig(): Promise<AxiosResponse|void> {
 		this.$store.commit('spinner/SHOW');
 		return DaemonConfigurationService.getComponent(this.componentName)
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.$store.commit('spinner/HIDE');
 				this.instances = response.data.instances;
 			})
-			.catch((error) => FormErrorHandler.configError(error));
+			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 	
 	private removeInstance(): void {
@@ -151,7 +151,7 @@ export default class TracerList extends Vue {
 					);
 				});
 			})
-			.catch((error) => {
+			.catch((error: AxiosError) => {
 				FormErrorHandler.configError(error);
 			});
 	}

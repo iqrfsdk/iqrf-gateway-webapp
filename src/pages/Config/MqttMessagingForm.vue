@@ -229,6 +229,7 @@ import {between, integer, min_value, required} from 'vee-validate/dist/rules';
 import { MqttInstance } from '../../interfaces/messagingInterfaces';
 import { MetaInfo } from 'vue-meta';
 import { IOption } from '../../interfaces/coreui';
+import { AxiosError, AxiosResponse } from 'axios';
 
 @Component({
 	components: {
@@ -308,11 +309,11 @@ export default class MqttMessagingForm extends Vue {
 	private getConfig(): void {
 		this.$store.commit('spinner/SHOW');
 		DaemonConfigurationService.getInstance(this.componentName, this.instance)
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.$store.commit('spinner/HIDE');
 				this.configuration = response.data;
 			})
-			.catch((error) => {
+			.catch((error: AxiosError) => {
 				this.$store.commit('spinner/HIDE');
 				this.$router.push('/config/mqtt/');
 				FormErrorHandler.configError(error);
@@ -324,11 +325,11 @@ export default class MqttMessagingForm extends Vue {
 		if (this.instance !== null) {
 			DaemonConfigurationService.updateInstance(this.componentName, this.instance, this.configuration)
 				.then(() => this.successfulSave())
-				.catch((error) => FormErrorHandler.configError(error));
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
 		} else {
 			DaemonConfigurationService.createInstance(this.componentName, this.configuration)
 				.then(() => this.successfulSave())
-				.catch((error) => FormErrorHandler.configError(error));
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
 		}
 	}
 

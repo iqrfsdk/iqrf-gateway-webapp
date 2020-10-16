@@ -9,7 +9,7 @@
 					class='float-right'
 					to='/config/websocket/add-messaging'
 				>
-					<CIcon :content='getIcon("add")' size='sm' />
+					<CIcon :content='icons.add' size='sm' />
 					{{ $t('table.actions.add') }}
 				</CButton>
 			</CCardHeader>
@@ -54,14 +54,14 @@
 								size='sm'
 								:to='"/config/websocket/edit-messaging/" + item.instance'
 							>
-								<CIcon :content='getIcon("edit")' size='sm' />
+								<CIcon :content='icons.edit' size='sm' />
 								{{ $t('table.actions.edit') }}
 							</CButton> <CButton
 								color='danger'
 								size='sm'
 								@click='instance = item.instance'
 							>
-								<CIcon :content='getIcon("remove")' size='sm' />
+								<CIcon :content='icons.remove' size='sm' />
 								{{ $t('table.actions.delete') }}
 							</CButton>
 						</td>
@@ -99,12 +99,13 @@
 <script lang='ts'>
 import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CCardHeader, CDataTable, CDropdown, CDropdownItem, CIcon, CModal} from '@coreui/vue/src';
+import {cilPlus, cilPencil, cilTrash} from '@coreui/icons';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {IField} from '../../interfaces/coreui';
 import {WsMessaging} from '../../interfaces/messagingInterfaces';
-import {getCoreIcon} from '../../helpers/icons';
 import { AxiosError, AxiosResponse } from 'axios';
+import { Dictionary } from 'vue-router/types/router';
 
 @Component({
 	components: {
@@ -142,15 +143,16 @@ export default class WebsocketMessagingList extends Vue {
 			sorter: false,
 		}
 	]
+	private icons: Dictionary<Array<string>> = {
+		add: cilPlus,
+		edit: cilPencil,
+		remove: cilTrash
+	}
 	private instances: Array<WsMessaging> = []
 	private instance: string|null = null
 
 	created(): void {
 		this.getConfig();
-	}
-
-	private getIcon(icon: string): void|string[] {
-		return getCoreIcon(icon);
 	}
 
 	private getConfig(): Promise<void> {
@@ -163,7 +165,7 @@ export default class WebsocketMessagingList extends Vue {
 			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 
-	private changeAccept(instance, setting): void {
+	private changeAccept(instance: WsMessaging, setting: boolean): void {
 		if (instance.acceptAsyncMsg !== setting) {
 			instance.acceptAsyncMsg = setting;
 			DaemonConfigurationService.updateInstance(this.componentName, instance.instance, instance)

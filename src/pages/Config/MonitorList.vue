@@ -101,7 +101,7 @@ import DaemonConfigurationService from '../../services/DaemonConfigurationServic
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import { Dictionary } from 'vue-router/types/router';
 import { IField } from '../../interfaces/coreui';
-import { AxiosResponse } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 
 @Component({
 	components: {
@@ -169,7 +169,7 @@ export default class MonitorList extends Vue {
 			DaemonConfigurationService.getComponent(this.componentNames.monitor),
 			DaemonConfigurationService.getComponent(this.componentNames.webSocket),
 		])
-			.then((responses) => {
+			.then((responses: Array<AxiosResponse>) => {
 				const monitors = responses[0].data.instances;
 				const webSockets = responses[1].data.instances;
 				for (const monitor of monitors) {
@@ -212,7 +212,7 @@ export default class MonitorList extends Vue {
 					);
 				});
 			})
-			.catch((error) => FormErrorHandler.configError(error));
+			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 
 	private removeInterface(): void {

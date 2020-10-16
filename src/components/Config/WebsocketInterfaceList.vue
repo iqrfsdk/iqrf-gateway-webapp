@@ -8,7 +8,7 @@
 					class='float-right'
 					to='/config/websocket/add'
 				>
-					<CIcon :content='getIcon("add")' size='sm' />
+					<CIcon :content='icons.add' size='sm' />
 					{{ $t('table.actions.add') }}
 				</CButton>
 			</CCardHeader>
@@ -64,14 +64,14 @@
 								size='sm'
 								:to='"/config/websocket/edit/" + item.instanceMessaging'
 							>
-								<CIcon :content='getIcon("edit")' size='sm' />
+								<CIcon :content='icons.edit' size='sm' />
 								{{ $t('table.actions.edit') }}
 							</CButton> <CButton
 								color='danger'
 								size='sm'
-								@click='modals.instance = {messaging: item.messaging.instance, service: item.service.instance}'
+								@click='deleteInstance = {messaging: item.messaging.instance, service: item.service.instance}'
 							>
-								<CIcon :content='getIcon("remove")' size='sm' />
+								<CIcon :content='icons.remove' size='sm' />
 								{{ $t('table.actions.delete') }}
 							</CButton>
 						</td>
@@ -81,20 +81,20 @@
 		</CCard>
 		<CModal
 			color='danger'
-			:show='modals.instance !== null'
+			:show='deleteInstance !== null'
 		>
 			<template #header>
 				<h5 class='modal-title'>
 					{{ $t('config.websocket.messages.delete.confirmTitle') }}
 				</h5>
 			</template>
-			<div v-if='modals.instance !== null'>
-				{{ $t('config.websocket.messages.delete.confirm', {service: modals.instance.messaging}) }}
+			<div v-if='deleteInstance !== null'>
+				{{ $t('config.websocket.messages.delete.confirm', {instance: deleteInstance.messaging}) }}
 			</div>
 			<template #footer>
 				<CButton
 					color='danger'
-					@click='modals.instance = null'
+					@click='deleteInstance = null'
 				>
 					{{ $t('forms.no') }}
 				</CButton> <CButton
@@ -111,12 +111,13 @@
 <script lang='ts'>
 import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CCardHeader, CDataTable, CDropdown, CDropdownItem, CIcon, CModal} from '@coreui/vue/src';
+import {cilPlus, cilPencil, cilTrash} from '@coreui/icons';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import { AxiosError, AxiosResponse } from 'axios';
 import {IField} from '../../interfaces/coreui';
-import {getCoreIcon} from '../../helpers/icons';
-import {WsInterface, ModalInstance} from '../../interfaces/messagingInterfaces';
+import {WsInterface, ModalInstance, WsService, WsMessaging} from '../../interfaces/messagingInterfaces';
+import {Dictionary} from 'vue-router/types/router';
 
 @Component({
 	components: {
@@ -137,6 +138,7 @@ export default class WebsocketInterfaceList extends Vue {
 		messaging: 'iqrf::WebsocketMessaging',
 		service: 'shape::WebsocketCppService',
 	}
+	private deleteInstance: ModalInstance|null = null
 	private fields: Array<IField> = [
 		{
 			key: 'instanceMessaging',
@@ -163,18 +165,16 @@ export default class WebsocketInterfaceList extends Vue {
 			sorter: false,
 		},
 	]
-	private instances: Array<WsInterface> = [];
-	private modals: Record<string, ModalInstance|null> = {
-		instance: null
+	private icons: Dictionary<Array<string>> = {
+		add: cilPlus,
+		edit: cilPencil,
+		remove: cilTrash
 	}
+	private instances: Array<WsInterface> = [];
 
 	created(): void {
 		this.$store.commit('spinner/SHOW');
 		this.getConfig();
-	}
-
-	private getIcon(icon: string): void|string[] {
-		return getCoreIcon(icon);
 	}
 
 	private getConfig(): Promise<void> {
@@ -214,7 +214,7 @@ export default class WebsocketInterfaceList extends Vue {
 		// TODO: add error message
 	}
 
-	private changeAcceptOnlyLocalhost(service, setting: boolean): void {
+	private changeAcceptOnlyLocalhost(service: WsService, setting: boolean): void {
 		this.$store.commit('spinner/SHOW');
 		service.acceptOnlyLocalhost = setting;
 		DaemonConfigurationService.updateInstance(this.componentNames.service, service.instance, service)
@@ -226,10 +226,10 @@ export default class WebsocketInterfaceList extends Vue {
 					);
 				});
 			})
-			.catch((error) => FormErrorHandler.configError(error));
+			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 
-	private changeAcceptAsyncMsg(instance, setting): void {
+	private changeAcceptAsyncMsg(instance: WsMessaging, setting: boolean): void {
 		this.$store.commit('spinner/SHOW');
 		instance.acceptAsyncMsg = setting;
 		DaemonConfigurationService.updateInstance(this.componentNames.messaging, instance.instance, instance)
@@ -245,20 +245,20 @@ export default class WebsocketInterfaceList extends Vue {
 	}
 
 	private removeInterface(): void {
-		if (this.modals.instance === null) {
+		if (this.deleteInstance === null) {
 			return;
 		}
 		this.$store.commit('spinner/SHOW');
 		Promise.all([
-			DaemonConfigurationService.deleteInstance(this.componentNames.messaging, this.modals.instance.messaging),
-			DaemonConfigurationService.deleteInstance(this.componentNames.service, this.modals.instance.service),
+			DaemonConfigurationService.deleteInstance(this.componentNames.messaging, this.deleteInstance.messaging),
+			DaemonConfigurationService.deleteInstance(this.componentNames.service, this.deleteInstance.service),
 		])
 			.then(() => {
 				this.$toast.success(
-					this.$t('config.websocket.messages.delete.success', {instance: this.modals.instance?.messaging})
+					this.$t('config.websocket.messages.delete.success', {instance: this.deleteInstance?.messaging})
 						.toString()
 				);
-				this.modals.instance = null;
+				this.deleteInstance = null;
 			});
 		// TODO: add error message
 	}

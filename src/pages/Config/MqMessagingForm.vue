@@ -67,6 +67,7 @@ import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {required} from 'vee-validate/dist/rules';
 import { MqInstance } from '../../interfaces/messagingInterfaces';
 import { MetaInfo } from 'vue-meta';
+import {AxiosError, AxiosResponse} from 'axios';
 
 @Component({
 	components: {
@@ -117,11 +118,11 @@ export default class MqMessagingForm extends Vue {
 	private getConfig(): void  {
 		this.$store.commit('spinner/SHOW');
 		DaemonConfigurationService.getInstance(this.componentName, this.instance)
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.$store.commit('spinner/HIDE');
 				this.configuration = response.data;
 			})
-			.catch((error) => {
+			.catch((error: AxiosError) => {
 				this.$router.push('/config/mq/');
 				FormErrorHandler.configError(error);
 			});
@@ -132,11 +133,11 @@ export default class MqMessagingForm extends Vue {
 		if (this.instance !== null) {
 			DaemonConfigurationService.updateInstance(this.componentName, this.instance, this.configuration)
 				.then(() => this.successfulSave())
-				.catch((error) => FormErrorHandler.configError(error));
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
 		} else {
 			DaemonConfigurationService.createInstance(this.componentName, this.configuration)
 				.then(() => this.successfulSave())
-				.catch((error) => FormErrorHandler.configError(error));
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
 		}
 	}
 

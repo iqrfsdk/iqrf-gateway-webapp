@@ -265,6 +265,7 @@ import VersionService from '../../services/VersionService';
 import {WebSocketOptions} from '../../store/modules/webSocketClient.module';
 import VueI18n from 'vue-i18n';
 import {AutoNetworkBase, AutoNetworkOverlappingNetworks, AutoNetworkStopConditions} from '../../interfaces/autonetwork';
+import { MutationPayload } from 'vuex';
 
 interface NodeMessages {
 	nodesNew: string
@@ -346,7 +347,7 @@ export default class AutoNetwork extends Vue {
 			const regex = RegExp('^(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[1-9])( (6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[1-9]))*$');
 			return regex.test(val);
 		});
-		this.unsubscribe = this.$store.subscribe(mutation => {
+		this.unsubscribe = this.$store.subscribe((mutation: MutationPayload) => {
 			if (mutation.type === 'SOCKET_ONERROR' ||
 				mutation.type === 'SOCKET_ONCLOSE') {
 				if (this.$store.getters['spinner/isEnabled']) {
@@ -413,7 +414,7 @@ export default class AutoNetwork extends Vue {
 	public getVersion(): void {
 		this.$store.dispatch('spinner/show', {timeout: 10000});
 		VersionService.getVersion(new WebSocketOptions(null, 10000, 'iqrfnet.networkManager.messages.autoNetwork.versionFailure', () => this.msgId = null))
-			.then((msgId) => this.msgId = msgId);
+			.then((msgId: string) => this.msgId = msgId);
 	}
 
 	private autoNetworkProgress(response): string {
@@ -462,7 +463,7 @@ export default class AutoNetwork extends Vue {
 		}
 		this.$store.commit('spinner/SHOW');
 		IqrfNetService.autoNetwork(submitData, new WebSocketOptions(null))
-			.then((msgId) => this.msgId = msgId);
+			.then((msgId: string) => this.msgId = msgId);
 	}
 }
 </script>

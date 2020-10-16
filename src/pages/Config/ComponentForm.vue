@@ -76,6 +76,7 @@ import {integer, required} from 'vee-validate/dist/rules';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import { MetaInfo } from 'vue-meta/types/vue-meta';
+import { AxiosError, AxiosResponse } from 'axios';
 
 interface ComponentFormConfig {
 	name: string|null
@@ -136,11 +137,11 @@ export default class ComponentForm extends Vue {
 	private getComponent(): void {
 		this.$store.commit('spinner/SHOW');
 		DaemonConfigurationService.getComponent(this.component)
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.$store.commit('spinner/HIDE');
 				this.configuration = response.data.configuration;
 			})
-			.catch((error) => {
+			.catch((error: AxiosError) => {
 				this.$router.push('/config/component/');
 				FormErrorHandler.configError(error);
 			});
@@ -151,11 +152,11 @@ export default class ComponentForm extends Vue {
 		if (this.component !== null) {
 			DaemonConfigurationService.updateComponent(this.component, this.configuration)
 				.then(() => this.successfulSave())
-				.catch((error) => FormErrorHandler.configError(error));
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
 		} else {
 			DaemonConfigurationService.createComponent(this.configuration)
 				.then(() => this.successfulSave())
-				.catch((error) => FormErrorHandler.configError(error));
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
 		}
 	}
 

@@ -173,6 +173,7 @@ import { MetaInfo } from 'vue-meta';
 import { AxiosError, AxiosResponse } from 'axios';
 import { WsMessaging } from '../../interfaces/messagingInterfaces';
 import { TaskTimeSpec } from '../../interfaces/scheduler';
+import { MutationPayload } from 'vuex';
 
 interface LocalTask {
 	message: string
@@ -262,7 +263,7 @@ export default class SchedulerForm extends Vue {
 			let object = JSON.parse(json);
 			return {}.hasOwnProperty.call(object, 'mType');
 		});
-		this.unsubscribe = this.$store.subscribe(mutation => {
+		this.unsubscribe = this.$store.subscribe((mutation: MutationPayload) => {
 			if (mutation.type === 'SOCKET_ONOPEN') {
 				this.useRest = false;
 				if (this.id && this.untouched) {
@@ -334,7 +335,7 @@ export default class SchedulerForm extends Vue {
 	}
 
 	beforeDestroy(): void {
-		this.msgIds.forEach((item) => this.$store.dispatch('removeMessage', item));
+		this.msgIds.forEach((item: string) => this.$store.dispatch('removeMessage', item));
 		this.unsubscribe();
 	}
 
@@ -347,7 +348,7 @@ export default class SchedulerForm extends Vue {
 		const cronTime = (this.timeSpec.cronTime as string).split(' ');
 		const len = cronTime.length;
 		if (len === 1) {
-			const alias = this.getCronAlias(this.timeSpec.cronTime);
+			const alias = this.getCronAlias((this.timeSpec.cronTime as string));
 			if (alias !== undefined) {
 				this.cronMessage = cronstrue.toString(alias);
 			} else {
@@ -368,12 +369,12 @@ export default class SchedulerForm extends Vue {
 		this.task.splice(index, 1);
 	}
 
-	private getTask(taskId): void {
+	private getTask(taskId: number): void {
 		this.untouched = false;
 		this.$store.commit('spinner/SHOW');
 		if (this.useRest) {
 			SchedulerService.getTaskREST(taskId)
-				.then((response) => {
+				.then((response: AxiosResponse) => {
 					this.$store.commit('spinner/HIDE');
 					this.taskId = response.data.taskId;
 					this.clientId = response.data.clientId;
@@ -393,7 +394,7 @@ export default class SchedulerForm extends Vue {
 				});
 		} else {
 			SchedulerService.getTask(taskId, new WebSocketOptions(null, 30000, null, () => this.$router.push('/config/scheduler/')))
-				.then((msgId) => this.storeId(msgId));
+				.then((msgId: string) => this.storeId(msgId));
 		}
 	}
 
@@ -492,7 +493,7 @@ export default class SchedulerForm extends Vue {
 		}
 	}
 
-	private getCronAlias(input) {
+	private getCronAlias(input: string): string {
 		let aliases = new Map();
 		aliases.set('@reboot', '');
 		aliases.set('@yearly', '0 0 0 1 1 * *');

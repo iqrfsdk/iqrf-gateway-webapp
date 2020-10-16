@@ -131,6 +131,7 @@ import {between, integer, required} from 'vee-validate/dist/rules';
 import StandardBinaryOutputService, {StandardBinaryOutput} from '../../services/DaemonApi/StandardBinaryOutputService';
 import { WebSocketOptions } from '../../store/modules/webSocketClient.module';
 import { Dictionary } from 'vue-router/types/router';
+import { MutationPayload } from 'vuex';
 
 @Component({
 	components: {
@@ -169,7 +170,7 @@ export default class BinaryOutputManager extends Vue {
 		extend('integer', integer);
 		extend('required', required);
 		extend('between', between);
-		this.unsubscribe = this.$store.subscribe(mutation => {
+		this.unsubscribe = this.$store.subscribe((mutation: MutationPayload) => {
 			if (mutation.type === 'SOCKET_ONSEND') {
 				if (!this.allowedMTypes.includes(mutation.payload.mType)) {
 					return;
@@ -233,7 +234,7 @@ export default class BinaryOutputManager extends Vue {
 		this.states = new Array(60).fill(false);
 	}
 
-	private parseSetOutput(states): void {
+	private parseSetOutput(states: Array<number>): void {
 		for(let i = 0; i < states.length; ++i) {
 			this.states[i] = states[i];
 		}
@@ -246,20 +247,20 @@ export default class BinaryOutputManager extends Vue {
 	private submitEnumerate(): void {
 		this.$store.dispatch('spinner/show', {timeout: 30000});
 		StandardBinaryOutputService.enumerate(this.address, this.buildOptions())
-			.then((msgId) => this.msgId = msgId);
+			.then((msgId: string) => this.msgId = msgId);
 	}
 
 	private submitGetStates(): void {
 		this.$store.dispatch('spinner/show', {timeout: 30000});
 		StandardBinaryOutputService.getOutputs(this.address, this.buildOptions())
-			.then((msgId) => this.msgId = msgId);
+			.then((msgId: string) => this.msgId = msgId);
 	}
 
 	private submitSetState(): void {
 		this.$store.dispatch('spinner/show', {timeout: 30000});
 		const output = new StandardBinaryOutput(this.index, this.state);
 		StandardBinaryOutputService.setOutputs(this.address, [output], this.buildOptions())
-			.then((msgId) => this.msgId = msgId);
+			.then((msgId: string) => this.msgId = msgId);
 	}
 }
 </script>

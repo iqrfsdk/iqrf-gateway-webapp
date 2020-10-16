@@ -84,7 +84,7 @@ export default class JsonSplitter extends Vue {
 					this.instance = this.configuration.instance;
 				}	
 			})
-			.catch((error) => FormErrorHandler.configError(error));
+			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 
 	private saveConfig(): void {

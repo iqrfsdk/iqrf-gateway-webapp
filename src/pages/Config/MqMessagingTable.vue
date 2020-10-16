@@ -180,7 +180,7 @@ export default class MqMessagingTable extends Vue {
 		this.deleteInstance = instance.instance;
 	}
 
-	private changeAcceptAsyncMsg(instance, acceptAsyncMsg): Promise<AxiosResponse|void> {
+	private changeAcceptAsyncMsg(instance: MqInstance, acceptAsyncMsg: boolean): Promise<AxiosResponse|void> {
 		this.$store.commit('spinner/SHOW');
 		instance.acceptAsyncMsg = acceptAsyncMsg;
 		return DaemonConfigurationService.updateInstance(this.componentName, instance.instance, instance)
@@ -196,7 +196,7 @@ export default class MqMessagingTable extends Vue {
 
 	private getInstances(): Promise<AxiosResponse|void> {
 		return DaemonConfigurationService.getComponent(this.componentName)
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.$store.commit('spinner/HIDE');
 				this.instances = response.data.instances;
 			})

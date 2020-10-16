@@ -130,6 +130,7 @@ import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {integer, min_value, required} from 'vee-validate/dist/rules';
 import { MetaInfo } from 'vue-meta';
 import { IOption } from '../../interfaces/coreui';
+import { AxiosError, AxiosResponse } from 'axios';
 
 interface VerbosityLevel {
 	channel: number
@@ -208,18 +209,18 @@ export default class TracerForm extends Vue {
 		this.configuration.VerbosityLevels.push({channel: 0, level: 'INF'});
 	}
 
-	private removeLevel(index): void {
+	private removeLevel(index: number): void {
 		this.configuration.VerbosityLevels.splice(index, 1);
 	}
 
 	private getInstance(): void {
 		this.$store.commit('spinner/SHOW');
 		DaemonConfigurationService.getInstance(this.componentName, this.instance)
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.$store.commit('spinner/HIDE');
 				this.configuration = response.data;
 			})
-			.catch((error) => {
+			.catch((error: AxiosError) => {
 				this.$router.push('/config/tracer/');
 				FormErrorHandler.configError(error);
 			});
@@ -230,11 +231,11 @@ export default class TracerForm extends Vue {
 		if (this.instance !== null) {
 			DaemonConfigurationService.updateInstance(this.componentName, this.instance, this.configuration)
 				.then(() => this.successfulSave())
-				.catch((error) => FormErrorHandler.configError(error));
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
 		} else {
 			DaemonConfigurationService.createInstance(this.componentName, this.configuration)
 				.then(() => this.successfulSave())
-				.catch((error) => FormErrorHandler.configError(error));
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
 		}
 	}
 

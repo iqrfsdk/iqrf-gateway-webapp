@@ -152,7 +152,7 @@ export default class UdpMessagingTable extends Vue {
 		this.getInstances();
 	}
 
-	private confirmDelete(instance): void {
+	private confirmDelete(instance: UdpInstance): void {
 		this.deleteInstance = instance.instance;
 	}
 

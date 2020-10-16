@@ -9,7 +9,7 @@
 					class='float-right'
 					to='/config/websocket/add-service'
 				>
-					<CIcon :content='getIcon("add")' size='sm' />
+					<CIcon :content='icons.add' size='sm' />
 					{{ $t('table.actions.add') }}
 				</CButton>
 			</CCardHeader>
@@ -49,14 +49,14 @@
 								size='sm'
 								:to='"/config/websocket/edit-service/" + item.instance'
 							>
-								<CIcon :content='getIcon("edit")' size='sm' />
+								<CIcon :content='icons.edit' size='sm' />
 								{{ $t('table.actions.edit') }}
 							</CButton> <CButton
 								color='danger'
 								size='sm'
 								@click='service = item.instance'
 							>
-								<CIcon :content='getIcon("remove")' size='sm' />
+								<CIcon :content='icons.remove' size='sm' />
 								{{ $t('table.actions.delete') }}
 							</CButton>
 						</td>
@@ -94,12 +94,13 @@
 <script lang='ts'>
 import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CCardHeader, CDataTable, CDropdown, CDropdownItem, CIcon, CModal} from '@coreui/vue/src';
+import {cilPlus, cilPencil, cilTrash} from '@coreui/icons';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
-import {getCoreIcon} from '../../helpers/icons';
 import {IField} from '../../interfaces/coreui';
 import { AxiosError, AxiosResponse } from 'axios';
 import { WsService } from '../../interfaces/messagingInterfaces';
+import {Dictionary} from 'vue-router/types/router';
 
 @Component({
 	components: {
@@ -137,15 +138,16 @@ export default class WebsocketServiceList extends Vue {
 			sorter: false,
 		},
 	]
+	private icons: Dictionary<Array<string>> = {
+		add: cilPlus,
+		edit: cilPencil,
+		remove: cilTrash
+	}
 	private instances: Array<WsService> = []
 	private service: string|null = null
 
 	created(): void {
 		this.getConfig();
-	}
-
-	private getIcon(icon: string): string[]|void {
-		return getCoreIcon(icon);
 	}
 
 	private getConfig(): Promise<void> {
@@ -158,7 +160,7 @@ export default class WebsocketServiceList extends Vue {
 			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 
-	private changeAccept(service, setting): void {
+	private changeAccept(service: WsService, setting: boolean): void {
 		if (service.acceptOnlyLocalhost !== setting) {
 			service.acceptOnlyLocalhost = setting;
 			DaemonConfigurationService.updateInstance(this.componentName, service.instance, service)

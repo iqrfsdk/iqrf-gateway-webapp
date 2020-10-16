@@ -41,6 +41,7 @@ import {CButton, CCard, CCardBody, CCardHeader, CForm, CInputFile, CSelect} from
 import {FileFormat} from '../../iqrfNet/fileFormat';
 import NativeUploadService from '../../services/NativeUploadService';
 import {IOption} from '../../interfaces/coreui';
+import { AxiosResponse } from 'axios';
 
 @Component({
 	components: {
@@ -114,7 +115,7 @@ export default class FileUpload extends Vue {
 		}
 		formData.append('file', this.getFiles()[0]);
 		NativeUploadService.uploadREST(formData)
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.$store.dispatch('spinner/show', {timeout: 30000});
 				NativeUploadService.upload(response.data.fileName, response.data.format, 30000, 'iqrfnet.trUpload.messages.timeout', () => this.msgId = null)
 					.then((msgId: string) => this.msgId = msgId);

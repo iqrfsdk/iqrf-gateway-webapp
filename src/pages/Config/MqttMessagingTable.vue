@@ -197,19 +197,19 @@ export default class MqttMessagingTable extends Vue {
 		this.getInstances();
 	}
 
-	private confirmDelete(instance): void {
+	private confirmDelete(instance: MqttInstance): void {
 		this.deleteInstance = instance.instance;
 	}
 
-	private changeAcceptAsyncMsg(instance, acceptAsyncMsg): void {
+	private changeAcceptAsyncMsg(instance: MqttInstance, acceptAsyncMsg: boolean): void {
 		this.edit(instance, {acceptAsyncMsg: acceptAsyncMsg});
 	}
 
-	private changeEnabledSSL(instance, enabledSsl) : void{
+	private changeEnabledSSL(instance: MqttInstance, enabledSsl: boolean) : void{
 		this.edit(instance, {EnabledSSL: enabledSsl});
 	}
 
-	private edit(instance, newSettings): Promise<AxiosResponse|void> {
+	private edit(instance: MqttInstance, newSettings: Dictionary<boolean>): Promise<AxiosResponse|void> {
 		this.$store.commit('spinner/SHOW');
 		let settings = {
 			...instance,
@@ -228,7 +228,7 @@ export default class MqttMessagingTable extends Vue {
 
 	private getInstances(): Promise<AxiosResponse|void> {
 		return DaemonConfigurationService.getComponent(this.componentName)
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.$store.commit('spinner/HIDE');
 				this.instances = response.data.instances;
 			})

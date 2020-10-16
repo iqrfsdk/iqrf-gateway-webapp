@@ -40,6 +40,7 @@ import OsService from '../../services/DaemonApi/OsService';
 import NativeUploadService from '../../services/NativeUploadService';
 import {MutationPayload} from 'vuex';
 import { WebSocketClientState } from '../../store/modules/webSocketClient.module';
+import { AxiosError, AxiosResponse } from 'axios';
 
 interface DpaVersions {
 	label: string
@@ -189,14 +190,14 @@ export default class DpaUpdater extends Vue {
 			Object.assign(request, {'dpa': this.version});
 		}
 		DpaService.getDpaFile(request)
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.$store.dispatch('spinner/show', {timeout: 30000});
 				NativeUploadService.upload(response.data.fileName, FileFormat.IQRF, 30000, 'iqrfnet.trUpload.messagess.genericError', () => this.msgId = null)
-					.then((msgId) => this.msgId = msgId);
+					.then((msgId: string) => this.msgId = msgId);
 			})
-			.catch((error) => {
+			.catch((error: AxiosError) => {
 				this.$store.commit('spinner/HIDE');
-				if (error.response !== null) {
+				if (error.response) {
 					switch (error.response.status) {
 						case 400:
 							this.$toast.error(

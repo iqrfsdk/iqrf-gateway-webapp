@@ -73,6 +73,7 @@ import DeviceIcon from './DeviceIcon.vue';
 import IqrfNetService from '../../services/IqrfNetService';
 import { WebSocketOptions } from '../../store/modules/webSocketClient.module';
 import { Dictionary } from 'vue-router/types/router';
+import { MutationPayload } from 'vuex';
 
 @Component({
 	components: {
@@ -107,7 +108,7 @@ export default class DevicesInfo extends Vue {
 
 	created(): void {
 		this.generateDevices();
-		this.unsubscribe = this.$store.subscribe(mutation => {
+		this.unsubscribe = this.$store.subscribe((mutation: MutationPayload) => {
 			if (mutation.type === 'SOCKET_ONMESSAGE') {
 				if (!this.allowedMTypes.includes(mutation.payload.mType)) {
 					return;
@@ -149,14 +150,14 @@ export default class DevicesInfo extends Vue {
 		this.unsubscribe();
 	}
 
-	private buildOptions(timeout, message): WebSocketOptions {
+	private buildOptions(timeout: number, message: string): WebSocketOptions {
 		return new WebSocketOptions(null, timeout, message, () => this.msgId = null);
 	}
 
 	private frcPing(): void {
 		this.$store.dispatch('spinner/show', {timeout: 30000});
 		IqrfNetService.ping(this.buildOptions(30000, 'iqrfnet.networkManager.devicesInfo.messages.bonded.failure'))
-			.then((msgId) => this.msgId = msgId);
+			.then((msgId: string) => this.msgId = msgId);
 	}
 
 	private generateDevices(): void {
@@ -173,23 +174,23 @@ export default class DevicesInfo extends Vue {
 	public getBondedDevices(): void {
 		this.$store.dispatch('spinner/show', {timeout: 20000});
 		IqrfNetService.getBonded(this.buildOptions(20000, 'iqrfnet.networkManager.devicesInfo.messages.bonded.failure'))
-			.then((msgId) => this.msgId = msgId);
+			.then((msgId: string) => this.msgId = msgId);
 	}
 
 	private getDiscoveredDevices(): void {
 		this.$store.dispatch('spinner/show', {timeout: 20000});
 		IqrfNetService.getDiscovered(this.buildOptions(20000, 'iqrfnet.networkManager.devicesInfo.messages.discovered.failure'))
-			.then((msgId) => this.msgId = msgId);
+			.then((msgId: string) => this.msgId = msgId);
 	}
 
 	private parseBondedDevices(response): void {
 		switch (response.data.status) {
 			case 0: {
-				this.devices.forEach(item => {
+				this.devices.forEach((item: Device) => {
 					item.bonded = false;
 				});
 				const bonded = response.data.rsp.result.bondedDevices;
-				bonded.forEach(item => {
+				bonded.forEach((item: number) => {
 					this.devices[item].bonded = true;
 				});
 				this.getDiscoveredDevices();
@@ -207,11 +208,11 @@ export default class DevicesInfo extends Vue {
 	private parseDiscoveredDevices(response): void {
 		switch (response.data.status) {
 			case 0: {
-				this.devices.forEach(item => {
+				this.devices.forEach((item: Device) => {
 					item.discovered = false;
 				});
 				const discovered = response.data.rsp.result.discoveredDevices;
-				discovered.forEach(item => {
+				discovered.forEach((item: number) => {
 					this.devices[item].discovered = true;
 				});
 				this.frcPing();
@@ -231,7 +232,7 @@ export default class DevicesInfo extends Vue {
 			case 0: {
 				const online = response.data.rsp.result.frcData.slice(0, 30);
 				let k = 0;
-				online.forEach(item => {
+				online.forEach((item: number) => {
 					for (let i = 0; i < 8; ++i) {
 						const device = (item & (1 << i)) >> i;
 						this.devices[k++].online = (device === 1);

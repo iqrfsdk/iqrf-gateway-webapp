@@ -75,6 +75,7 @@ import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {integer, required} from 'vee-validate/dist/rules';
 import { MetaInfo } from 'vue-meta';
 import { RequiredInterface } from '../../interfaces/requiredInterfaces';
+import { AxiosError, AxiosResponse } from 'axios';
 
 interface MonitorComponents {
 	monitor: string
@@ -160,17 +161,17 @@ export default class MonitorForm extends Vue {
 		}
 		this.$store.commit('spinner/SHOW');
 		DaemonConfigurationService.getInstance(this.componentNames.monitor, this.instance)
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.monitor = response.data;
 				this.instances.monitor = this.instance;
 				this.instances.webSocket = this.monitor.RequiredInterfaces[0].target.instance;
 				DaemonConfigurationService.getInstance(this.componentNames.webSocket, this.instances.webSocket)
-					.then((response) => {
+					.then((response: AxiosResponse) => {
 						this.webSocket = response.data;
 						this.$store.commit('spinner/HIDE');
 					});
 			})
-			.catch((error) => {
+			.catch((error: AxiosError) => {
 				this.$router.push('/config/monitor/');
 				FormErrorHandler.configError(error);
 			});
@@ -195,14 +196,14 @@ export default class MonitorForm extends Vue {
 				DaemonConfigurationService.createInstance(this.componentNames.monitor, this.monitor),
 			])
 				.then(() => this.successfulSave())
-				.catch((error) => FormErrorHandler.configError(error));
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
 		} else {
 			Promise.all([
 				DaemonConfigurationService.updateInstance(this.componentNames.webSocket, this.instances.webSocket, this.webSocket),
 				DaemonConfigurationService.updateInstance(this.componentNames.monitor, this.instances.monitor, this.monitor),
 			])
 				.then(() => this.successfulSave())
-				.catch((error) => FormErrorHandler.configError(error));
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
 		}
 	}
 

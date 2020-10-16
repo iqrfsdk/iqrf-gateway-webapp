@@ -100,7 +100,7 @@ import DaemonConfigurationService from '../../services/DaemonConfigurationServic
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 import { MetaInfo } from 'vue-meta';
 import { IField } from '../../interfaces/coreui';
-import { AxiosResponse } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 import { Dictionary } from 'vue-router/types/router';
 
 interface ComponentItem {
@@ -193,7 +193,7 @@ export default class ComponentList extends Vue {
 					this.components = response.data.components;
 				} else {
 					const whitelistedComponents = ['iqrf::IqrfCdc', 'iqrf::IqrfSpi', 'iqrf::IqrfUart'];
-					this.components = response.data.components.filter((component) => {
+					this.components = response.data.components.filter((component: ComponentItem) => {
 						if (whitelistedComponents.includes(component.name)) {
 							return component;
 						}
@@ -203,7 +203,7 @@ export default class ComponentList extends Vue {
 			.catch((error) => FormErrorHandler.configError(error));
 	}
 
-	private changeEnabled(component, enabled): void {
+	private changeEnabled(component: ComponentItem, enabled: boolean): void {
 		if (component.enabled !== enabled) {
 			component.enabled = enabled;
 			DaemonConfigurationService.updateComponent(component.name, component)
@@ -212,7 +212,7 @@ export default class ComponentList extends Vue {
 						this.$toast.success(this.$t('config.components.form.messages.editSuccess', {component: component.name}).toString());
 					});
 				})
-				.catch((error) => FormErrorHandler.configError(error));
+				.catch((error: AxiosError) => FormErrorHandler.configError(error));
 		}
 	}
 	
@@ -226,7 +226,7 @@ export default class ComponentList extends Vue {
 					this.$toast.success(this.$t('config.components.form.messages.deleteSuccess', {component: component}).toString());
 				});
 			})
-			.catch((error) => FormErrorHandler.configError(error));
+			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 
 }
