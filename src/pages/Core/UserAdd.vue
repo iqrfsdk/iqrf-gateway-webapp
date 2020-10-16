@@ -82,15 +82,14 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Vue} from 'vue-property-decorator';
 import {AxiosError} from 'axios';
 import {CButton, CCard, CForm, CInput, CSelect} from '@coreui/vue/src';
 import {required} from 'vee-validate/dist/rules';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import UserService from '../../services/UserService';
 
-export default Vue.extend({
-	name: 'UserAdd',
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -100,41 +99,40 @@ export default Vue.extend({
 		ValidationObserver,
 		ValidationProvider,
 	},
-	data(): any {
-		return {
-			username: null,
-			password: null,
-			language: null,
-			role: null,
-		};
-	},
-	created() {
-		extend('required', required);
-	},
-	methods: {
-		handleSubmit() {
-			const language = this.language ?? 'en';
-			const role = this.role ?? 'normal';
-			UserService.add(this.username, this.password, language, role)
-				.then(() => {
-					this.$router.push('/user/');
-					this.$toast.success(
-						this.$t('core.user.messages.add.success', {username: this.username})
-							.toString());
-				}).catch((error: AxiosError) => {
-					if (error.response === undefined) {
-						return;
-					}
-					if (error.response.status === 409) {
-						this.$toast.error(
-							this.$t('core.user.messages.conflict.username').toString()
-						);
-					}
-				});
-		},
-	},
 	metaInfo: {
 		title: 'core.user.add.title',
-	},
-});
+	}
+})
+
+export default class UserAdd extends Vue {
+	private language = ''
+	private password = ''
+	private role = ''
+	private username = ''
+
+	created(): void {
+		extend('required', required);
+	}
+
+	private handleSubmit(): void {
+		const language = this.language ?? 'en';
+		const role = this.role ?? 'normal';
+		UserService.add(this.username, this.password, language, role)
+			.then(() => {
+				this.$router.push('/user/');
+				this.$toast.success(
+					this.$t('core.user.messages.add.success', {username: this.username})
+						.toString());
+			}).catch((error: AxiosError) => {
+				if (error.response === undefined) {
+					return;
+				}
+				if (error.response.status === 409) {
+					this.$toast.error(
+						this.$t('core.user.messages.conflict.username').toString()
+					);
+				}
+			});
+	}
+}
 </script>

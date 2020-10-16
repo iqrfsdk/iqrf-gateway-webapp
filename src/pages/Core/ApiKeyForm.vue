@@ -153,7 +153,7 @@ export default class ApiKeyForm extends Vue {
 		}
 	}
 
-	private successfulSave() {
+	private successfulSave(): void {
 		this.$router.push('/api-key');
 		this.$store.commit('spinner/HIDE');
 		if (this.$route.path === '/api-key/add') {

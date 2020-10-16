@@ -92,7 +92,7 @@ import FormErrorHandler from '../../helpers/FormErrorHandler';
 import {DateTime} from 'luxon';
 import { Dictionary } from 'vue-router/types/router';
 import { IField } from '../../interfaces/coreui';
-import { AxiosResponse } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 
 interface ApiKey {
 	description: string
@@ -163,7 +163,7 @@ export default class ApiKeyList extends Vue {
 				this.$store.commit('spinner/HIDE');
 				this.keys = response.data;
 			})
-			.catch((error) => FormErrorHandler.apiKeyError(error));
+			.catch((error: AxiosError) => FormErrorHandler.apiKeyError(error));
 	}
 
 	private removeKey(): void  {
@@ -179,10 +179,10 @@ export default class ApiKeyList extends Vue {
 					this.$toast.success(this.$t('core.apiKey.messages.deleteSuccess', {key: key}).toString());
 				});
 			})
-			.catch((error) => FormErrorHandler.apiKeyError(error));
+			.catch((error: AxiosError) => FormErrorHandler.apiKeyError(error));
 	}
 
-	private timeString(item): string {
+	private timeString(item: ApiKey): string {
 		return DateTime.fromISO(item.expiration).toLocaleString(this.dateFormat);
 	}
 
