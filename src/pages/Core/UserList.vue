@@ -126,6 +126,7 @@ import {cilPencil, cilPlus, cilTrash} from '@coreui/icons';
 import UserService from '../../services/UserService';
 import { Dictionary } from 'vue-router/types/router';
 import { IField } from '../../interfaces/coreui';
+import { AxiosResponse } from 'axios';
 
 interface User {
 	id?: number
@@ -208,7 +209,7 @@ export default class UserList extends Vue {
 
 	private getUsers() {
 		return UserService.list()
-			.then((response) => {
+			.then((response: AxiosResponse) => {
 				this.$store.commit('spinner/HIDE');
 				this.users = response.data;
 			})
