@@ -1,4 +1,28 @@
 /**
+ * Daemon api raw message raw data interface
+ */
+export interface RawMessageRData {
+	rData: string
+}
+
+/**
+ * Daemon api raw message data interface
+ */
+export interface RawMessageData {
+	req: RawMessageRData
+	returnVerbose: boolean
+	timeout?: number
+}
+
+/**
+ * Daemon api raw message interface
+ */
+export interface RawMessage {
+	mType: string
+	data: RawMessageData
+}
+
+/**
  * Os information flags interface
  */
 export interface OsInfoFlags {
@@ -65,4 +89,80 @@ export interface PeripheralEnumeration {
 	hwpIdVer: number
 	perNr: number
 	userPers: Array<unknown>
+}
+
+export interface PeripheralInfo {
+	par1: number
+	part: number
+	perT: number
+	perTe: number
+}
+
+export interface Discovery {
+	discovered: boolean
+	parent: number
+	vrn: number
+	zone: number
+}
+
+export interface IEmbedPers {
+	coordinator: boolean
+	eeeprom: boolean
+	eeprom: boolean
+	io: boolean
+	ledg: boolean
+	ledr: boolean
+	node: boolean
+	os: boolean
+	pwm: boolean
+	ram: boolean
+	spi: boolean
+	thermometer: boolean
+	uart: boolean
+}
+
+export interface IEmbedPersEnabled {
+	enabled: boolean
+	name: string
+}
+
+export interface ITrConfiguration {
+	customDpaHandler: boolean
+	dpaAutoexec: boolean
+	dpaPeerToPeer: boolean
+	embPers: IEmbedPers
+	ioSetup: boolean
+	lpRxTimeout: number
+	neverSleep: boolean
+	peerToPeer: boolean
+	rfAltDsmChannel: number
+	rfBand: string
+	rfChannelA: number
+	rfChannelB: number
+	rfPgmDualChannel: boolean
+	rfPgmEnableAfterReset: boolean
+	rfPgmIncorrectUpload: boolean
+	rfPgmLpMode: boolean
+	rfPgmTerminateAfter1Min: boolean
+	rfPgmTerminateMcuPin: boolean
+	routingOff: boolean
+	rxFilter: number
+	stdAndLpNetwork: boolean
+	txPower: number
+	uartBaudrate: number
+}
+
+/**
+ * Device enumeration interface
+ */
+export interface IDeviceEnumeration {
+	deviceAddr: number
+	discovery: Discovery
+	manufacturer: string
+	morePeripheralsInfo: PeripheralInfo
+	osRead: OsInfo
+	peripheralEnumeration: PeripheralEnumeration
+	product: string
+	standards: Array<string>
+	trConfiguration: ITrConfiguration
 }

@@ -170,7 +170,7 @@ export default class DevicesInfo extends Vue {
 		return row * 10 + col;
 	}
 
-	private getBondedDevices(): void {
+	public getBondedDevices(): void {
 		this.$store.dispatch('spinner/show', {timeout: 20000});
 		IqrfNetService.getBonded(this.buildOptions(20000, 'iqrfnet.networkManager.devicesInfo.messages.bonded.failure'))
 			.then((msgId) => this.msgId = msgId);

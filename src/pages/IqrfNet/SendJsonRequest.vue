@@ -44,80 +44,24 @@
 				</CAlert>
 			</CCardBody>
 		</CCard>
-		<CRow>
-			<CCol v-if='request !== null' md='6'>
-				<CCard>
-					<CCardHeader class='d-flex'>
-						<span class='mr-auto'>
-							{{ $t('iqrfnet.sendJson.request') }}
-						</span>
-						<CButton
-							v-clipboard='request'
-							v-clipboard:success='() => $toast.success($t("iqrfnet.sendJson.copy.messages.request").toString())'
-							color='primary'
-							size='sm'
-						>
-							{{ $t('iqrfnet.sendJson.copy.request') }}
-						</CButton>
-					</CCardHeader>
-					<CCardBody>
-						<prism-editor
-							v-model='request'
-							:highlight='highlighter'
-							:readonly='true'
-						/>
-					</CCardBody>
-				</CCard>
-			</CCol>
-			<CCol v-if='response !== null' md='6'>
-				<CCard>
-					<CCardHeader class='d-flex'>
-						<span class='mr-auto'>
-							{{ $t('iqrfnet.sendJson.response') }}
-						</span>
-						<CButton
-							v-clipboard='response'
-							v-clipboard:success='() => $toast.success($t("iqrfnet.sendJson.copy.messages.response").toString())'
-							color='primary'
-							size='sm'
-						>
-							{{ $t('iqrfnet.sendJson.copy.response') }}
-						</CButton>
-					</CCardHeader>
-					<CCardBody>
-						<prism-editor
-							v-model='response'
-							:highlight='highlighter'
-							:readonly='true'
-						/>
-					</CCardBody>
-				</CCard>
-			</CCol>
-		</CRow>
+		<RequestAndResponse :request='request' :response='response' :source='"sendJson"' />
 	</div>
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Vue} from 'vue-property-decorator';
 import {MutationPayload} from 'vuex';
 import {CAlert, CButton, CCard, CCardBody, CCardHeader, CForm, CTextarea} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import {required} from 'vee-validate/dist/rules';
+import RequestAndResponse from '../../components/IqrfNet/RequestAndResponse.vue';
 
 import {TextareaAutogrowDirective} from 'vue-textarea-autogrow-directive/src/VueTextareaAutogrowDirective';
 import {StatusMessages} from '../../iqrfNet/sendJson';
 import IqrfNetService from '../../services/IqrfNetService';
 import { WebSocketOptions } from '../../store/modules/webSocketClient.module';
 
-import {PrismEditor} from 'vue-prism-editor';
-import 'vue-prism-editor/dist/prismeditor.min.css';
-import Prism from 'prismjs/components/prism-core';
-import 'prismjs/components/prism-json';
-import 'prismjs/themes/prism.css';
-
-
-export default Vue.extend({
-	name: 'SendJsonRequest',
+@Component({
 	components: {
 		CAlert,
 		CButton,
@@ -126,26 +70,28 @@ export default Vue.extend({
 		CCardHeader,
 		CForm,
 		CTextarea,
-		PrismEditor,
+		RequestAndResponse,
 		ValidationObserver,
 		ValidationProvider,
 	},
 	directives: {
 		'autogrow': TextareaAutogrowDirective
 	},
-	data(): any {
-		return {
-			json: null,
-			request: null,
-			response: null,
-			timeout: null,
-			mType: null,
-			daemonAvailable: true,
-			reconnectAttempt: 0,
-			msgId: null,
-		};
+	metaInfo: {
+		title: 'iqrfnet.sendJson.title',
 	},
-	created() {
+})
+
+export default class SendJsonRequest extends Vue {
+	private daemonAvailable = true
+	private json: string|null = null
+	private msgId: string|null = null
+	private reconnectAttempt = 0
+	private request: string|null = null
+	private response: string|null = null
+	private unsubscribe: CallableFunction = () => {return;}
+
+	created(): void {
 		extend('json', (json) => {
 			try {
 				JSON.parse(json);
@@ -167,8 +113,6 @@ export default Vue.extend({
 				this.daemonAvailable = false;
 			} else if (mutation.type === 'SOCKET_RECONNECT') {
 				this.reconnectAttempt = mutation.payload;
-			} else if (mutation.type === 'SOCKET_ONSEND') {
-				this.mType = mutation.payload.mType;
 			} else if (mutation.type === 'SOCKET_ONMESSAGE') {
 				if ({}.hasOwnProperty.call(mutation.payload, 'mType')) {
 					if (mutation.payload.data.msgId === this.msgId) {
@@ -213,39 +157,33 @@ export default Vue.extend({
 				}
 			}
 		});
-	},
-	beforeDestroy() {
+	}
+
+	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		this.unsubscribe();
-	},
-	methods: {
-		/**
-		 * JSON highlighter method
-		 */
-		highlighter(code: string) {
-			return Prism.highlight(code, Prism.languages.json, 'json');
-		},
-		processSubmit() {
-			const json = JSON.parse(this.json);
-			let options = new WebSocketOptions(json);
-			if ({}.hasOwnProperty.call(json.data.req, 'nAdr') && json.data.req.nAdr === 255) {
-				options.timeout = 1000;
-			} else if (json.mType === 'iqrfEmbedOs_Batch' || json.mType === 'iqrfEmbedOs_SelectiveBatch') {
-				options.timeout = 1000;
-			} else {
-				options.timeout = 60000;
-				options.message = 'iqrfnet.sendJson.form.messages.error.fail';
-				this.$store.commit('spinner/SHOW');
-			}
-			options.callback = () => this.msgId = null;
-			this.request = JSON.stringify(json, null, 4);
-			this.response = null;
-			IqrfNetService.sendJson(options)
-				.then((msgId: string) => this.msgId = msgId);
-		},
-	},
-	metaInfo: {
-		title: 'iqrfnet.sendJson.title',
-	},
-});
+	}
+
+	private processSubmit(): void {
+		if (this.json === null) {
+			return;
+		}
+		const json = JSON.parse(this.json);
+		let options = new WebSocketOptions(json);
+		if ({}.hasOwnProperty.call(json.data.req, 'nAdr') && json.data.req.nAdr === 255) {
+			options.timeout = 1000;
+		} else if (json.mType === 'iqrfEmbedOs_Batch' || json.mType === 'iqrfEmbedOs_SelectiveBatch') {
+			options.timeout = 1000;
+		} else {
+			options.timeout = 60000;
+			options.message = 'iqrfnet.sendJson.form.messages.error.fail';
+			this.$store.commit('spinner/SHOW');
+		}
+		options.callback = () => this.msgId = null;
+		this.request = JSON.stringify(json, null, 4);
+		this.response = null;
+		IqrfNetService.sendJson(options)
+			.then((msgId: string) => this.msgId = msgId);
+	}
+}
 </script>

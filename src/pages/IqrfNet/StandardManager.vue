@@ -15,14 +15,13 @@
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Vue} from 'vue-property-decorator';
 import BinaryOutputManager from '../../components/IqrfNet/BinaryOutputManager.vue';
 import DaliManager from '../../components/IqrfNet/DaliManager.vue';
 import LightManager from '../../components/IqrfNet/LightManager.vue';
 import SensorManager from '../../components/IqrfNet/SensorManager.vue';
 
-export default Vue.extend({
-	name: 'StandardManager',
+@Component({
 	components: {
 		BinaryOutputManager,
 		DaliManager,
@@ -31,6 +30,9 @@ export default Vue.extend({
 	},
 	metaInfo: {
 		title: 'iqrfnet.standard.title',
-	},
-});
+	}
+})
+
+export default class StandardManager extends Vue {
+}
 </script>

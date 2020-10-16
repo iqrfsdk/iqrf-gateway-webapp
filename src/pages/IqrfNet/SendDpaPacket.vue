@@ -77,77 +77,23 @@
 			</ValidationObserver>
 		</CCard>
 		<DpaMacros @set-packet='setPacket($event)' />
-		<CRow>
-			<CCol md='6'>
-				<CCard v-if='request !== null'>
-					<CCardHeader class='d-flex'>
-						<span class='mr-auto'>
-							{{ $t('iqrfnet.sendPacket.request') }}
-						</span>
-						<CButton
-							v-clipboard='request'
-							v-clipboard:success='() => $toast.success($t("iqrfnet.sendPacket.copy.messages.request").toString())'
-							color='primary'
-							size='sm'
-						>
-							{{ $t('iqrfnet.sendPacket.copy.request') }}
-						</CButton>
-					</CCardHeader>
-					<CCardBody>
-						<prism-editor
-							v-model='request'
-							:highlight='highlighter'
-							:readonly='true'
-						/>
-					</CCardBody>
-				</CCard>
-			</CCol>
-			<CCol md='6'>
-				<CCard v-if='response !== null'>
-					<CCardHeader class='d-flex'>
-						<span class='mr-auto'>
-							{{ $t('iqrfnet.sendPacket.response') }}
-						</span>
-						<CButton
-							v-clipboard='response'
-							v-clipboard:success='() => $toast.success($t("iqrfnet.sendPacket.copy.messages.response").toString())'
-							color='primary'
-							size='sm'
-						>
-							{{ $t('iqrfnet.sendPacket.copy.response') }}
-						</CButton>
-					</CCardHeader>
-					<CCardBody>
-						<prism-editor
-							v-model='response'
-							:highlight='highlighter'
-							:readonly='true'
-						/>
-					</CCardBody>
-				</CCard>
-			</CCol>
-		</CRow>
+		<RequestAndResponse :request='request' :response='response' :source='"sendDpa"' />
 	</div>
 </template>
 
 <script lang='ts'>
-import Vue from 'vue';
+import {Component, Vue} from 'vue-property-decorator';
 import {MutationPayload} from 'vuex';
 import {CButton, CCard, CCardBody, CCardHeader, CCol, CForm, CInput, CInputCheckbox, CRow} from '@coreui/vue/src';
 import DpaMacros from '../../components/IqrfNet/DpaMacros.vue';
 import {between, integer, min_value, required} from 'vee-validate/dist/rules';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import sendPacket from '../../iqrfNet/sendPacket';
+import RequestAndResponse from '../../components/IqrfNet/RequestAndResponse.vue';
+import {WebSocketOptions} from '../../store/modules/webSocketClient.module';
+import {RawMessage} from '../../interfaces/dpa';
 
-import {PrismEditor} from 'vue-prism-editor';
-import 'vue-prism-editor/dist/prismeditor.min.css';
-import Prism from 'prismjs/components/prism-core';
-import 'prismjs/components/prism-json';
-import 'prismjs/themes/prism.css';
-import { WebSocketOptions } from '../../store/modules/webSocketClient.module';
-
-export default Vue.extend({
-	name: 'SendDpaPacket',
+@Component({
 	components: {
 		CButton,
 		CCard,
@@ -159,23 +105,27 @@ export default Vue.extend({
 		CInputCheckbox,
 		CRow,
 		DpaMacros,
-		PrismEditor,
+		RequestAndResponse,
 		ValidationObserver,
 		ValidationProvider,
 	},
-	data(): any {
-		return {
-			packet: null,
-			address: 0,
-			addressOverwrite: false,
-			timeout: 1000,
-			timeoutOverwrite: false,
-			request: null,
-			response: null,
-			msgId: null,
-		};
-	},
-	created() {
+	metaInfo: {
+		title: 'iqrfnet.sendPacket.title',
+	}
+})
+
+export default class SendDpaPacket extends Vue {
+	private address = 0
+	private addressOverwrite = false
+	private msgId: string|null = null
+	private packet = ''
+	private request: string|null = null
+	private response: string|null = null
+	private timeout = 1000
+	private timeoutOverwrite = false
+	private unsubscribe: CallableFunction = () => {return;}
+
+	created(): void {
 		extend('between', between);
 		extend('integer', integer);
 		extend('min', min_value);
@@ -223,81 +173,74 @@ export default Vue.extend({
 				}
 			}
 		});
-	},
-	beforeDestroy() {
+	}
+
+	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		this.unsubscribe();
-	},
-	methods: {
-		/**
-		 * Handles Send DPA packet form submit event
-		 */
-		handleSubmit() {
-			if (this.packet === null || this.packet === '') {
-				this.$toast.error(this.$t('iqrfnet.sendPacket.form.messages.missing.packet').toString());
-				return;
-			}
-			const json: any = {
-				'mType': 'iqrfRaw',
-				'data': {
-					'req': {
-						'rData': this.packet,
-					},
-					'returnVerbose': true,
+	}
+
+	/**
+	 * Handles Send DPA packet form submit event
+	 */
+	private handleSubmit(): Promise<string>|void {
+		if (this.packet === null || this.packet === '') {
+			this.$toast.error(this.$t('iqrfnet.sendPacket.form.messages.missing.packet').toString());
+			return;
+		}
+		const json: RawMessage = {
+			'mType': 'iqrfRaw',
+			'data': {
+				'req': {
+					'rData': this.packet,
 				},
-			};
-			if (this.addressOverwrite && this.address !== null) {
-				json.data.req.rData = sendPacket.updateNadr(this.packet, this.address);
-			}
-			if (this.timeoutOverwrite && this.timeout !== null) {
-				json.data.timeout = this.timeout;
-			}
-			let options = new WebSocketOptions(json);
-			const packet = sendPacket.Packet.parse(this.packet);
-			if (packet.nadr === 255) {
-				options.timeout = 1000;
-			} else if (packet.pnum === 2 && (packet.pcmd === 5 || packet.pcmd === 11)) {
-				options.timeout = 1000;
-			} else {
-				options.timeout = 60000;
-				options.message = 'iqrfnet.sendPacket.messages.failure';
-				this.$store.commit('spinner/SHOW');
-			}
-			options.callback = () => this.msgId = null;
-			return this.$store.dispatch('sendRequest', options)
-				.then((msgId: string) => this.msgId = msgId);
-		},
-		/**
-		 * JSON highlighter method
-		 */
-		highlighter(code: any) {
-			return Prism.highlight(code, Prism.languages.json, 'json');
-		},
-		/**
-		 * Sets new DPA packet
-		 * @param {string} newPacket New DPA packet
-		 */
-		setPacket(newPacket: string) {
-			this.packet = newPacket;
-			this.setTimeout();
-		},
-		/**
-		 * Sets DPA timeout
-		 */
-		setTimeout() {
-			let packet = sendPacket.Packet.parse(this.packet);
-			let newTimeout = packet.detectTimeout();
-			if (newTimeout === null) {
-				this.timeoutOverwrite = false;
-				this.timeout = 1000;
-			} else {
-				this.timeoutOverwrite = true;
-				this.timeout = newTimeout;
-			}
-		},
-	},
-	metaInfo: {
-		title: 'iqrfnet.sendPacket.title',
-	},
-});
+				'returnVerbose': true,
+			},
+		};
+		if (this.addressOverwrite && this.address !== null) {
+			json.data.req.rData = sendPacket.updateNadr(this.packet, this.address);
+		}
+		if (this.timeoutOverwrite && this.timeout !== null) {
+			json.data.timeout = this.timeout;
+		}
+		let options = new WebSocketOptions(json);
+		const packet = sendPacket.Packet.parse(this.packet);
+		if (packet.nadr === 255) {
+			options.timeout = 1000;
+		} else if (packet.pnum === 2 && (packet.pcmd === 5 || packet.pcmd === 11)) {
+			options.timeout = 1000;
+		} else {
+			options.timeout = 60000;
+			options.message = 'iqrfnet.sendPacket.messages.failure';
+			this.$store.commit('spinner/SHOW');
+		}
+		options.callback = () => this.msgId = null;
+		return this.$store.dispatch('sendRequest', options)
+			.then((msgId: string) => this.msgId = msgId);
+	}
+
+	/**
+	 * Sets new DPA packet
+	 * @param {string} newPacket New DPA packet
+	 */
+	private setPacket(newPacket: string): void {
+		this.packet = newPacket;
+		this.setTimeout();
+	}
+
+	/**
+	 * Sets DPA timeout
+	 */
+	private setTimeout(): void {
+		let packet = sendPacket.Packet.parse(this.packet);
+		let newTimeout = packet.detectTimeout();
+		if (newTimeout === null) {
+			this.timeoutOverwrite = false;
+			this.timeout = 1000;
+		} else {
+			this.timeoutOverwrite = true;
+			this.timeout = newTimeout;
+		}
+	}
+}
 </script>

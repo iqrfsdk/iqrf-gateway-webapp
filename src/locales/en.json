@@ -1133,17 +1133,7 @@
 			"title": "Send JSON request",
 			"description": "Send JSON request.",
 			"documentation": "Show API documentation.",
-			"response": "Response",
-			"request": "Request",
 			"notAvailable": "The IQRF Gateway Daemon service is currently not available, attempting reconnect ({attempt}).",
-			"copy": {
-				"request": "Copy request to the clipboard",
-				"response": "Copy response to the clipboard",
-				"messages": {
-					"request": "JSON request has been copied to the clipboard.",
-					"response": "JSON response has been copied to the clipboard."
-				}
-			},
 			"form": {
 				"json": "JSON request",
 				"messages": {
@@ -1172,16 +1162,6 @@
 			"title": "Send DPA packet",
 			"description": "Send DPA packet.",
 			"macros": "Macros",
-			"request": "Request",
-			"response": "Response",
-			"copy": {
-				"request": "Copy request to the clipboard",
-				"response": "Copy response to the clipboard",
-				"messages": {
-					"request": "JSON request has been copied to the clipboard.",
-					"response": "JSON response has been copied to the clipboard."
-				}
-			},
 			"form": {
 				"packet": "DPA packet",
 				"address": "Custom NADR",
@@ -1213,6 +1193,16 @@
 					"dataLength": "Sent DPA packet contains incorrect data length."
 				}
 			}
+		},
+		"requestAndResponse": {
+			"request": "Request",
+			"response": "Response",
+			"copyRequest": "Copy request to the clipboard",
+			"copyResponse": "Copy response to the clipboard",
+			"dpaRequestCopied": "DPA request has been copied to the clipboard.",
+			"dpaResponseCopied": "DPA response has been copied to the clipboard.",
+			"jsonRequestCopied": "DPA request has been copied to the clipboard.",
+			"jsonResponseCopied": "DPA response has been copied to the clipboard."
 		},
 		"standard": {
 			"title": "Standard manager",
