@@ -60,20 +60,40 @@ interface OtaUploadConfig {
 	}
 })
 
+/**
+ * OtaUpload card for IqmeshServices component
+ */
 export default class OtaUpload extends Vue {
+	/**
+	 * @constant {string} componentName name of daemon component
+	 */
 	private componentName = 'iqrf::OtaUploadService'
+
+	/**
+	 * @var {string} instance name of daemon componenent instance
+	 */
 	private instance: string|null = null
+
+	/**
+	 * @var {OtaUploadConfig} configuration OtaUpload instance configuration
+	 */
 	private configuration: OtaUploadConfig = {
 		instance: null,
 		uploadPath: null,
 		uploadPathSuffix: null,
 	}
 
+	/**
+	 * Vue lifecycle hook created
+	 */
 	created(): void {
 		extend('required', required);
 		this.getInstance();
 	}
 
+	/**
+	 * Retrieves instance of OtaUpload daemon component
+	 */
 	private getInstance(): void {
 		this.$store.commit('spinner/SHOW');
 		DaemonConfigurationService.getComponent(this.componentName)
@@ -87,6 +107,9 @@ export default class OtaUpload extends Vue {
 			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 
+	/**
+	 * Updates configuration of OtaUpload instance and creates one if it does not exist
+	 */
 	private saveInstance(): void {
 		this.$store.commit('spinner/SHOW');
 		if (this.instance !== null) {
@@ -100,6 +123,9 @@ export default class OtaUpload extends Vue {
 		}
 	}
 
+	/**
+	 * Handles REST API success
+	 */
 	private successfulSave(): void {
 		this.$store.commit('spinner/HIDE');
 		this.$toast.success(this.$t('config.success').toString());

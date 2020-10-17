@@ -13,17 +13,46 @@ import {WebSocketClientState} from '../../store/modules/webSocketClient.module';
 
 @Component({})
 
+/**
+ * Daemon mode information component for gateway information
+ */
 export default class DaemonModeInfo extends Vue {
+	/**
+	 * @constant {Array<string>} allowedMTypes Array of allowed daemon api messages
+	 */
 	private allowedMTypes: Array<string> = [
 		'mngDaemon_Mode',
 		'messageError'
 	]
+
+	/**
+	 * @var {DaemonModeEnum} mode Current daemon mode
+	 */
 	private mode: DaemonModeEnum = DaemonModeEnum.unknown
+
+	/**
+	 * @var {string|null} msgId daemon api message id
+	 */
 	private msgId: string|null = null
+
+	/**
+	 * @var {boolean} requestRunning indicates whether a daemon api request has been completed
+	 */
 	private requestRunning = false
+
+	/**
+	 * Component unsubscribe function
+	 */
 	private unsubscribe: CallableFunction = () => {return;}
+	
+	/**
+	 * Component unwatch function
+	 */
 	private unwatch: CallableFunction = () => {return;}
 
+	/**
+	 * Vue lifecycle hook created
+	 */
 	created(): void {
 		this.unsubscribe = this.$store.subscribe((mutation: MutationPayload) => {
 			if (mutation.type === 'SOCKET_ONMESSAGE') {
@@ -53,6 +82,9 @@ export default class DaemonModeInfo extends Vue {
 		}
 	}
 
+	/**
+	 * Vue lifecycle hook beforeDestroy
+	 */
 	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		if (this.unwatch !== undefined) {
@@ -61,12 +93,18 @@ export default class DaemonModeInfo extends Vue {
 		this.unsubscribe();
 	}
 
+	/**
+	 * Retrieves current Daemon mode
+	 */
 	private getMode(): void {
 		DaemonModeService.get(5000, 'gateway.mode.modes.unknown', () => this.timedOut())
 			.then((msgId: string) => this.msgId = msgId);
 		this.requestRunning = true;
 	}
 
+	/**
+	 * Daemon api request timeout handler
+	 */
 	private timedOut(): void {
 		this.requestRunning = false;
 		this.msgId = null;

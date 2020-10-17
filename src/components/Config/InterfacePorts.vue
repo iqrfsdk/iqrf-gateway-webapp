@@ -26,18 +26,33 @@ import IqrfService from '../../services/IqrfService';
 	},
 })
 
+/**
+ * Interface port mapping
+ */
 export default class InterfacePorts extends Vue {
+	/**
+	 * @var {Array<string>} ports device ports
+	 */
 	private ports: Array<string> = []
 	
-	@Prop({ required: true })
-	interfaceType!: string;
+	/**
+	 * @property {string} interfaceType communication interface type
+	 */
+	@Prop({ required: true }) interfaceType!: string;
 
+	/**
+	 * Vue lifecycle hook created
+	 */
 	created(): void {
 		IqrfService.getInterfacePorts(this.interfaceType)
 			.then((ports: Array<string>) => (this.ports = ports))
 			.catch(() => (this.ports = []));
 	}
 
+	/**
+	 * Emits port to parent component to update port field
+	 * @param {string} port port name
+	 */
 	private setPort(port: string): void {
 		this.$emit('update-port', port);
 	}

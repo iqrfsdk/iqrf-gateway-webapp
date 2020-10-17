@@ -20,7 +20,13 @@ import { Dictionary } from 'vue-router/types/router';
 
 @Component({})
 
+/**
+ * Resource usage component for gateway information
+ */
 export default class ResourceUsage extends Vue {
+	/**
+	 * @property {Dictionary<string>} usage Dictionary of gateway device resource usage
+	 */
 	@Prop({ required: true }) usage!: Dictionary<string>
 }
 </script>

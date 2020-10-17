@@ -54,7 +54,7 @@
 							</CButton> <CButton
 								color='danger'
 								size='sm'
-								@click='service = item.instance'
+								@click='deleteService = item.instance'
 							>
 								<CIcon :content='icons.remove' size='sm' />
 								{{ $t('table.actions.delete') }}
@@ -66,18 +66,18 @@
 		</CCard>
 		<CModal
 			color='danger'
-			:show='service !== null'
+			:show='deleteService !== null'
 		>
 			<template #header>
 				<h5 class='modal-title'>
 					{{ $t('config.websocket.service.messages.deleteTitle') }}
 				</h5>
 			</template>
-			{{ $t('config.websocket.service.messages.deletePrompt', {service: service}) }}
+			{{ $t('config.websocket.service.messages.deletePrompt', {service: deleteService}) }}
 			<template #footer>
 				<CButton
 					color='danger'
-					@click='service = null'
+					@click='deleteService = null'
 				>
 					{{ $t('forms.no') }}
 				</CButton> <CButton
@@ -116,8 +116,23 @@ import {Dictionary} from 'vue-router/types/router';
 	}
 })
 
+/**
+ * Websocket service list card for normal user
+ */
 export default class WebsocketServiceList extends Vue {
+	/**
+	 * @constant {string} componentName Websocket service component name
+	 */
 	private componentName = 'shape::WebsocketCppService'
+
+	/**
+	 * @var {string|null} deleteService Websocket service instance used in remove modal
+	 */
+	private deleteService: string|null = null
+
+	/**
+	 * @constant {Array<IField>} fields CoreUI datatable columns
+	 */
 	private fields: Array<IField> = [
 		{
 			key: 'instance',
@@ -138,18 +153,31 @@ export default class WebsocketServiceList extends Vue {
 			sorter: false,
 		},
 	]
+
+	/**
+	 * @constant {Dictionary<Array<string>>} icons Dictionary of CoreUI icons
+	 */
 	private icons: Dictionary<Array<string>> = {
 		add: cilPlus,
 		edit: cilPencil,
 		remove: cilTrash
 	}
-	private instances: Array<WsService> = []
-	private service: string|null = null
 
+	/**
+	 * @var {Array<WsService>} instances Array of Websocket service instances
+	 */
+	private instances: Array<WsService> = []
+
+	/**
+	 * Vue lifecycle hook created
+	 */
 	created(): void {
 		this.getConfig();
 	}
 
+	/**
+	 * Retrieves instances of Websocket service component
+	 */
 	private getConfig(): Promise<void> {
 		this.$store.commit('spinner/SHOW');
 		return DaemonConfigurationService.getComponent(this.componentName)
@@ -160,6 +188,11 @@ export default class WebsocketServiceList extends Vue {
 			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 
+	/**
+	 * Updates accepted message source of Websocket service component instance
+	 * @param {WsService} service Websocket service instance
+	 * @param {boolean} setting new setting
+	 */
 	private changeAccept(service: WsService, setting: boolean): void {
 		if (service.acceptOnlyLocalhost !== setting) {
 			service.acceptOnlyLocalhost = setting;
@@ -176,13 +209,16 @@ export default class WebsocketServiceList extends Vue {
 		}
 	}
 
+	/**
+	 * Removes an existing instance of Websocket service component
+	 */
 	private removeService(): void {
-		if (this.service === null) {
+		if (this.deleteService === null) {
 			return;
 		}
 		this.$store.commit('spinner/SHOW');
-		const service = this.service;
-		this.service = null;
+		const service = this.deleteService;
+		this.deleteService = null;
 		DaemonConfigurationService.deleteInstance(this.componentName, service)
 			.then(() => {
 				this.getConfig().then(() => {

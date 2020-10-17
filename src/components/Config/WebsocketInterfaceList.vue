@@ -133,12 +133,26 @@ import {Dictionary} from 'vue-router/types/router';
 	}
 })
 
+/**
+ * Websocket interface list card for normal user
+ */
 export default class WebsocketInterfaceList extends Vue {
+	/**
+	 * @constant {ModalInstance} componentNames Websocket messaging and service component names
+	 */
 	private componentNames: ModalInstance = {
 		messaging: 'iqrf::WebsocketMessaging',
 		service: 'shape::WebsocketCppService',
 	}
+
+	/**
+	 * @var {ModalInstance|null} deleteInstance Websocket interface instance used in remove modal
+	 */
 	private deleteInstance: ModalInstance|null = null
+
+	/**
+	 * @constant {Array<IField>} fields CoreUI datatable columns
+	 */
 	private fields: Array<IField> = [
 		{
 			key: 'instanceMessaging',
@@ -165,18 +179,32 @@ export default class WebsocketInterfaceList extends Vue {
 			sorter: false,
 		},
 	]
+
+	/**
+	 * @constant {Dictionary<Array<string>>} icons Dictionary of CoreUI icons
+	 */
 	private icons: Dictionary<Array<string>> = {
 		add: cilPlus,
 		edit: cilPencil,
 		remove: cilTrash
 	}
+
+	/**
+	 * @var {Array<WsInterface>} instances Array of websocket interface instances
+	 */
 	private instances: Array<WsInterface> = [];
 
+	/**
+	 * Vue lifecycle hook created
+	 */
 	created(): void {
 		this.$store.commit('spinner/SHOW');
 		this.getConfig();
 	}
 
+	/**
+	 * Retrieves instances of Websocket daemon components
+	 */
 	private getConfig(): Promise<void> {
 		this.instances = [];
 		return Promise.all([
@@ -214,6 +242,11 @@ export default class WebsocketInterfaceList extends Vue {
 		// TODO: add error message
 	}
 
+	/**
+	 * Updates accepted message source of Websocket service component instance
+	 * @param {WsService} service Websocket service instance
+	 * @param {boolean} setting new setting
+	 */
 	private changeAcceptOnlyLocalhost(service: WsService, setting: boolean): void {
 		this.$store.commit('spinner/SHOW');
 		service.acceptOnlyLocalhost = setting;
@@ -229,6 +262,11 @@ export default class WebsocketInterfaceList extends Vue {
 			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 
+	/**
+	 * Updates accepting asynchronous messages setting of Websocket messaging component instance
+	 * @param {WsMessaging} instance Websocket messaging instance
+	 * @param {boolean} setting new setting
+	 */
 	private changeAcceptAsyncMsg(instance: WsMessaging, setting: boolean): void {
 		this.$store.commit('spinner/SHOW');
 		instance.acceptAsyncMsg = setting;
@@ -244,6 +282,9 @@ export default class WebsocketInterfaceList extends Vue {
 			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 
+	/**
+	 * Removes an existing instance of Websocket interface component
+	 */
 	private removeInterface(): void {
 		if (this.deleteInstance === null) {
 			return;

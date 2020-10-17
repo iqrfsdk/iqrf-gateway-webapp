@@ -26,15 +26,27 @@ import {IMappings} from '../../interfaces/mappings';
 	},
 })
 
+/**
+ * Interface configuration mapping
+ */
 export default class InterfaceMappings extends Vue {
+	/**
+	 * @var {IMappings} mappings dictionary of spi and uart mappings
+	 */
 	private mappings: IMappings = {
 		'spi': require('../../../app/ConfigModule/json/SpiPins.json'),
 		'uart': require('../../../app/ConfigModule/json/UartPins.json'),
 	}
 
-	@Prop({ required: true })
-	interfaceType!: string;
+	/**
+	 * @property {string} interfaceType communication interface type
+	 */
+	@Prop({ required: true }) interfaceType!: string;
 	
+	/**
+	 * Emits selected mapping to parent component to update form fields
+	 * @param {string} board board name
+	 */
 	private setMapping(board: string): void {
 		const mapping = this.mappings[this.interfaceType][board];
 		this.$emit('update-mapping', mapping);

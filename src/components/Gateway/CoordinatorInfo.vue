@@ -44,20 +44,61 @@ import {PeripheralEnumeration, OsInfo, TrMcu} from '../../interfaces/dpa';
 	},
 })
 
+/**
+ * Coordinator information block component for gateway information
+ */
 export default class CoordinatorInfo extends Vue {
+	/**
+	 * @constant {Array<string>} allowedMTypes Array of allowed daemon api messages
+	 */
 	private allowedMTypes: Array<string> = [
 		'iqmeshNetwork_EnumerateDevice',
 		'messageError'
 	]
+
+	/**
+	 * @var {PeripheralEnumeration|null} enumeration Peripheral enumeration of a device
+	 */
 	private enumeration: PeripheralEnumeration|null = null
+
+	/**
+	 * @var {boolean} hasData Indicates whether data has been fetched successfully
+	 */
 	private hasData = false
+
+	/**
+	 * @var {string|null} msgId Daemon api message id
+	 */
 	private msgId: string|null = null
+
+	/**
+	 * @var {OsInfo|null} osInfo Information about OS of a device
+	 */
 	private osInfo: OsInfo|null = null
+
+	/**
+	 * @var {boolean} requestRunning Indicates whether a daemon api request has been completed
+	 */
 	private requestRunning = false
-	private trMcuType: TrMcu|null = null 
+
+	/**
+	 * @var {TrMcu|null} trMcuType Information about transciever type
+	 */
+	private trMcuType: TrMcu|null = null
+
+	/**
+	 * Component unwatch function
+	 */
 	private unwatch: CallableFunction = () => {return;}
+
+	/**
+	 * Component unsubscribe function
+	 */
 	private unsubscribe: CallableFunction = () => {return;}
 
+	/**
+	 * Vue lifecycle hook created
+	 */
 	created(): void {
 		this.unsubscribe = this.$store.subscribe((mutation: MutationPayload) => {
 			if (mutation.type === 'SOCKET_ONMESSAGE') {
@@ -98,6 +139,9 @@ export default class CoordinatorInfo extends Vue {
 		}
 	}
 
+	/**
+	 * Vue lifecycle hook beforeDestroy
+	 */
 	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
 		if (this.unwatch !== undefined) {
@@ -106,12 +150,18 @@ export default class CoordinatorInfo extends Vue {
 		this.unsubscribe();
 	}
 
+	/**
+	 * Performs enumeration of the coordinator device
+	 */
 	private enumerate(): void {
 		IqrfNetService.enumerateDevice(0, 5000, 'iqrfnet.enumeration.messages.failure', () => this.timedOut())
 			.then((msgId: string) => this.msgId = msgId);
 		this.requestRunning = true;
 	}
 
+	/**
+	 * Daemon api request timeout handler
+	 */
 	private timedOut(): void {
 		this.requestRunning = false;
 		this.msgId = null;

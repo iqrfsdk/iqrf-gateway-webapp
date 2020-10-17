@@ -56,20 +56,37 @@ import PixlaService from '../../services/PixlaService';
 	},
 })
 
+/**
+ * Pixla token editor modal
+ */
 export default class PixlaTokenEditor extends Vue {
+	/**
+	 * @var {string} token pixla token
+	 */
 	private token = ''
 	
-	@Prop({ required: true })
-	show!: boolean;
+	/**
+	 * @property {boolean} show show modal
+	 */
+	@Prop({ required: true }) show!: boolean;
 	
+	/**
+	 * Vue lifecycle hook created
+	 */
 	created(): void {
 		extend('required', required);
 	}
 	
+	/**
+	 * Close pixla token editor modal
+	 */
 	private close(): void {
 		this.$emit('update:show', false);
 	}
 
+	/**
+	 * Sends REST API request to update pixla token
+	 */
 	private processSubmit(): void {
 		PixlaService.setToken(this.token)
 			.then(() => {
