@@ -102,9 +102,9 @@ class IqrfOsManager {
 	 * @param string|null $rfMode RF mode
 	 * @return array<string> Files to upload
 	 */
-	public function getFiles(IqrfOs $currentOs, string $toBuild, string $dpa, ?string $rfMode = null): array {
+	public function getFiles(IqrfOs $currentOs, string $toBuild, string $dpa, string $interface, ?string $rfMode = null): array {
 		$files = $this->getOsFiles($currentOs->getBuild(), $toBuild);
-		$files[] = $this->dpaManager->getFile($toBuild, $dpa, $currentOs->getTrSeries(), $rfMode);
+		$files[] = $this->dpaManager->getFile($toBuild, $dpa, $interface, $currentOs->getTrSeries(), $rfMode);
 		return $files;
 	}
 

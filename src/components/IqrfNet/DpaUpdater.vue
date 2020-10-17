@@ -37,6 +37,7 @@ import {required} from 'vee-validate/dist/rules';
 import {FileFormat} from '../../iqrfNet/fileFormat';
 import DpaService, { RFMode } from '../../services/IqrfRepository/DpaService';
 import OsService from '../../services/DaemonApi/OsService';
+import IqrfNetService from '../../services/IqrfNetService';
 import NativeUploadService from '../../services/NativeUploadService';
 import {MutationPayload} from 'vuex';
 import { WebSocketClientState } from '../../store/modules/webSocketClient.module';
@@ -66,6 +67,8 @@ export default class DpaUpdater extends Vue {
 		'iqrfEmbedOs_Read',
 		'mngDaemon_Upload'
 	]
+	private currentDpa: string|null = null
+	private interfaceType: string|null = null
 	private msgId: string|null = null
 	private osBuild: string|null = null
 	private trType: number|null = null
@@ -87,7 +90,7 @@ export default class DpaUpdater extends Vue {
 			this.$store.dispatch('removeMessage', this.msgId);
 			if (mutation.payload.mType === 'iqrfEmbedOs_Read') {
 				if (mutation.payload.data.status === 0) {
-					this.handleResponse(mutation.payload);
+					this.handleOsInfoResponse(mutation.payload);
 				} else {
 					this.$toast.error(
 						this.$t('iqrfnet.trUpload.messages.osInfoFail').toString()
@@ -101,6 +104,14 @@ export default class DpaUpdater extends Vue {
 				} else {
 					this.$toast.error(
 						this.$t('iqrfnet.trUpload.messages.failure').toString()
+					);
+				}
+			} else if (mutation.payload.mType === 'iqmeshNetwork_EnumerateDevice') {
+				if (mutation.payload.data.status === 0) {
+					this.interfaceType = mutation.payload.data.rsp.osRead.flags.interfaceType;
+				} else {
+					this.$toast.error(
+						this.$t('iqrfnet.enumeration.messages.failure').toString()
 					);
 				}
 			}
@@ -138,11 +149,17 @@ export default class DpaUpdater extends Vue {
 			.then((msgId: string) => this.msgId = msgId);
 	}
 
-	private handleResponse(response: any): void {
+	private getDeviceEnumeration(): void {
+		this.$store.dispatch('spinner/show', {timeout: 30000});
+		IqrfNetService.enumerateDevice(this.address, 30000, 'iqrfnet.enumeration.messages.failure', () => this.msgId = null)
+			.then((msgId: string) => this.msgId = msgId);
+	}
+
+	private handleOsInfoResponse(response: any): void {
 		const result = response.data.rsp.result;
 		this.osBuild = this.convertVersion(result.osBuild);
 		this.trType = result.trMcuType;
-		this.version = this.convertVersion(result.dpaVer);
+		this.currentDpa = this.convertVersion(result.dpaVer);
 		DpaService.getVersions(this.osBuild)
 			.then((versions) => {
 				for (const version of versions) {
@@ -163,7 +180,14 @@ export default class DpaUpdater extends Vue {
 						});
 					}
 				}
+				this.versions.forEach(item => {
+					if (this.currentDpa === item.value) {
+						Object.assign(item, {disabled: true});
+						Object.assign(item, {label: item.label + ' (Current version)'});
+					}
+				});
 				this.versions.sort().reverse();
+				this.getDeviceEnumeration();
 			})
 			.catch(() => {
 				this.$toast.error(
@@ -177,6 +201,7 @@ export default class DpaUpdater extends Vue {
 			return;
 		}
 		const request = {
+			'interfaceType': this.interfaceType,
 			'osBuild': this.osBuild,
 			'trSeries': this.trType,
 		};

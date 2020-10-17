@@ -72,18 +72,19 @@ class DpaManager {
 	 * Returns DPA file name
 	 * @param string $osBuild IQRF OS build number
 	 * @param string $dpaVersion DPA version
+	 * @param string $interface Communication interface
 	 * @param TrSeries $trSeries TR series
 	 * @param string|null $rfMode RF mode
 	 * @return string|null DPA file name
 	 */
-	public function getFile(string $osBuild, string $dpaVersion, TrSeries $trSeries, ?string $rfMode = null): ?string {
+	public function getFile(string $osBuild, string $dpaVersion, string $interface, TrSeries $trSeries, ?string $rfMode = null): ?string {
 		$path = $this->osDpaManager->get($osBuild, $dpaVersion)[0]->getDownloadPath();
 		$this->filesManager->setPath($path);
 		$files = $this->filesManager->list()->getFiles();
 		$filePrefixes = [
-			'GeneralHWP-Coordinator-' . $rfMode . '-SPI-' . $trSeries->toScalar() . '-',
-			'HWP-Coordinator-' . $rfMode . '-SPI-' . $trSeries->toScalar() . '-',
-			'DPA-Coordinator-SPI-' . $trSeries->toScalar() . '-',
+			'GeneralHWP-Coordinator-' . $rfMode . '-' . $interface . '-' . $trSeries->toScalar() . '-',
+			'HWP-Coordinator-' . $rfMode . '-' . $interface . '-' . $trSeries->toScalar() . '-',
+			'DPA-Coordinator-' . $interface . '-' . $trSeries->toScalar() . '-',
 		];
 		foreach ($files as $file) {
 			foreach ($filePrefixes as $filePrefix) {

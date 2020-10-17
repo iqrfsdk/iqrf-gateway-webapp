@@ -205,11 +205,12 @@ class IqrfController extends BaseController {
 		try {
 			$data = $request->getJsonBody();
 			$dpa = $data['dpa'];
+			$interface = $data['interfaceType'];
 			$rfMode = $data['rfMode'] ?? null;
 			if (hexdec(($dpa)) < 0x400 && $rfMode === null) {
 				throw new ClientErrorException('Missing RF mode for DPA Version < 4.00', ApiResponse::S400_BAD_REQUEST);
 			}
-			$fileName = $this->dpaManager->getFile($data['osBuild'], $dpa, TrSeries::fromTrMcuType($data['trSeries']), $rfMode);
+			$fileName = $this->dpaManager->getFile($data['osBuild'], $dpa, $interface, TrSeries::fromTrMcuType($data['trSeries']), $rfMode);
 			if ($fileName === null) {
 				throw new ClientErrorException('DPA file not found', ApiResponse::S404_NOT_FOUND);
 			}

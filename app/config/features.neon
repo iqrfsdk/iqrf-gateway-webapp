@@ -36,7 +36,7 @@ updater:
 	enabled: false
 # IQRF TR native upload
 trUpload:
-	enabled: false
+	enabled: true
 # Unattended upgrades
 unattendedUpgrades:
 	enabled: false

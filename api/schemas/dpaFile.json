@@ -7,7 +7,8 @@
 	"required": [
 		"osBuild",
 		"dpa",
-		"trSeries"
+		"trSeries",
+		"interfaceType"
 	],
 	"properties": {
 		"osBuild": {
@@ -28,6 +29,16 @@
 			"type": "integer",
 			"title": "TR series",
 			"example": 36
+		},
+		"interfaceType": {
+			"$id": "#/properties/interfaceType",
+			"type": "string",
+			"title": "Interface",
+			"enum": [
+				"SPI",
+				"UART"
+			],
+			"example": "SPI"
 		},
 		"rfMode": {
 			"$id": "#/properties/rfMode",
