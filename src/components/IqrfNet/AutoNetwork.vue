@@ -418,7 +418,7 @@ export default class AutoNetwork extends Vue {
 	}
 
 	private autoNetworkProgress(response): string {
-		let message = '\nWave ' + response.rsp.wave;
+		let message = '\n' + this.$t('iqrfnet.networkManager.messages.autoNetwork.statusWave').toString() + response.rsp.wave;
 		if (this.useWaves) {
 			message += '/ ' + this.stopConditions.waves;
 		}
@@ -427,10 +427,10 @@ export default class AutoNetwork extends Vue {
 			message += response.rsp.waveState;
 		}
 		if (response.rsp.nodesNr) {
-			this.messages.nodesTotal = '\nTotal number of nodes in network: ' + response.rsp.nodesNr;
+			this.messages.nodesTotal = '\n' + this.$t('iqrfnet.networkManager.messages.autoNetwork.statusTotalNodes').toString() + response.rsp.nodesNr;
 		}
 		if (response.rsp.newNodesNr) {
-			this.messages.nodesNew = '\nNumber of nodes added in last wave: ' + response.rsp.newNodesNr;
+			this.messages.nodesNew = '\n' + this.$t('iqrfnet.networkManager.messages.autoNetwork.statusAddedNodes').toString() + response.rsp.newNodesNr;
 		}
 		message += this.messages.nodesTotal + this.messages.nodesNew;
 		return message;
