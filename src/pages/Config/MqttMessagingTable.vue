@@ -63,14 +63,17 @@
 					<template #actions='{item}'>
 						<td class='col-actions'>
 							<CButton
-								color='primary'
+								color='info'
 								:to='"/config/mqtt/edit/" + item.instance'
 								size='sm'
 							>
 								<CIcon :content='icons.edit' size='sm' />
 								{{ $t('table.actions.edit') }}
-							</CButton>
-							<CButton color='danger' size='sm' @click='confirmDelete(item)'>
+							</CButton> <CButton 
+								color='danger' 
+								size='sm'
+								@click='confirmDelete(item)'
+							>
 								<CIcon :content='icons.delete' size='sm' />
 								{{ $t('table.actions.delete') }}
 							</CButton>

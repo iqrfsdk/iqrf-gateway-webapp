@@ -46,7 +46,7 @@
 					<template #actions='{item}'>
 						<td class='col-actions'>
 							<CButton
-								color='primary'
+								color='info'
 								:to='"/config/mq/edit/" + item.instance'
 								size='sm'
 							>

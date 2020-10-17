@@ -43,6 +43,7 @@ const InstallGatewayInfo = () => import(/* webpackChunkName: "install" */ '@/pag
 const MissingMigration = () => import(/* webpackChunkName: "install" */ '@/pages/Install/MissingMigration.vue');
 
 const ConfigDisambiguation = () => import(/* webpackChunkName: "config" */ '@/pages/Config/ConfigDisambiguation.vue');
+const IqrfDaemon = () => import(/* WebpackChunkName: "config" */ '@/pages/Config/IqrfDaemon.vue'); 
 const ConfigMigration = () => import(/* webpackChunkName: "config" */ '@/pages/Config/ConfigMigration.vue');
 const TranslatorConfig = () => import(/* webpackChunkName: "config" */ '@/pages/Config/TranslatorConfig.vue');
 const ControllerConfig = () => import(/* webpackChunkName: "config" */ '@/pages/Config/ControllerConfig.vue');
@@ -166,6 +167,10 @@ const routes: Array<RouteConfig> = [
 					{
 						component: ConfigDisambiguation,
 						path: '',
+					},
+					{
+						component: IqrfDaemon,
+						path: 'daemon'
 					},
 					{
 						component: MainConfiguration,

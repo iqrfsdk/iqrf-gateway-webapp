@@ -179,6 +179,10 @@
 				"readConfig": "Cannot read zip archive with a configuration."
 			}
 		},
+		"daemon": {
+			"title": "IQRF Daemon",
+			"description": "IQRF Daemon configuration"
+		},
 		"components": {
 			"title": "Components",
 			"description": "Manage components.",
@@ -1638,7 +1642,7 @@
 		}
 	},
 	"translatorConfig": {
-		"title": "Translator",
+		"title": "IQRF Translator",
 		"description": "Translator configuration",
 		"form": {
 			"rest": {
@@ -1677,7 +1681,7 @@
 		}
 	},
 	"controllerConfig": {
-		"title": "Controller",
+		"title": "IQRF Controller",
 		"description": "Controller configuration",
 		"form": {
 			"daemonApi": {

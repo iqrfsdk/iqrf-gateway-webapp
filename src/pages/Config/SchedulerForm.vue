@@ -303,7 +303,7 @@ export default class SchedulerForm extends Vue {
 							];
 						}
 					} else {
-						this.$router.push('/config/scheduler/');
+						this.$router.push('/config/daemon/');
 						this.$toast.error(
 							this.$t('config.scheduler.messages.getFail', {task: this.id})
 								.toString()

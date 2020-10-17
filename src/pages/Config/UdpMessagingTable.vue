@@ -29,7 +29,7 @@
 					<template #actions='{item}'>
 						<td class='col-actions'>
 							<CButton
-								color='primary'
+								color='info'
 								:to='"/config/udp/edit/" + item.instance'
 								size='sm'
 							>

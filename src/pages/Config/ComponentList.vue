@@ -56,8 +56,7 @@
 							>
 								<CIcon :content='icons.edit' size='sm' />
 								{{ $t('table.actions.edit') }}
-							</CButton>
-							<CButton
+							</CButton> <CButton
 								color='danger'
 								size='sm'
 								@click='component = item.name'
@@ -98,10 +97,10 @@ import {CButton, CCard, CCardBody, CCardHeader, CDataTable, CDropdown, CDropdown
 import {cilPencil, cilPlus, cilTrash} from '@coreui/icons';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
-import { MetaInfo } from 'vue-meta';
 import { IField } from '../../interfaces/coreui';
 import { AxiosError, AxiosResponse } from 'axios';
 import { Dictionary } from 'vue-router/types/router';
+import { MetaInfo } from 'vue-meta';
 
 interface ComponentItem {
 	enabled: boolean
@@ -127,7 +126,7 @@ interface ComponentItem {
 		return {
 			title: (this as unknown as ComponentList).pageTitle
 		};
-	},
+	}
 })
 
 export default class ComponentList extends Vue {
