@@ -2,7 +2,9 @@
 	<div>
 		<CCard>
 			<CCardHeader>
-				{{ $t('config.websocket.service.title') }}
+				<h3 class='float-left'>
+					{{ $t('config.websocket.service.title') }}
+				</h3>
 				<CButton
 					color='success'
 					size='sm'

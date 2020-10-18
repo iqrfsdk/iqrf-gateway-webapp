@@ -1,8 +1,10 @@
 <template>
 	<div>
-		<h1>{{ $t('config.scheduler.title') }}</h1>
 		<CCard>
 			<CCardHeader>
+				<h3 class='float-left'>
+					{{ $t('config.scheduler.title') }}
+				</h3>
 				<div class='float-right'>
 					<CButton
 						color='success'
@@ -242,7 +244,7 @@ export default class SchedulerList extends Vue {
 	private unsubscribe: CallableFunction = () => {return;}
 	private useRest = true
 
-	created(): void {
+	mounted(): void {
 		this.$store.commit('spinner/SHOW');
 		setTimeout(() => {
 			if (this.$store.state.webSocketClient.socket.isConnected) {

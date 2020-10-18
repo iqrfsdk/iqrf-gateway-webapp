@@ -108,7 +108,7 @@ export default class MqMessagingForm extends Vue {
 			this.$t('forms.add').toString() : this.$t('forms.save').toString();
 	}
 
-	created(): void {
+	mounted(): void {
 		extend('required', required);
 		if (this.instance !== null) {
 			this.getConfig();

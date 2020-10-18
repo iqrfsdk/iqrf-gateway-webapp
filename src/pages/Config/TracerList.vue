@@ -1,8 +1,10 @@
 <template>
 	<div>
-		<h1>{{ $t('config.tracer.title') }}</h1>
 		<CCard>
 			<CCardHeader>
+				<h3 class='float-left'>
+					{{ $t('config.tracer.title') }}
+				</h3>
 				<CButton
 					color='success'
 					size='sm'
@@ -120,7 +122,7 @@ export default class TracerList extends Vue {
 	private addModal = false
 	private editModal = false
 
-	private created(): void {
+	mounted(): void {
 		this.getConfig();
 	}
 

@@ -296,7 +296,7 @@ export default class MqttMessagingForm extends Vue {
 			this.$t('forms.add').toString() : this.$t('forms.save').toString();
 	}
 
-	created(): void {
+	mounted(): void {
 		extend('between', between);
 		extend('integer', integer);
 		extend('min', min_value);

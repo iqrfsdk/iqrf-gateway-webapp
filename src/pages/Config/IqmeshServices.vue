@@ -1,7 +1,11 @@
 <template>
 	<div>
-		<h1>{{ $t('config.iqmesh.title') }}</h1>
-		<OtaUpload />
+		<CCard>
+			<CCardHeader><h3>{{ $t('config.iqmesh.title') }}</h3></CCardHeader>
+			<CCardBody>
+				<OtaUpload />
+			</CCardBody>
+		</CCard>
 	</div>
 </template>
 

@@ -239,7 +239,7 @@ export default class SchedulerForm extends Vue {
 
 	@Prop({required: false, default: null}) id!: number
 
-	created(): void {
+	mounted(): void {
 		this.$store.commit('spinner/SHOW');
 		setTimeout(() => {
 			if (this.$store.state.webSocketClient.socket.isConnected) {

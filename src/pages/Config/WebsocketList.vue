@@ -1,6 +1,5 @@
 <template>
 	<div>
-		<h1>{{ $t('config.websocket.title') }}</h1>
 		<div v-if='powerUser'>
 			<WebsocketMessagingList />
 			<WebsocketServiceList />
@@ -31,7 +30,7 @@ import WebsocketServiceList from '../../components/Config/WebsocketServiceList.v
 export default class WebsocketList extends Vue {
 	private powerUser = false
 
-	created(): void {
+	mounted(): void {
 		if (this.$store.getters['user/getRole'] === 'power') {
 			this.powerUser = true;
 		}

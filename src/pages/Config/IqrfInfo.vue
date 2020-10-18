@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<h1>{{ $t('config.iqrfInfo.title') }}</h1>
 		<CCard>
+			<CCardHeader><h3>{{ $t('config.iqrfInfo.title') }}</h3></CCardHeader>
 			<CCardBody>
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
@@ -95,7 +95,7 @@ export default class IqrfInfo extends Vue {
 		enumUniformDpaVer: false,
 	}
 
-	created(): void {
+	mounted(): void {
 		extend('integer', integer);
 		extend('min', min_value);
 		extend('required', required);

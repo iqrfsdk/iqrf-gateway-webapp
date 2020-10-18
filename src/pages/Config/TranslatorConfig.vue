@@ -227,7 +227,7 @@ export default class TranslatorConfig extends Vue {
 		shown: cilLockUnlocked
 	}
 
-	created(): void {
+	mounted(): void {
 		extend('between', between);
 		extend('integer', integer);
 		extend('required', required);

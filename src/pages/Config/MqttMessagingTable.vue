@@ -1,8 +1,10 @@
 <template>
 	<div>
-		<h1>{{ $t('config.mqtt.title') }}</h1>
 		<CCard>
 			<CCardHeader>
+				<h3 class='float-left'>
+					{{ $t('config.mqtt.title') }}
+				</h3>
 				<CButton
 					color='success'
 					to='/config/mqtt/add'
@@ -195,7 +197,7 @@ export default class MqttMessagingTable extends Vue {
 	}
 	private instances: Array<MqttInstance> = []
 
-	created(): void {
+	mounted(): void {
 		this.$store.commit('spinner/SHOW');
 		this.getInstances();
 	}

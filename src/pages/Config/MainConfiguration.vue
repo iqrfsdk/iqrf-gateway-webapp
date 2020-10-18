@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<h1>{{ $t('config.main.title') }}</h1>
 		<CCard>
+			<CCardHeader><h3>{{ $t('config.main.title') }}</h3></CCardHeader>
 			<CCardBody>
 				<CForm @submit.prevent='saveConfig'>
 					<CInput
@@ -82,7 +82,7 @@ export default class MainConfiguration extends Vue {
 		userDir: null
 	}
 	
-	created(): void {
+	mounted(): void {
 		this.getConfig();
 	}
 

@@ -196,7 +196,7 @@ export default class TracerForm extends Vue {
 			this.$t('forms.add').toString() : this.$t('forms.edit').toString();
 	}
 
-	created(): void {
+	mounted(): void {
 		extend('integer', integer);
 		extend('min', min_value);
 		extend('required', required);

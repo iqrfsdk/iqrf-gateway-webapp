@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<h1>{{ $t('config.jsonMngMetaDataApi.title') }}</h1>
 		<CCard>
+			<CCardHeader><h3>{{ $t('config.jsonMngMetaDataApi.title') }}</h3></CCardHeader>
 			<CCardBody>
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
@@ -69,7 +69,7 @@ export default class JsonMngMetaDataApi extends Vue {
 		metaDataToMessages: false,
 	}
 
-	created(): void {
+	mounted(): void {
 		extend('required', required);
 		this.getConfig();
 	}

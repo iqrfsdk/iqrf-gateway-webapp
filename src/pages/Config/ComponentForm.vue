@@ -126,7 +126,7 @@ export default class ComponentForm extends Vue {
 			this.$t('forms.add').toString() : this.$t('forms.edit').toString();
 	}
 
-	created(): void {
+	mounted(): void {
 		extend('integer', integer);
 		extend('required', required);
 		if (this.component !== null) {

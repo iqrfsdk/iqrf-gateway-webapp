@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<h1>{{ $t('config.iqrfSpi.title') }}</h1>
 		<CCard>
+			<CCardHeader><h3>{{ $t('config.iqrfSpi.title') }}</h3></CCardHeader>
 			<CCardBody>
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
@@ -164,7 +164,7 @@ export default class IqrfSpi extends Vue {
 	}
 	private instance: string|null = null
 
-	created(): void {
+	mounted(): void {
 		extend('integer', integer);
 		extend('required', required);
 		this.getConfig();

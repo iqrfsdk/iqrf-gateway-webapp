@@ -181,7 +181,17 @@
 		},
 		"daemon": {
 			"title": "IQRF Daemon",
-			"description": "IQRF Daemon configuration"
+			"description": "IQRF Daemon configuration",
+			"tabs": {
+				"interfaces": "Interfaces",
+				"messaging": "Messaging",
+				"scheduler": "Scheduler",
+				"other": "Other"
+			},
+			"form": {
+				"interface": "Select IQRF interface",
+				"messaging": "Select Messaging"
+			}
 		},
 		"components": {
 			"title": "Components",

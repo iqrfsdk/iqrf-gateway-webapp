@@ -305,7 +305,7 @@ export default class ControllerConfig extends Vue {
 	private name = 'controller'
 	private config: ControllerBase|null = null
 
-	created(): void {
+	mounted(): void {
 		extend('between', between);
 		extend('integer', integer);
 		extend('required', required);

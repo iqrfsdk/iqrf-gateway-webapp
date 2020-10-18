@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<h1>{{ $t('config.migration.title') }}</h1>
 		<CCard>
+			<CCardHeader><h3>{{ $t('config.migration.title') }}</h3></CCardHeader>
 			<CCardBody>
 				<CForm>
 					<div class='form-group'>

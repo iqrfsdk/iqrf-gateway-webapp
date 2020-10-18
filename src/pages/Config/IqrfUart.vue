@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<h1>{{ $t('config.iqrfUart.title') }}</h1>
 		<CCard>
+			<CCardHeader><h3>{{ $t('config.iqrfUart.title') }}</h3></CCardHeader>
 			<CCardBody>
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
@@ -169,7 +169,7 @@ export default class IqrfUart extends Vue {
 		return baudRates.map((baudRate: number) => ({value: baudRate, label: baudRate + ' Bd'}));
 	}
 	
-	created(): void {
+	mounted(): void {
 		extend('integer', integer);
 		extend('required', required);
 		this.getConfig();

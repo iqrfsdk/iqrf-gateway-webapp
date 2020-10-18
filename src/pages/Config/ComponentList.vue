@@ -1,13 +1,16 @@
 <template>
 	<div>
-		<h1 v-if='$store.getters["user/getRole"] === "power"'>
-			{{ $t('config.components.title') }}
-		</h1>
-		<h1 v-else>
-			{{ $t('config.selectedComponents.title') }}
-		</h1>
 		<CCard>
 			<CCardHeader>
+				<h3 
+					v-if='$store.getters["user/getRole"] === "power"'
+					class='float-left'
+				>
+					{{ $t('config.components.title') }}
+				</h3>
+				<h3 v-else class='float-left'>
+					{{ $t('config.selectedComponents.title') }}
+				</h3>
 				<CButton
 					color='success'
 					size='sm'

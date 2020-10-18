@@ -1,74 +1,59 @@
 <template>
-	<CTabs variant='pills' :active-tab='activeTab' :vertical='{content: "col-lg"}'>
-		<CTab v-if='powerUser' :title='$t("config.main.title")'>
-			<MainConfiguration />
-		</CTab>
-		<CTab v-if='powerUser' :title='$t("config.components.title")'>
-			<ComponentList />
-		</CTab>
-		<CTab v-else :title='$t("config.selectedComponents.title")'>
-			<ComponentList />
-		</CTab>
-		<CTab :title='$t("config.iqrfSpi.title")'>
-			<IqrfSpi />
-		</CTab>
-		<CTab :title='$t("config.iqrfCdc.title")'>
-			<IqrfCdc />
-		</CTab>
-		<CTab :title='$t("config.iqrfUart.title")'>
-			<IqrfUart />
-		</CTab>
-		<CTab :title='$t("config.iqrfDpa.title")'>
-			<IqrfDpa />
-		</CTab>
-		<CTab :title='$t("config.iqrfRepository.title")'>
-			<IqrfRepository />
-		</CTab>
-		<CTab :title='$t("config.iqrfInfo.title")'>
-			<IqrfInfo />
-		</CTab>
-		<CTab :title='$t("config.iqmesh.title")'>
-			<IqmeshServices />
-		</CTab>
-		<CTab :title='$t("config.mqtt.title")'>
-			<MqttMessagingTable />
-		</CTab>
-		<CTab :title='$t("config.websocket.title")'>
-			<WebsocketList />
-		</CTab>
-		<CTab :title='$t("config.mq.title")'>
-			<MqMessagingTable />
-		</CTab>
-		<CTab :title='$t("config.udp.title")'>
-			<UdpMessagingTable />
-		</CTab>
-		<CTab v-if='powerUser' :title='$t("config.jsonRawApi.title")'>
-			<JsonRawApi />
-		</CTab>
-		<CTab :title='$t("config.jsonMngMetaDataApi.title")'>
-			<JsonMngMetaDataApi />
-		</CTab>
-		<CTab v-if='powerUser' :title='$t("config.jsonSplitter.title")'>
-			<JsonSplitter />
-		</CTab>
-		<CTab :title='$t("config.scheduler.title")'>
-			<SchedulerList />
-		</CTab>
-		<CTab :title='$t("config.tracer.title")'>
-			<TracerList />
-		</CTab>
-		<CTab :title='$t("config.monitor.title")'>
-			<MonitorList />
-		</CTab>
-		<CTab :title='$t("config.migration.title")'>
-			<ConfigMigration />
-		</CTab>
-	</CTabs>
+	<CCard>
+		<CTabs variant='tabs' :active-tab='activeTab'>
+			<CTab :title='$t("config.daemon.tabs.interfaces")'>
+				<CCard body-wrapper class='border-0'>
+					<CSelect
+						:value.sync='interfaceOption'
+						:options='interfaceSelect'
+						:label='$t("config.daemon.form.interface")'
+					/>
+					<IqrfSpi v-if='interfaceOption === "spi"' />
+					<IqrfCdc v-if='interfaceOption === "cdc"' />
+					<IqrfUart v-if='interfaceOption === "uart"' />
+				</CCard>
+			</CTab>
+			<CTab :title='$t("config.daemon.tabs.messaging")'>
+				<CCard body-wrapper class='border-0'>
+					<CSelect
+						:value.sync='messagingOption'
+						:options='messagingSelect'
+						:label='$t("config.daemon.form.messaging")'
+					/>
+					<MqttMessagingTable v-if='messagingOption === "mqtt"' />
+					<WebsocketList v-if='messagingOption === "ws"' />
+					<MqMessagingTable v-if='messagingOption === "mq"' />
+					<UdpMessagingTable v-if='messagingOption === "udp"' />
+				</CCard>
+			</CTab>
+			<CTab :title='$t("config.daemon.tabs.scheduler")'>
+				<CCard body-wrapper class='border-0'>
+					<SchedulerList />
+				</CCard>
+			</CTab>
+			<CTab :title='$t("config.daemon.tabs.other")'>
+				<CCard body-wrapper class='border-0'>
+					<MainConfiguration v-if='powerUser' />
+					<ComponentList />
+					<IqrfDpa />
+					<IqrfRepository />
+					<IqrfInfo />
+					<IqmeshServices />
+					<JsonRawApi />
+					<JsonMngMetaDataApi />
+					<JsonSplitter />
+					<TracerList />
+					<MonitorList />
+					<ConfigMigration />
+				</CCard>
+			</CTab>
+		</CTabs>
+	</CCard>
 </template>
 
 <script lang='ts'>
 import {Component, Vue} from 'vue-property-decorator';
-import {CCard, CTab, CTabs} from '@coreui/vue/src';
+import {CCard, CForm, CSelect, CTab, CTabs} from '@coreui/vue/src';
 import MainConfiguration from '../../pages/Config/MainConfiguration.vue';
 import ComponentList from '../../pages/Config/ComponentList.vue';
 import IqrfSpi from '../../pages/Config/IqrfSpi.vue';
@@ -89,10 +74,13 @@ import SchedulerList from '../../pages/Config/SchedulerList.vue';
 import TracerList from '../../pages/Config/TracerList.vue';
 import MonitorList from '../../pages/Config/MonitorList.vue';
 import ConfigMigration from '../../pages/Config/ConfigMigration.vue';
+import { IOption } from '../../interfaces/coreui';
 
 @Component({
 	components: {
 		CCard,
+		CForm,
+		CSelect,
 		CTab,
 		CTabs,
 		ComponentList,
@@ -124,8 +112,42 @@ import ConfigMigration from '../../pages/Config/ConfigMigration.vue';
 export default class IqrfDaemon extends Vue {
 	private activeTab = 0
 	private powerUser = false;
+	private interfaceOption = 'spi'
+	private interfaceSelect: Array<IOption> = [
+		{
+			value: 'spi',
+			label: this.$t('config.iqrfSpi.title').toString()
+		},
+		{
+			value: 'cdc',
+			label: this.$t('config.iqrfCdc.title').toString()
+		},
+		{
+			value: 'uart',
+			label: this.$t('config.iqrfUart.title').toString()
+		}
+	]
+	private messagingOption = 'mqtt'
+	private messagingSelect: Array<IOption> = [
+		{
+			value: 'mqtt',
+			label: this.$t('config.mqtt.title').toString()
+		},
+		{
+			value: 'ws',
+			label: this.$t('config.websocket.title').toString()
+		},
+		{
+			value: 'mq',
+			label: this.$t('config.mq.title').toString()
+		},
+		{
+			value: 'udp',
+			label: this.$t('config.udp.title').toString()
+		}
+	]
 
-	created(): void {
+	mounted(): void {
 		if (this.$store.getters['user/getRole'] === 'power') {
 			this.powerUser = true;
 		}

@@ -1,8 +1,10 @@
 <template>
 	<div>
-		<h1>{{ $t('config.monitor.title') }}</h1>
 		<CCard>
 			<CCardHeader>
+				<h3 class='float-left'>
+					{{ $t('config.monitor.title') }}
+				</h3>
 				<CButton
 					color='success'
 					size='sm'
@@ -156,9 +158,9 @@ export default class MonitorList extends Vue {
 		edit: cilPencil,
 		remove: cilTrash,
 	}
-	private instances: Array<unknown> = []
+	private instances: Array<unknown>|null = null
 
-	created(): void {
+	mounted(): void {
 		this.$store.commit('spinner/SHOW');
 		this.getConfig();
 	}
@@ -183,6 +185,9 @@ export default class MonitorList extends Vue {
 					for (const webSocket of webSockets) {
 						if (webSocket.instance !== webSocketInstance) {
 							continue;
+						}
+						if (this.instances === null) {
+							return;
 						}
 						this.instances.push({
 							monitor: monitor,

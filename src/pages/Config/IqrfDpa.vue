@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<h1>{{ $t('config.iqrfDpa.title') }}</h1>
 		<CCard>
+			<CCardHeader><h3>{{ $t('config.iqrfDpa.title') }}</h3></CCardHeader>
 			<CCardBody>
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
@@ -82,7 +82,7 @@ export default class IqrfDpa extends Vue {
 	}
 	private instance: string|null = null
 
-	created(): void {
+	mounted(): void {
 		extend('integer', integer);
 		extend('min', min_value);
 		extend('required', required);

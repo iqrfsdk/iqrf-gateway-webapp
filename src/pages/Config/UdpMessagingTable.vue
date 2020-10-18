@@ -1,9 +1,12 @@
 <template>
 	<div>
-		<h1>{{ $t('config.udp.title') }}</h1>
 		<CCard>
-			<CCardHeader v-if='instances.length < 1'>
-				<CButton
+			<CCardHeader>
+				<h3 class='float-left'>
+					{{ $t('config.udp.title') }}
+				</h3>
+				<CButton 
+					v-if='instances.length < 1'
 					color='success'
 					to='/config/udp/add'
 					size='sm'
@@ -147,7 +150,7 @@ export default class UdpMessagingTable extends Vue {
 	}
 	private instances: Array<UdpInstance> = []
 
-	created(): void {
+	mounted(): void {
 		this.$store.commit('spinner/SHOW');
 		this.getInstances();
 	}

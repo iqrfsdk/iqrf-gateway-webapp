@@ -148,7 +148,7 @@ export default class MenderConfig extends Vue {
 	}
 	private name = 'mender'
 
-	created(): void {
+	mounted(): void {
 		extend('integer', integer);
 		extend('required', required);
 		extend('min', min_value);

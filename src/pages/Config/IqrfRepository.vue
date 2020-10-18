@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<h1>{{ $t('config.iqrfRepository.title') }}</h1>
 		<CCard>
+			<CCardHeader><h3>{{ $t('config.iqrfRepository.title') }}</h3></CCardHeader>
 			<CCardBody>
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
@@ -103,7 +103,7 @@ export default class IqrfRepository extends Vue {
 		downloadIfRepoCacheEmpty: true,
 	}
 
-	created(): void {
+	mounted(): void {
 		extend('integer', integer);
 		extend('min', min_value);
 		extend('required', required);

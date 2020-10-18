@@ -1,8 +1,10 @@
 <template>
 	<div>
-		<h1>{{ $t('config.mq.title') }}</h1>
 		<CCard>
 			<CCardHeader>
+				<h3 class='float-left'>
+					{{ $t('config.mq.title') }}
+				</h3>
 				<CButton
 					color='success'
 					to='/config/mq/add'
@@ -171,7 +173,7 @@ export default class MqMessagingTable extends Vue {
 	}
 	private instances: Array<MqInstance> = []
 
-	created(): void {
+	mounted(): void {
 		this.$store.commit('spinner/SHOW');
 		this.getInstances();
 	}
