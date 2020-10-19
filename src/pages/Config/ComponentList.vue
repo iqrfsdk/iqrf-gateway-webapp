@@ -12,6 +12,7 @@
 					{{ $t('config.selectedComponents.title') }}
 				</h3>
 				<CButton
+					v-if='$store.getters["user/getRole"] === "power"'
 					color='success'
 					size='sm'
 					class='float-right'

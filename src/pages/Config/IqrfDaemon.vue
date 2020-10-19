@@ -1,9 +1,20 @@
 <template>
 	<CCard>
 		<CTabs variant='tabs' :active-tab='activeTab'>
+			<CTab v-if='powerUser' :title='$t("config.main.title")'>
+				<CCard body-wrapper class='border-0'>
+					<MainConfiguration />
+				</CCard>
+			</CTab>
+			<CTab :title='$t("config.components.title")'>
+				<CCard body-wrapper class='border-0'>
+					<ComponentList />
+				</CCard>
+			</CTab>
 			<CTab :title='$t("config.daemon.tabs.interfaces")'>
 				<CCard body-wrapper class='border-0'>
 					<CSelect
+						color='primary'
 						:value.sync='interfaceOption'
 						:options='interfaceSelect'
 						:label='$t("config.daemon.form.interface")'
@@ -11,6 +22,7 @@
 					<IqrfSpi v-if='interfaceOption === "spi"' />
 					<IqrfCdc v-if='interfaceOption === "cdc"' />
 					<IqrfUart v-if='interfaceOption === "uart"' />
+					<IqrfDpa />
 				</CCard>
 			</CTab>
 			<CTab :title='$t("config.daemon.tabs.messaging")'>
@@ -33,9 +45,6 @@
 			</CTab>
 			<CTab :title='$t("config.daemon.tabs.other")'>
 				<CCard body-wrapper class='border-0'>
-					<MainConfiguration v-if='powerUser' />
-					<ComponentList />
-					<IqrfDpa />
 					<IqrfRepository />
 					<IqrfInfo />
 					<IqmeshServices />
@@ -44,7 +53,6 @@
 					<JsonSplitter />
 					<TracerList />
 					<MonitorList />
-					<ConfigMigration />
 				</CCard>
 			</CTab>
 		</CTabs>

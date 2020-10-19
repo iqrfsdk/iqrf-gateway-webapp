@@ -57,6 +57,7 @@
 								:label='$t("config.iqrfSpi.form.busEnableGpioPin")'
 								:is-valid='touched ? valid : null'
 								:invalid-feedback='$t(errors[0])'
+								:disabled='true'
 							/>
 						</ValidationProvider>
 						<ValidationProvider

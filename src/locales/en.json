@@ -164,7 +164,7 @@
 		"description": "Edit configuration.",
 		"success": "The configuration has been saved successfully.",
 		"migration": {
-			"title": "Configuration migration",
+			"title": "Migration",
 			"description": "Migration of IQRF Gateway Daemon's configuration",
 			"form": {
 				"importButton": "Configuration to import",
@@ -184,12 +184,12 @@
 			"description": "IQRF Daemon configuration",
 			"tabs": {
 				"interfaces": "Interfaces",
-				"messaging": "Messaging",
+				"messaging": "Messagings",
 				"scheduler": "Scheduler",
 				"other": "Other"
 			},
 			"form": {
-				"interface": "Select IQRF interface",
+				"interface": "Select interface",
 				"messaging": "Select Messaging"
 			}
 		},
@@ -560,10 +560,10 @@
 			}
 		},
 		"tracer": {
-			"title": "Tracer file",
-			"description": "Tracer file settings.",
-			"add": "Add tracer file configuration",
-			"edit": "Edit tracer file configuration",
+			"title": "Logging service",
+			"description": "Logging service settings.",
+			"add": "Add logging service configuration",
+			"edit": "Edit logging service configuration",
 			"form": {
 				"instance": "Instance name",
 				"path": "Path to directory with logs",
