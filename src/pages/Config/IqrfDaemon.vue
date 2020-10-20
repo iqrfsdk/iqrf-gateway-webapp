@@ -8,20 +8,21 @@
 			</CTab>
 			<CTab :title='$t("config.components.title")'>
 				<CCard body-wrapper class='border-0'>
-					<ComponentList />
+					<ComponentList @update-interface='getConfig' />
 				</CCard>
 			</CTab>
 			<CTab :title='$t("config.daemon.tabs.interfaces")'>
 				<CCard body-wrapper class='border-0'>
 					<CSelect
+						v-if='powerUser'
 						color='primary'
 						:value.sync='interfaceOption'
 						:options='interfaceSelect'
 						:label='$t("config.daemon.form.interface")'
 					/>
-					<IqrfSpi v-if='interfaceOption === "spi"' />
-					<IqrfCdc v-if='interfaceOption === "cdc"' />
-					<IqrfUart v-if='interfaceOption === "uart"' />
+					<IqrfSpi v-if='getInterface === "iqrf::IqrfSpi"' />
+					<IqrfCdc v-if='getInterface === "iqrf::IqrfCdc"' />
+					<IqrfUart v-if='getInterface === "iqrf::IqrfUart"' />
 					<IqrfDpa />
 				</CCard>
 			</CTab>
@@ -47,10 +48,11 @@
 				<CCard body-wrapper class='border-0'>
 					<IqrfRepository />
 					<IqrfInfo />
-					<IqmeshServices />
-					<JsonRawApi />
-					<JsonMngMetaDataApi />
-					<JsonSplitter />
+					<IqmeshServices v-if='powerUser' />
+					<JsonRawApi v-if='powerUser' />
+					<JsonMngMetaDataApi v-if='powerUser' />
+					<JsonSplitter v-if='powerUser' />
+					<JsonApi v-if='!powerUser' />
 					<TracerList />
 					<MonitorList />
 				</CCard>
@@ -78,11 +80,23 @@ import UdpMessagingTable from '../../pages/Config/UdpMessagingTable.vue';
 import JsonRawApi from '../../pages/Config/JsonRawApi.vue';
 import JsonMngMetaDataApi from '../../pages/Config/JsonMngMetaDataApi.vue';
 import JsonSplitter from '../../pages/Config/JsonSplitter.vue';
+import JsonApi from '../../pages/Config/JsonApi.vue';
 import SchedulerList from '../../pages/Config/SchedulerList.vue';
 import TracerList from '../../pages/Config/TracerList.vue';
 import MonitorList from '../../pages/Config/MonitorList.vue';
 import ConfigMigration from '../../pages/Config/ConfigMigration.vue';
 import { IOption } from '../../interfaces/coreui';
+import DaemonConfigurationService from '../../services/DaemonConfigurationService';
+import { AxiosError, AxiosResponse } from 'axios';
+import FormErrorHandler from '../../helpers/FormErrorHandler';
+
+interface ComponentItem {
+	enabled: boolean
+	libraryName: string
+	libraryPath: string
+	name: string
+	startLevel: number
+}
 
 @Component({
 	components: {
@@ -100,6 +114,7 @@ import { IOption } from '../../interfaces/coreui';
 		IqrfRepository,
 		IqrfSpi,
 		IqrfUart,
+		JsonApi,
 		JsonMngMetaDataApi,
 		JsonRawApi,
 		JsonSplitter,
@@ -120,18 +135,18 @@ import { IOption } from '../../interfaces/coreui';
 export default class IqrfDaemon extends Vue {
 	private activeTab = 0
 	private powerUser = false;
-	private interfaceOption = 'spi'
+	private interfaceOption = 'iqrf::IqrfSpi'
 	private interfaceSelect: Array<IOption> = [
 		{
-			value: 'spi',
+			value: 'iqrf::IqrfSpi',
 			label: this.$t('config.iqrfSpi.title').toString()
 		},
 		{
-			value: 'cdc',
+			value: 'iqrf::IqrfCdc',
 			label: this.$t('config.iqrfCdc.title').toString()
 		},
 		{
-			value: 'uart',
+			value: 'iqrf::IqrfUart',
 			label: this.$t('config.iqrfUart.title').toString()
 		}
 	]
@@ -159,6 +174,32 @@ export default class IqrfDaemon extends Vue {
 		if (this.$store.getters['user/getRole'] === 'power') {
 			this.powerUser = true;
 		}
+		this.getConfig();
+	}
+
+	get getInterface(): string {
+		return this.interfaceOption;
+	}
+
+	private getConfig(): void {
+		this.$store.commit('spinner/SHOW');
+		DaemonConfigurationService.getComponent('')
+			.then((response: AxiosResponse) => {
+				this.$store.commit('spinner/HIDE');
+				const whitelistedComponents = ['iqrf::IqrfCdc', 'iqrf::IqrfSpi', 'iqrf::IqrfUart'];
+				const components = response.data.components.filter((component: ComponentItem) => {
+					if (whitelistedComponents.includes(component.name)) {
+						return component;
+					}
+				});
+				for (let item of components) {
+					if (item.enabled) {
+						this.interfaceOption = item.name;
+						return;
+					}
+				}
+			})
+			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}
 }
 </script>

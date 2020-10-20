@@ -6,6 +6,7 @@
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
 						<ValidationProvider
+							v-if='powerUser'
 							v-slot='{ errors, touched, valid }'
 							rules='required'
 							:custom-messages='{required: "config.iqrfDpa.form.messages.instance"}'
@@ -68,10 +69,7 @@ interface IqrfDpaConfig {
 		CInput,
 		ValidationObserver,
 		ValidationProvider
-	},
-	metaInfo: {
-		title: 'config.iqrfDpa.title',
-	},
+	}
 })
 
 export default class IqrfDpa extends Vue {
@@ -81,11 +79,15 @@ export default class IqrfDpa extends Vue {
 		DpaHandlerTimeout: 500,
 	}
 	private instance: string|null = null
+	private powerUser = false
 
 	mounted(): void {
 		extend('integer', integer);
 		extend('min', min_value);
 		extend('required', required);
+		if (this.$store.getters['user/getRole'] === 'power') {
+			this.powerUser = true;
+		}
 		this.getConfig();
 	}
 

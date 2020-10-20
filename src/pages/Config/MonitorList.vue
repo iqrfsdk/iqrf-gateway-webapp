@@ -116,9 +116,6 @@ import { AxiosError, AxiosResponse } from 'axios';
 		CDropdownItem,
 		CIcon,
 		CModal,
-	},
-	metaInfo: {
-		title: 'config.monitor.title'
 	}
 })
 

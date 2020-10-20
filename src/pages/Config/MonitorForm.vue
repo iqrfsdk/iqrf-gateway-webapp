@@ -172,7 +172,7 @@ export default class MonitorForm extends Vue {
 					});
 			})
 			.catch((error: AxiosError) => {
-				this.$router.push('/config/monitor/');
+				this.$router.push('/config/daemon/');
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -208,7 +208,7 @@ export default class MonitorForm extends Vue {
 	}
 
 	private successfulSave() {
-		this.$router.push('/config/monitor/');
+		this.$router.push('/config/daemon/');
 		this.$store.commit('spinner/HIDE');
 		if (this.$route.path === '/config/monitor/add') {
 			this.$toast.success(

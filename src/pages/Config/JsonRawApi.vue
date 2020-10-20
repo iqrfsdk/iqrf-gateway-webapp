@@ -55,9 +55,6 @@ interface JsonRawApiConfig {
 		CInputCheckbox,
 		ValidationObserver,
 		ValidationProvider
-	},
-	metaInfo: {
-		title: 'config.jsonRawApi.title'
 	}
 })
 

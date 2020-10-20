@@ -142,7 +142,7 @@ export default class ComponentForm extends Vue {
 				this.configuration = response.data.configuration;
 			})
 			.catch((error: AxiosError) => {
-				this.$router.push('/config/component/');
+				this.$router.push('/config/daemon/');
 				FormErrorHandler.configError(error);
 			});
 	}

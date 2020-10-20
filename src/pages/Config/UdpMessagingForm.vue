@@ -130,7 +130,7 @@ export default class UdpMessagingForm extends Vue {
 				this.configuration = response.data;
 			})
 			.catch((error: AxiosError) => {
-				this.$router.push('/config/udp/');
+				this.$router.push('/config/daemon/');
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -149,7 +149,7 @@ export default class UdpMessagingForm extends Vue {
 	}
 
 	private successfulSave(): void {
-		this.$router.push('/config/udp/');
+		this.$router.push('/config/daemon/');
 		this.$store.commit('spinner/HIDE');
 		if (this.$route.path === '/config/udp/add') {
 			this.$toast.success(

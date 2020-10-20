@@ -133,7 +133,7 @@ export default class MonitorForm extends Vue {
 					});
 			})
 			.catch((error: AxiosError) => {
-				this.$router.push('/config/websocket/');
+				this.$router.push('/config/daemon/');
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -168,7 +168,7 @@ export default class MonitorForm extends Vue {
 		}
 	}
 	private successfulSave(): void {
-		this.$router.push('/config/websocket/');
+		this.$router.push('/config/daemon/');
 		this.$store.commit('spinner/HIDE');
 		if (this.$route.path === '/config/websocket/add') {
 			this.$toast.success(

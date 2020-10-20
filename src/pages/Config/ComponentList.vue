@@ -104,7 +104,6 @@ import FormErrorHandler from '../../helpers/FormErrorHandler';
 import { IField } from '../../interfaces/coreui';
 import { AxiosError, AxiosResponse } from 'axios';
 import { Dictionary } from 'vue-router/types/router';
-import { MetaInfo } from 'vue-meta';
 
 interface ComponentItem {
 	enabled: boolean
@@ -125,11 +124,6 @@ interface ComponentItem {
 		CDropdownItem,
 		CIcon,
 		CModal,
-	},
-	metaInfo(): MetaInfo {
-		return {
-			title: (this as unknown as ComponentList).pageTitle
-		};
 	}
 })
 
@@ -206,13 +200,40 @@ export default class ComponentList extends Vue {
 			.catch((error) => FormErrorHandler.configError(error));
 	}
 
+	private multipleIqrfInterfaces(enabledComponent: string): boolean|void {
+		if (this.components === null) {
+			return;
+		}
+		let interfaceCount = 0;
+		this.components.forEach((item: ComponentItem) => {
+			if (item.name === 'iqrf::IqrfCdc' || item.name === 'iqrf::IqrfSpi' || item.name === 'iqrf::IqrfUart') {
+				if (item.enabled && item.name !== enabledComponent) {
+					interfaceCount += 1;
+				}
+			}
+		});
+		if (interfaceCount > 0) {
+			return false;
+		}
+		return true;
+	}
+
 	private changeEnabled(component: ComponentItem, enabled: boolean): void {
 		if (component.enabled !== enabled) {
+			if (!this.multipleIqrfInterfaces(component.name)) {
+				this.$toast.info(
+					this.$t('config.components.form.messages.multipleInterfaces').toString()
+				);
+				return;
+			}
 			component.enabled = enabled;
 			DaemonConfigurationService.updateComponent(component.name, component)
 				.then(() => {
 					this.getConfig().then(() => {
 						this.$toast.success(this.$t('config.components.form.messages.editSuccess', {component: component.name}).toString());
+						if (component.name === 'iqrf::IqrfCdc' || component.name === 'iqrf::IqrfSpi' || component.name === 'iqrf::IqrfUart') {
+							this.$emit('update-interface');
+						}
 					});
 				})
 				.catch((error: AxiosError) => FormErrorHandler.configError(error));

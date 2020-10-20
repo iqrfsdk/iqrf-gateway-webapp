@@ -5,7 +5,8 @@
 			<CCardBody>
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
-						<ValidationProvider
+						<ValidationProvider 
+							v-if='powerUser'
 							v-slot='{ errors, touched, valid }'
 							rules='required'
 							:custom-messages='{required: "config.iqrfRepository.form.messages.instance"}'
@@ -71,8 +72,8 @@ import FormErrorHandler from '../../helpers/FormErrorHandler';
 import DaemonConfigurationService	from '../../services/DaemonConfigurationService';
 
 interface IqrfRepositoryConfig {
-	instance: string|null
-	urlRepo: string|null
+	instance: string
+	urlRepo: string
 	checkPeriodInMinutes: number
 	downloadIfRepoCacheEmpty: boolean
 }
@@ -87,26 +88,27 @@ interface IqrfRepositoryConfig {
 		CInputCheckbox,
 		ValidationObserver,
 		ValidationProvider,
-	},
-	metaInfo: {
-		title: 'config.iqrfRepository.title',
-	},
+	}
 })
 
 export default class IqrfRepository extends Vue {
 	private componentName = 'iqrf::JsCache'
-	private instance: string|null = null
+	private instance = ''
 	private configuration: IqrfRepositoryConfig = {
-		instance: null,
-		urlRepo: null,
+		instance: '',
+		urlRepo: '',
 		checkPeriodInMinutes: 0,
 		downloadIfRepoCacheEmpty: true,
 	}
+	private powerUser = false
 
 	mounted(): void {
 		extend('integer', integer);
 		extend('min', min_value);
 		extend('required', required);
+		if (this.$store.getters['user/getRole'] === 'power') {
+			this.powerUser = true;
+		}
 		this.getConfig();
 	}
 
@@ -125,7 +127,7 @@ export default class IqrfRepository extends Vue {
 
 	private saveConfig(): void {
 		this.$store.commit('spinner/SHOW');
-		if (this.instance !== null) {
+		if (this.instance !== '') {
 			DaemonConfigurationService.updateInstance(this.componentName, this.instance, this.configuration)
 				.then(() => this.successfulSave())
 				.catch((error: AxiosError) => FormErrorHandler.configError(error));

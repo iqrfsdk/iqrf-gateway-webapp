@@ -181,9 +181,6 @@ import { MutationPayload } from 'vuex';
 	},
 	directives: {
 		'autogrow': TextareaAutogrowDirective
-	},
-	metaInfo: {
-		title: 'config.scheduler.title',
 	}
 })
 

@@ -221,7 +221,7 @@ export default class TracerForm extends Vue {
 				this.configuration = response.data;
 			})
 			.catch((error: AxiosError) => {
-				this.$router.push('/config/tracer/');
+				this.$router.push('/config/daemon/');
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -240,7 +240,7 @@ export default class TracerForm extends Vue {
 	}
 
 	private successfulSave(): void {
-		this.$router.push('/config/tracer/');
+		this.$router.push('/config/daemon/');
 		this.$store.commit('spinner/HIDE');
 		if (this.$route.path === '/config/tracer/add') {
 			this.$toast.success(

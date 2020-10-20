@@ -55,10 +55,7 @@ interface JsonMngMetaDataApiConfig {
 		CInputCheckbox,
 		ValidationObserver,
 		ValidationProvider
-	},
-	metaInfo: {
-		title: 'config.jsonMngMetaDataApi.title',
-	},
+	}
 })
 
 export default class JsonMngMetaDataApi extends Vue {

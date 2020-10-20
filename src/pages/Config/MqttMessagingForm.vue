@@ -315,7 +315,7 @@ export default class MqttMessagingForm extends Vue {
 			})
 			.catch((error: AxiosError) => {
 				this.$store.commit('spinner/HIDE');
-				this.$router.push('/config/mqtt/');
+				this.$router.push('/config/daemon/');
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -334,7 +334,7 @@ export default class MqttMessagingForm extends Vue {
 	}
 
 	private successfulSave(): void {
-		this.$router.push('/config/mqtt/');
+		this.$router.push('/config/daemon/');
 		this.$store.commit('spinner/HIDE');
 		if (this.$route.path === '/config/mqtt/add') {
 			this.$toast.success(

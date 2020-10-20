@@ -207,6 +207,7 @@
 				"startLevel": "Start level",
 				"messages": {
 					"name": "Please enter name of component.",
+					"multipleInterfaces": "Only one IQRF interface can be enabled at a time.",
 					"libraryPath": "Please enter path to component's library directory.",
 					"libraryName": "Please enter name of component's library file.",
 					"startLevel": "Please enter component's start level.",
@@ -263,12 +264,12 @@
 			}
 		},
 		"iqrfInfo": {
-			"title": "IQRF Info",
+			"title": "LiteDB",
 			"description": "IQRF Info database settings.",
 			"form": {
 				"instance": "Name of instance",
 				"enumAtStartUp": "Initialize network full enumeration just after startup",
-				"enumPeriod": "Period in minutes of regular check enumeration",
+				"enumPeriod": "Enumeration check period in minutes",
 				"enumUniformDpaVer": "Obtain only HWPID and HWPID version from nodes"
 			},
 			"messages": {
@@ -281,7 +282,7 @@
 			"description": "Manage IQRF Repository's settings.",
 			"form": {
 				"instance": "Name of instance",
-				"urlRepo": "IQRF Repository URL",
+				"urlRepo": "Server URL",
 				"checkPeriod": "Check period in minutes",
 				"downloadIfEmpty": "Download if repository cache is empty",
 				"messages": {
@@ -329,6 +330,13 @@
 				}
 			},
 			"mappings": "Available UART mappings"
+		},
+		"jsonApi": {
+			"title": "JSON Api",
+			"messages": {
+				"success": "JSON Api configuration has been successfully updated.",
+				"noChanges": "No configuration changes detected."
+			}
 		},
 		"jsonMngMetaDataApi": {
 			"title": "JSON Metadata API",
@@ -716,6 +724,9 @@
 						"server": "Server address should contain the HTTP protocol."
 					}
 				}
+			},
+			"messages": {
+				"disabled": "Mender is disabled."
 			}
 		}
 	},
@@ -1688,6 +1699,9 @@
 					"rapi_key": "Please enter the REST API client key."
 				}
 			}
+		},
+		"messages": {
+			"disabled": "IQRF Translator is disabled."
 		}
 	},
 	"controllerConfig": {
@@ -1730,7 +1744,7 @@
 				"monitor": "Monitor server"
 			},
 			"messages": {
-				"disabled": "IQRF Gateway Controller service is disabled.",
+				"disabled": "IQRF Controller service is disabled.",
 				"integer": "This parameter should be an integer.",
 				"daEwaves": "Please enter an integer between 1 and 127 for empty waves stop condition.",
 				"daWaves": "Please enter an integer between 1 and 127 for maximum waves stop condition.",

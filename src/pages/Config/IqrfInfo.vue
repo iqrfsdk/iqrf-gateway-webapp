@@ -6,6 +6,7 @@
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
 						<ValidationProvider
+							v-if='powerUser'
 							v-slot='{ errors, touched, valid }'
 							rules='required'
 							:custom-messages='{required: "config.iqrfInfo.messages.instance"}'
@@ -17,10 +18,6 @@
 								:invalid-feedback='$t(errors[0])'
 							/>
 						</ValidationProvider>
-						<CInputCheckbox
-							:checked.sync='configuration.enumAtStartUp'
-							:label='$t("config.iqrfInfo.form.enumAtStartUp")'
-						/>
 						<ValidationProvider
 							v-slot='{ errors, touched, valid }'
 							:rules='configuration.enumAtStartUp ? "integer|min:0|required": ""'
@@ -39,6 +36,10 @@
 								:invalid-feedback='$t(errors[0])'
 							/>
 						</ValidationProvider>
+						<CInputCheckbox
+							:checked.sync='configuration.enumAtStartUp'
+							:label='$t("config.iqrfInfo.form.enumAtStartUp")'
+						/>
 						<CInputCheckbox
 							:checked.sync='configuration.enumUniformDpaVer'
 							:label='$t("config.iqrfInfo.form.enumUniformDpaVer")'
@@ -79,10 +80,7 @@ interface IqrfInfoConfig {
 		CInputCheckbox,
 		ValidationObserver,
 		ValidationProvider,
-	},
-	metaInfo: {
-		title: 'config.iqrfInfo.title',
-	},
+	}
 })
 
 export default class IqrfInfo extends Vue {
@@ -94,11 +92,15 @@ export default class IqrfInfo extends Vue {
 		enumPeriod: 0,
 		enumUniformDpaVer: false,
 	}
+	private powerUser = false
 
 	mounted(): void {
 		extend('integer', integer);
 		extend('min', min_value);
 		extend('required', required);
+		if (this.$store.getters['user/getRole'] === 'power') {
+			this.powerUser = true;
+		}
 		this.getConfig();
 	}
 

@@ -159,7 +159,7 @@ export default class TheSidebar extends Vue {
 						route: '/config/',
 						icon: {content: cilSettings},
 						roles: ['power', 'normal'],
-						_children: [
+						items: [
 							{
 								_name: 'CSidebarNavItem',
 								name: this.$t('config.daemon.title'),
@@ -380,7 +380,6 @@ export default class TheSidebar extends Vue {
 						items.push(item);
 						
 					});
-					console.error(items);
 					element.items = items;
 				}
 				return element;

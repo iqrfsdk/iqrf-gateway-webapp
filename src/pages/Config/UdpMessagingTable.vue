@@ -114,9 +114,6 @@ import { UdpInstance } from '../../interfaces/messagingInterfaces';
 		CDataTable,
 		CIcon,
 		CModal,
-	},
-	metaInfo: {
-		title: 'config.udp.title',
 	}
 })
 

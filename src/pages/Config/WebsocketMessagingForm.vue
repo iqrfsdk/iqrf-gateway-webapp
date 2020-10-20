@@ -241,7 +241,7 @@ export default class WebsocketMessagingForm extends Vue {
 	}
 
 	private successfulSave(): void {
-		this.$router.push('/config/websocket/');
+		this.$router.push('/config/daemon/');
 		this.$store.commit('spinner/HIDE');
 		if (this.$route.path === '/config/websocket/add-messaging') {
 			this.$toast.success(

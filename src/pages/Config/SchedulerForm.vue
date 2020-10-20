@@ -386,7 +386,7 @@ export default class SchedulerForm extends Vue {
 					this.task = tasks;
 				})
 				.catch(() => {
-					this.$router.push('/config/scheduler/');
+					this.$router.push('/config/daemon/');
 					this.$toast.error(
 						this.$t('config.scheduler.messages.getFail', {task: this.id})
 							.toString()
@@ -428,7 +428,7 @@ export default class SchedulerForm extends Vue {
 			})
 			.catch(() => {
 				this.$store.commit('spinner/HIDE');
-				this.$router.push('/config/scheduler/');
+				this.$router.push('/config/daemon/');
 				this.$toast.error(
 					this.$t('config.scheduler.messages.rest.messagingFail').toString()
 				);
@@ -507,7 +507,7 @@ export default class SchedulerForm extends Vue {
 	}
 
 	private successfulSave(): void {
-		this.$router.push('/config/scheduler/');
+		this.$router.push('/config/daemon/');
 		this.$toast.success(
 			this.$t('config.scheduler.messages.addSuccess').toString()
 		);

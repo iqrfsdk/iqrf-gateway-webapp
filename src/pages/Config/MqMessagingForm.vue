@@ -123,7 +123,7 @@ export default class MqMessagingForm extends Vue {
 				this.configuration = response.data;
 			})
 			.catch((error: AxiosError) => {
-				this.$router.push('/config/mq/');
+				this.$router.push('/config/daemon/');
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -142,7 +142,7 @@ export default class MqMessagingForm extends Vue {
 	}
 
 	private successfulSave(): void  {
-		this.$router.push('/config/mq/');
+		this.$router.push('/config/daemon/');
 		this.$store.commit('spinner/HIDE');
 		if (this.$route.path === '/config/mq/add') {
 			this.$toast.success(

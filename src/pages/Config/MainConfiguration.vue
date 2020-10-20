@@ -65,9 +65,6 @@ interface IMainConfig {
 		CCardBody,
 		CForm,
 		CInput,
-	},
-	metaInfo: {
-		title: 'config.main.title',
 	}
 })
 

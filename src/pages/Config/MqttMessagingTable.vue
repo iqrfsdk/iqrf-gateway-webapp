@@ -143,9 +143,6 @@ import { AxiosResponse } from 'axios';
 		CDropdownItem,
 		CIcon,
 		CModal,
-	},
-	metaInfo: {
-		title: 'config.mqtt.title',
 	}
 })
 

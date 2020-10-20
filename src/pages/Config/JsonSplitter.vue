@@ -55,10 +55,7 @@ interface JsonSplitterConfig {
 		CInputCheckbox,
 		ValidationObserver,
 		ValidationProvider,
-	},
-	metaInfo: {
-		title: 'config.jsonSplitter.title',
-	},
+	}
 })
 
 export default class JsonSplitter extends Vue {

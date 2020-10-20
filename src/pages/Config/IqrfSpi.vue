@@ -6,6 +6,7 @@
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
 						<ValidationProvider
+							v-if='powerUser'
 							v-slot='{ errors, touched, valid }'
 							rules='required'
 							:custom-messages='{required: "config.iqrfSpi.form.messages.instance"}'
@@ -85,10 +86,8 @@
 					</CForm>
 				</ValidationObserver>
 			</CCardBody>
-		</CCard>
-		<CCard>
-			<CCardHeader>{{ $t('config.iqrfSpi.mappings' ) }}</CCardHeader>
-			<CCardBody>
+			<CCardFooter>
+				<h4>{{ $t('config.iqrfSpi.mappings' ) }}</h4><hr>
 				<CRow>
 					<CCol md='6'>
 						<InterfaceMappings interface-type='spi' @update-mapping='updateMapping' />
@@ -97,7 +96,7 @@
 						<InterfacePorts interface-type='spi' @update-port='updatePort' />
 					</CCol>
 				</CRow>
-			</CCardBody>
+			</CCardFooter>
 		</CCard>
 	</div>
 </template>
@@ -147,10 +146,7 @@ interface IqrfSpiConfig {
 		InterfacePorts,
 		ValidationObserver,
 		ValidationProvider,
-	},
-	metaInfo: {
-		title: 'config.iqrfSpi.title',
-	},
+	}
 })
 
 export default class IqrfSpi extends Vue {
@@ -164,10 +160,14 @@ export default class IqrfSpi extends Vue {
 		spiReset: false,
 	}
 	private instance: string|null = null
+	private powerUser = false
 
 	mounted(): void {
 		extend('integer', integer);
 		extend('required', required);
+		if (this.$store.getters['user/getRole'] === 'power') {
+			this.powerUser = true;
+		}
 		this.getConfig();
 	}
 

@@ -6,6 +6,7 @@
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
 						<ValidationProvider
+							v-if='powerUser'
 							v-slot='{ errors, touched, valid }'
 							rules='required'
 							:custom-messages='{required: "config.iqrfUart.form.messages.instance"}'
@@ -81,10 +82,8 @@
 					</CForm>
 				</ValidationObserver>
 			</CCardBody>
-		</CCard>
-		<CCard>
-			<CCardHeader>{{ $t('config.iqrfUart.mappings' ) }}</CCardHeader>
-			<CCardBody>
+			<CCardFooter>
+				<h4>{{ $t('config.iqrfUart.mappings') }}</h4><hr>
 				<CRow>
 					<CCol md='6'>
 						<InterfaceMappings interface-type='uart' @update-mapping='updateMapping' />
@@ -93,7 +92,7 @@
 						<InterfacePorts interface-type='uart' @update-port='updatePort' />
 					</CCol>
 				</CRow>
-			</CCardBody>
+			</CCardFooter>
 		</CCard>
 	</div>
 </template>
@@ -147,10 +146,7 @@ interface BaudRateOptions {
 		InterfacePorts,
 		ValidationObserver,
 		ValidationProvider,
-	},
-	metaInfo: {
-		title: 'config.iqrfUart.title',
-	},
+	}
 })
 
 export default class IqrfUart extends Vue {
@@ -163,6 +159,7 @@ export default class IqrfUart extends Vue {
 		busEnableGpioPin: null,
 	}
 	private instance: string|null = null
+	private powerUser = false
 
 	get baudRates(): Array<BaudRateOptions> {
 		const baudRates: Array<number> = [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400];
@@ -172,6 +169,9 @@ export default class IqrfUart extends Vue {
 	mounted(): void {
 		extend('integer', integer);
 		extend('required', required);
+		if (this.$store.getters['user/getRole'] === 'power') {
+			this.powerUser = true;
+		}
 		this.getConfig();
 	}
 

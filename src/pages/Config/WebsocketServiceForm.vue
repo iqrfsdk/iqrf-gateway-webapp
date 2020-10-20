@@ -117,7 +117,7 @@ export default class WebsocketServiceForm extends Vue {
 				this.configuration = response.data;
 			})
 			.catch((error: AxiosError) => {
-				this.$router.push('/config/websocket/');
+				this.$router.push('/config/daemon/');
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -136,7 +136,7 @@ export default class WebsocketServiceForm extends Vue {
 	}
 
 	private successfulSave(): void {
-		this.$router.push('/config/websocket/');
+		this.$router.push('/config/daemon/');
 		this.$store.commit('spinner/HIDE');
 		if (this.$route.path === '/config/websocket/add-service') {
 			this.$toast.success(

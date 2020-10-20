@@ -21,9 +21,6 @@ import WebsocketServiceList from '../../components/Config/WebsocketServiceList.v
 		WebsocketInterfaceList,
 		WebsocketMessagingList,
 		WebsocketServiceList,
-	},
-	metaInfo: {
-		title: 'config.websocket.title'
 	}
 })
 

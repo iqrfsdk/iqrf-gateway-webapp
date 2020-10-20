@@ -96,10 +96,7 @@ import { Dictionary } from 'vue-router/types/router';
 		CDataTable,
 		CIcon,
 		CModal,
-	},
-	metaInfo: {
-		title: 'config.tracer.title',
-	},
+	}
 })
 
 export default class TracerList extends Vue {

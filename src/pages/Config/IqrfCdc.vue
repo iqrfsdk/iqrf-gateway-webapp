@@ -6,6 +6,7 @@
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='saveConfig'>
 						<ValidationProvider
+							v-if='powerUser'
 							v-slot='{ errors, touched, valid }'
 							rules='required'
 							:custom-messages='{required: "config.iqrfCdc.form.messages.instance"}'
@@ -35,12 +36,10 @@
 					</CForm>
 				</ValidationObserver>
 			</CCardBody>
-		</CCard>
-		<CCard>
-			<CCardHeader>{{ $t('config.iqrfCdc.mappings' ) }}</CCardHeader>
-			<CCardBody>
+			<CCardFooter>
+				<h4>{{ $t('config.iqrfCdc.mappings' ) }}</h4><hr>
 				<InterfacePorts interface-type='cdc' @update-port='updatePort' />
-			</CCardBody>
+			</CCardFooter>
 		</CCard>
 	</div>
 </template>
@@ -71,10 +70,7 @@ interface IqrfCdcConfig {
 		InterfacePorts,
 		ValidationObserver,
 		ValidationProvider,
-	},
-	metaInfo: {
-		title: 'config.iqrfCdc.title',
-	},
+	}
 })
 
 export default class IqrfCdc extends Vue {
@@ -84,9 +80,13 @@ export default class IqrfCdc extends Vue {
 		IqrfInterface: null,
 	}
 	private instance: string|null = null
+	private powerUser = false
 
 	mounted(): void {
 		extend('required', required);
+		if (this.$store.getters['user/getRole'] === 'power') {
+			this.powerUser = true;
+		}
 		this.getConfig();
 	}
 
