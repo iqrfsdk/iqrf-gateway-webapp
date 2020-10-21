@@ -182,11 +182,17 @@
 		"daemon": {
 			"title": "IQRF Daemon",
 			"description": "IQRF Daemon configuration",
-			"tabs": {
-				"interfaces": "Interfaces",
-				"messaging": "Messagings",
-				"scheduler": "Scheduler",
-				"other": "Other"
+			"interfaces": {
+				"title": "Interfaces",
+				"description": "Configuration of IQRF communication interfaces."
+			},
+			"messagings": {
+				"title": "Messagings",
+				"description": "Configuration of messagings."
+			},
+			"other": {
+				"title": "Other",
+				"description": "Configuration of other Daemon components"
 			},
 			"form": {
 				"interface": "Select interface",

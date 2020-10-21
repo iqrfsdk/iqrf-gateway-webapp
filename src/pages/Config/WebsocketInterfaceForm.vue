@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<h1 v-if='$route.path === "/config/websocket/add"'>
+		<h1 v-if='$route.path === "/config/daemon/websocket/add"'>
 			{{ $t('config.websocket.interface.add') }}
 		</h1>
 		<h1 v-else>
@@ -102,12 +102,12 @@ export default class MonitorForm extends Vue {
 	@Prop({required: false, default: null}) instance!: string
 
 	get pageTitle(): string {
-		return this.$route.path === '/config/websocket/add' ?
+		return this.$route.path === '/config/daemon/websocket/add' ?
 			this.$t('config.websocket.interface.add').toString() : this.$t('config.websocket.interface.edit').toString();
 	}
 	
 	get submitButton(): string {
-		return this.$route.path === '/config/mq/add' ?
+		return this.$route.path === '/config/daemon/websocket/add' ?
 			this.$t('forms.add').toString() : this.$t('forms.save').toString();
 	}
 
@@ -133,7 +133,7 @@ export default class MonitorForm extends Vue {
 					});
 			})
 			.catch((error: AxiosError) => {
-				this.$router.push('/config/daemon/');
+				this.$router.push('/config/daemon/messagings/');
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -168,9 +168,9 @@ export default class MonitorForm extends Vue {
 		}
 	}
 	private successfulSave(): void {
-		this.$router.push('/config/daemon/');
+		this.$router.push('/config/daemon/messagings');
 		this.$store.commit('spinner/HIDE');
-		if (this.$route.path === '/config/websocket/add') {
+		if (this.$route.path === '/config/daemon/websocket/add') {
 			this.$toast.success(
 				this.$t('config.websocket.messages.add.success', {instance: this.messaging.instance})
 					.toString()

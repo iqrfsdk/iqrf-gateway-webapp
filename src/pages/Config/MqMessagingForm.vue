@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<h1 v-if='$route.path === "/config/mq/add"'>
+		<h1 v-if='$route.path === "/config/daemon/mq/add"'>
 			{{ $t('config.mq.add') }}
 		</h1>
 		<h1 v-else>
@@ -99,12 +99,12 @@ export default class MqMessagingForm extends Vue {
 	@Prop({required: false, default: null}) instance!: string
 
 	get pageTitle(): string {
-		return this.$route.path === '/config/mq/add' ?
+		return this.$route.path === '/config/daemon/mq/add' ?
 			this.$t('config.mq.add').toString() : this.$t('config.mq.edit').toString();
 	}
 	
 	get submitButton(): string {
-		return this.$route.path === '/config/mq/add' ?
+		return this.$route.path === '/config/daemon/mq/add' ?
 			this.$t('forms.add').toString() : this.$t('forms.save').toString();
 	}
 
@@ -123,7 +123,7 @@ export default class MqMessagingForm extends Vue {
 				this.configuration = response.data;
 			})
 			.catch((error: AxiosError) => {
-				this.$router.push('/config/daemon/');
+				this.$router.push('/config/daemon/messagings/');
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -142,9 +142,9 @@ export default class MqMessagingForm extends Vue {
 	}
 
 	private successfulSave(): void  {
-		this.$router.push('/config/daemon/');
+		this.$router.push('/config/daemon/messagings');
 		this.$store.commit('spinner/HIDE');
-		if (this.$route.path === '/config/mq/add') {
+		if (this.$route.path === '/config/daemon/mq/add') {
 			this.$toast.success(
 				this.$t('config.mq.messages.add.success', {instance: this.configuration.instance})
 					.toString()

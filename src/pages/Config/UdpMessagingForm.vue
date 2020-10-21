@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<h1 v-if='$route.path === "/config/udp/add"'>
+		<h1 v-if='$route.path === "/config/daemon/udp/add"'>
 			{{ $t('config.udp.add') }}
 		</h1>
 		<h1 v-else>
@@ -105,12 +105,12 @@ export default class UdpMessagingForm extends Vue {
 	@Prop({required: false, default: null}) instance!: string
 
 	get pageTitle(): string {
-		return this.$route.path === '/config/udp/add' ?
+		return this.$route.path === '/config/daemon/udp/add' ?
 			this.$t('config.udp.add').toString() : this.$t('config.udp.edit').toString();
 	}
 
 	get submitButton(): string {
-		return this.$route.path === '/config/udp/add' ?
+		return this.$route.path === '/config/daemon/udp/add' ?
 			this.$t('forms.add').toString() : this.$t('forms.save').toString();
 	}
 
@@ -130,7 +130,7 @@ export default class UdpMessagingForm extends Vue {
 				this.configuration = response.data;
 			})
 			.catch((error: AxiosError) => {
-				this.$router.push('/config/daemon/');
+				this.$router.push('/config/daemon/messagings/');
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -149,9 +149,9 @@ export default class UdpMessagingForm extends Vue {
 	}
 
 	private successfulSave(): void {
-		this.$router.push('/config/daemon/');
+		this.$router.push('/config/daemon/messagings/');
 		this.$store.commit('spinner/HIDE');
-		if (this.$route.path === '/config/udp/add') {
+		if (this.$route.path === '/config/daemon/udp/add') {
 			this.$toast.success(
 				this.$t('config.udp.messages.add.success', {instance: this.configuration.instance})
 					.toString());

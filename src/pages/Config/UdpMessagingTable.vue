@@ -8,7 +8,7 @@
 				<CButton 
 					v-if='instances.length < 1'
 					color='success'
-					to='/config/udp/add'
+					to='/config/daemon/udp/add'
 					size='sm'
 					class='float-right'
 				>
@@ -33,7 +33,7 @@
 						<td class='col-actions'>
 							<CButton
 								color='info'
-								:to='"/config/udp/edit/" + item.instance'
+								:to='"/config/daemon/udp/edit/" + item.instance'
 								size='sm'
 							>
 								<CIcon :content='icons.edit' size='sm' />

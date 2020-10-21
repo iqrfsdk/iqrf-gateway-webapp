@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<h1 v-if='$route.path === "/config/websocket/add-service"'>
+		<h1 v-if='$route.path === "/config/daemon/websocket/add-service"'>
 			{{ $t('config.websocket.service.add') }}
 		</h1>
 		<h1 v-else>
@@ -92,12 +92,12 @@ export default class WebsocketServiceForm extends Vue {
 	@Prop({required: false, default: null}) instance!: string
 
 	get pageTitle(): string {
-		return this.$route.path === '/config/websocket/add-service' ?
+		return this.$route.path === '/config/daemon/websocket/add-service' ?
 			this.$t('config.websocket.service.add').toString() : this.$t('config.websocket.service.edit').toString();
 	}
 
 	get submitButton(): string {
-		return this.$route.path === '/config/websocket/add-service' ?
+		return this.$route.path === '/config/daemon/websocket/add-service' ?
 			this.$t('forms.add').toString() : this.$t('forms.edit').toString();
 	}
 
@@ -117,7 +117,7 @@ export default class WebsocketServiceForm extends Vue {
 				this.configuration = response.data;
 			})
 			.catch((error: AxiosError) => {
-				this.$router.push('/config/daemon/');
+				this.$router.push('/config/daemon/messagings/');
 				FormErrorHandler.configError(error);
 			});
 	}
@@ -136,9 +136,9 @@ export default class WebsocketServiceForm extends Vue {
 	}
 
 	private successfulSave(): void {
-		this.$router.push('/config/daemon/');
+		this.$router.push('/config/daemon/messagings/');
 		this.$store.commit('spinner/HIDE');
-		if (this.$route.path === '/config/websocket/add-service') {
+		if (this.$route.path === '/config/daemon/websocket/add-service') {
 			this.$toast.success(
 				this.$t('config.websocket.service.messages.addSuccess', {service: this.configuration.instance})
 					.toString()

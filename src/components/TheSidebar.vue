@@ -59,9 +59,10 @@ interface NavMemberIcon {
 
 interface NavMember {
 	_name: string
+	_children?: Array<NavMember>
 	feature?: string
 	href?: string
-	icon: NavMemberIcon
+	icon?: NavMemberIcon
 	items?: Array<NavMemberItem>
 	name: VueI18n.TranslateResult
 	roles?: Array<string>
@@ -159,13 +160,50 @@ export default class TheSidebar extends Vue {
 						route: '/config/',
 						icon: {content: cilSettings},
 						roles: ['power', 'normal'],
-						items: [
+						_children: [
 							{
-								_name: 'CSidebarNavItem',
+								_name: 'CSidebarNavDropdown',
 								name: this.$t('config.daemon.title'),
 								to: '/config/daemon/',
 								route: '/config/daemon/',
 								roles: ['power', 'normal'],
+								items: [
+									{
+										name: this.$t('config.main.title'),
+										to: '/config/daemon/main/',
+										roles: ['power'],
+									},
+									{
+										name: this.$t('config.components.title'),
+										to: '/config/daemon/component/',
+										roles: ['power'],
+									},
+									{
+										name: this.$t('config.selectedComponents.title'),
+										to: '/config/daemon/component/',
+										roles: ['normal'],
+									},
+									{
+										name: this.$t('config.daemon.interfaces.title'),
+										to: '/config/daemon/interfaces/',
+										roles: ['power', 'normal'],
+									},
+									{
+										name: this.$t('config.daemon.messagings.title'),
+										to: '/config/daemon/messagings/',
+										roles: ['power', 'normal'],
+									},
+									{
+										name: this.$t('config.scheduler.title'),
+										to: '/config/daemon/scheduler/',
+										roles: ['power', 'normal'],
+									},
+									{
+										name: this.$t('config.daemon.other.title'),
+										to: '/config/daemon/other/',
+										roles: ['power', 'normal'],
+									}
+								]
 							},
 							{	
 								_name: 'CSidebarNavItem',
@@ -367,25 +405,64 @@ export default class TheSidebar extends Vue {
 					return null;
 				}
 				if (element.items !== undefined) {
-					let items: Array<NavMemberItem> = [];
-					element.items.forEach((item: NavMemberItem) => {
+					element.items = this.filterItems(element.items);
+				}
+				if (element._children !== undefined) {
+					let children: Array<NavMember> = [];
+					element._children.forEach((item: NavMember) => {
 						if (item.roles !== undefined &&
 							!item.roles.includes(this.$store.getters['user/getRole'])) {
-							return;
+							return null;
 						}
 						if (item.feature !== undefined &&
 							!this.$store.getters['features/isEnabled'](item.feature)) {
 							return;
 						}
-						items.push(item);
-						
+						if (item.items !== undefined) {
+							item.items = this.filterItems(item.items);
+						}
+						children.push(item);
 					});
-					element.items = items;
+					element._children = children;
 				}
 				return element;
 			});
 			return element;
 		});
+	}
+
+	/*private filterChildren(children: Array<NavMember>): Array<NavMember> {
+		let filteredChildren: Array<NavMember> = [];
+		children.forEach((child: NavMember) => {
+			if (child.roles !== undefined &&
+					!child.roles.includes(this.$store.getters['user/getRole'])) {
+				return null;
+			}
+			if (child.feature !== undefined &&
+					!this.$store.getters['features/isEnabled'](child.feature)) {
+				return null;
+			}
+			if (child.items !== undefined) {
+				child.items = this.filterItems(child.items);
+			}
+		});
+		return filteredChildren;
+	}*/
+
+	private filterItems(items: Array<NavMemberItem>): Array<NavMemberItem> {
+		let filteredItems: Array<NavMemberItem> = [];
+		items.forEach((item: NavMemberItem) => {
+			if (item.roles !== undefined &&
+				!item.roles.includes(this.$store.getters['user/getRole'])) {
+				return;
+			}
+			if (item.feature !== undefined &&
+				!this.$store.getters['features/isEnabled'](item.feature)) {
+				return;
+			}
+			filteredItems.push(item);
+		});
+		return filteredItems;
 	}
 
 }

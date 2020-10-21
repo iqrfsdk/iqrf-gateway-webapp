@@ -7,7 +7,7 @@
 				</h3>
 				<CButton
 					color='success'
-					to='/config/mq/add'
+					to='/config/daemon/mq/add'
 					size='sm'
 					class='float-right'
 				>
@@ -49,7 +49,7 @@
 						<td class='col-actions'>
 							<CButton
 								color='info'
-								:to='"/config/mq/edit/" + item.instance'
+								:to='"/config/daemon/mq/edit/" + item.instance'
 								size='sm'
 							>
 								<CIcon :content='icons.edit' size='sm' />

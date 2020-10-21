@@ -94,13 +94,16 @@ export default class IqrfInfo extends Vue {
 	}
 	private powerUser = false
 
-	mounted(): void {
+	created(): void {
 		extend('integer', integer);
 		extend('min', min_value);
 		extend('required', required);
 		if (this.$store.getters['user/getRole'] === 'power') {
 			this.powerUser = true;
 		}
+	}
+
+	mounted(): void {
 		this.getConfig();
 	}
 

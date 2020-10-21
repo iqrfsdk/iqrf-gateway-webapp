@@ -54,9 +54,6 @@ interface OtaUploadConfig {
 		CInput,
 		ValidationObserver,
 		ValidationProvider,
-	},
-	metaInfo: {
-		title: 'config.iqmesh.otaUpload.title'
 	}
 })
 
