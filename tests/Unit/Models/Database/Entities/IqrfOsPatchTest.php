@@ -33,24 +33,24 @@ class IqrfOsPatchTest extends TestCase {
 	private const MODULE_TYPE = 'TR7x';
 
 	/**
-	 * IqrfOsPatch from DPA version
+	 * IqrfOsPatch from OS version
 	 */
-	private const FROM_DPA = 307;
+	private const FROM_OS_VERSION = 307;
 
 	/**
 	 * IqrfOsPatch from OS build
 	 */
-	private const FROM_OS = 2160;
+	private const FROM_OS_BUILD = 2160;
 
 	/**
-	 * IqrfOsPatch to DPA version
+	 * IqrfOsPatch to OS version
 	 */
-	private const TO_DPA = 400;
+	private const TO_OS_VERSION = 400;
 
 	/**
 	 * IqrfOsPatch to OS build
 	 */
-	private const TO_OS = 2225;
+	private const TO_OS_BUILD = 2225;
 
 	/**
 	 * IqrfOsPatch part number
@@ -72,7 +72,7 @@ class IqrfOsPatchTest extends TestCase {
 	 */
 	protected function setUp(): void {
 		parent::setUp();
-		$this->iqrfOsPatch = new IqrfOsPatch(self::MODULE_TYPE, self::FROM_DPA, self::FROM_OS, self::TO_DPA, self::TO_OS, self::PART_NUMBER, self::PARTS, self::FILE_NAME);
+		$this->iqrfOsPatch = new IqrfOsPatch(self::MODULE_TYPE, self::FROM_OS_VERSION, self::FROM_OS_BUILD, self::TO_OS_VERSION, self::TO_OS_BUILD, self::PART_NUMBER, self::PARTS, self::FILE_NAME);
 	}
 
 	/**
@@ -83,31 +83,31 @@ class IqrfOsPatchTest extends TestCase {
 	}
 
 	/**
-	 * Tests the function to return patch from DPA version
+	 * Tests the function to return patch from OS version
 	 */
 	public function testGetFromVersion(): void {
-		Assert::same(self::FROM_DPA, $this->iqrfOsPatch->getFromVersion());
+		Assert::same(self::FROM_OS_VERSION, $this->iqrfOsPatch->getFromVersion());
 	}
 
 	/**
 	 * Tests the function to return patch from OS build
 	 */
 	public function testGetFromBuild(): void {
-		Assert::same(self::FROM_OS, $this->iqrfOsPatch->getFromBuild());
+		Assert::same(self::FROM_OS_BUILD, $this->iqrfOsPatch->getFromBuild());
 	}
 
 	/**
-	 * Tests the function to return patch target DPA version
+	 * Tests the function to return patch target OS version
 	 */
 	public function testGetToVersion(): void {
-		Assert::same(self::TO_DPA, $this->iqrfOsPatch->getToVersion());
+		Assert::same(self::TO_OS_VERSION, $this->iqrfOsPatch->getToVersion());
 	}
 
 	/**
 	 * Tests the function to return patch target OS version
 	 */
 	public function testGetToBuild(): void {
-		Assert::same(self::TO_OS, $this->iqrfOsPatch->getToBuild());
+		Assert::same(self::TO_OS_BUILD, $this->iqrfOsPatch->getToBuild());
 	}
 
 	/**
@@ -138,10 +138,10 @@ class IqrfOsPatchTest extends TestCase {
 		$expected = [
 			'id' => null,
 			'moduleType' => self::MODULE_TYPE,
-			'fromDpaVersion' => self::FROM_DPA,
-			'fromOsBuild' => self::FROM_OS,
-			'toDpaVersion' => self::TO_DPA,
-			'toOsBuild' => self::TO_OS,
+			'fromOsVersion' => self::FROM_OS_VERSION,
+			'fromOsBuild' => self::FROM_OS_BUILD,
+			'toOsVersion' => self::TO_OS_VERSION,
+			'toOsBuild' => self::TO_OS_BUILD,
 			'partNumber' => self::PART_NUMBER,
 			'parts' => self::PARTS,
 			'fileName' => self::FILE_NAME,

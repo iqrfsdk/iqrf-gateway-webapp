@@ -7,9 +7,9 @@
 	"required": [
 		"id",
 		"moduleType",
-		"fromDpaVersion",
+		"fromOsVersion",
 		"fromOsBuild",
-		"toDpaVersion",
+		"toOsVersion",
 		"toOsBuild",
 		"partNumber",
 		"parts",
@@ -29,11 +29,11 @@
 			"description": "Type of module this patch is intended for",
 			"example": "TR7x"
 		},
-		"fromDpaVersion": {
-			"$id": "#/properties/fromDpaVersion",
+		"fromOsVersion": {
+			"$id": "#/properties/fromOsVersion",
 			"type": "integer",
-			"title": "From DPA version",
-			"description": "Version of DPA protocol this patch upgrades from",
+			"title": "From OS version",
+			"description": "Version of OS this patch upgrades from",
 			"example": 307
 		},
 		"fromOsBuild": {
@@ -43,11 +43,11 @@
 			"description": "OS build number this patch upgrades",
 			"example": 2160
 		},
-		"toDpaVersion": {
-			"$id": "#/properties/toDpaVersion",
+		"toOsVersion": {
+			"$id": "#/properties/toOsVersion",
 			"type": "integer",
-			"title": "Target DPA version",
-			"description": "Version of DPA protocol this patch upgrades to",
+			"title": "Target OS version",
+			"description": "Version of OS this patch upgrades to",
 			"example": 400
 		},
 		"toOsBuild": {

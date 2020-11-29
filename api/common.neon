@@ -81,6 +81,8 @@ components:
 			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/iqrfIdeMacros.json
 		IqrfInterfaces:
 			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/iqrfInterfaces.json
+		IqrfOsPatchDetail:
+			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/iqrfOsPatchDetail.json
 		InstallationCheck:
 			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/installationCheck.json
 		MainConfiguration:

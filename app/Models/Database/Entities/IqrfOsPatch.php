@@ -175,9 +175,9 @@ class IqrfOsPatch {
 		$array = [
 			'id' => $this->getId(),
 			'moduleType' => $this->getModuleType(),
-			'fromDpaVersion' => $this->getFromVersion(),
+			'fromOsVersion' => $this->getFromVersion(),
 			'fromOsBuild' => $this->getFromBuild(),
-			'toDpaVersion' => $this->getToVersion(),
+			'toOsVersion' => $this->getToVersion(),
 			'toOsBuild' => $this->getToBuild(),
 			'partNumber' => $this->getPart(),
 			'parts' => $this->getParts(),
