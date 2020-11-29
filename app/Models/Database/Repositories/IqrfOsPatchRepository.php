@@ -20,11 +20,26 @@ declare(strict_types = 1);
 
 namespace App\Models\Database\Repositories;
 
+use App\Models\Database\Entities\IqrfOsPatch;
 use Doctrine\ORM\EntityRepository;
+use function assert;
 
 /**
  * IQRF OS patch repository
  */
 class IqrfOsPatchRepository extends EntityRepository {
+
+	/**
+	 * Retrieves list of all patch details
+	 * @return array<int, array<int|string>> Array of OS patch detail
+	 */
+	public function getOsPatchDetails(): array {
+		$patches = [];
+		foreach ($this->findAll() as $patch) {
+			assert($patch instanceof IqrfOsPatch);
+			array_push($patches, [$patch->getId(), $patch->getModuleType(), $patch->getFromVersion(), $patch->getFromBuild(), $patch->getToVersion(), $patch->getToBuild(), $patch->getPart(), $patch->getParts(), $patch->getFileName()]);
+		}
+		return $patches;
+	}
 
 }

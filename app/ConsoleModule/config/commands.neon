@@ -8,6 +8,7 @@ services:
 	- App\ConsoleModule\Commands\FeatureEnableCommand
 	- App\ConsoleModule\Commands\FeatureListCommand
 	- App\ConsoleModule\Commands\IqrfOsPatchImportCommand
+	- App\ConsoleModule\Commands\IqrfOsPatchListCommand
 	- App\ConsoleModule\Commands\MappingAddCommand
 	- App\ConsoleModule\Commands\MappingEditCommand
 	- App\ConsoleModule\Commands\MappingListCommand

@@ -1,0 +1,80 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"$id": "https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/iqrfOsPatchDetail.json",
+	"type": "object",
+	"title": "IQRF OS patch",
+	"additionalProperties": false,
+	"required": [
+		"id",
+		"moduleType",
+		"fromDpaVersion",
+		"fromOsBuild",
+		"toDpaVersion",
+		"toOsBuild",
+		"partNumber",
+		"parts",
+		"fileName"
+	],
+	"properties": {
+		"id": {
+			"$id": "#/properties/id",
+			"type": "integer",
+			"title": "IQRF OS patch ID",
+			"example": 1
+		},
+		"moduleType": {
+			"$id": "#/properties/moduleType",
+			"type": "string",
+			"title": "Module type",
+			"description": "Type of module this patch is intended for",
+			"example": "TR7x"
+		},
+		"fromDpaVersion": {
+			"$id": "#/properties/fromDpaVersion",
+			"type": "integer",
+			"title": "From DPA version",
+			"description": "Version of DPA protocol this patch upgrades from",
+			"example": 307
+		},
+		"fromOsBuild": {
+			"$id": "#/properties/fromOsBuild",
+			"type": "integer",
+			"title": "From OS build",
+			"description": "OS build number this patch upgrades",
+			"example": 2160
+		},
+		"toDpaVersion": {
+			"$id": "#/properties/toDpaVersion",
+			"type": "integer",
+			"title": "Target DPA version",
+			"description": "Version of DPA protocol this patch upgrades to",
+			"example": 400
+		},
+		"toOsBuild": {
+			"$id": "#/properties/toOsBuild",
+			"type": "integer",
+			"title": "Target OS build",
+			"description": "Os build number this patch upgrades to",
+			"example": 2225
+		},
+		"partNumber": {
+			"$id": "#/properties/partNumber",
+			"type": "integer",
+			"title": "Part number",
+			"description": "Number of patch part number in case a patch is composed of multiple parts",
+			"example": 1
+		},
+		"parts": {
+			"$id": "#/properties/parts",
+			"type": "integer",
+			"title": "Number of parts this patch is composed of",
+			"example": 1
+		},
+		"fileName": {
+			"$id": "#/properties/fileName",
+			"type": "string",
+			"title": "Patch file name",
+			"example": "ChangeOS-TR7x-307(0870)-400(08B1)-1of2.iqrf"
+		}
+	}
+}
