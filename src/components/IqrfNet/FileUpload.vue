@@ -1,26 +1,26 @@
 <template>
 	<CCard>
-		<CCardHeader>{{ $t('iqrfnet.trUpload.title') }}</CCardHeader>
+		<CCardHeader>{{ $t('iqrfnet.trUpload.fileUpload.title') }}</CCardHeader>
 		<CCardBody>
 			<CForm @submit.prevent='submitUpload'>
 				<div class='form-group'>
 					<CInputFile
 						ref='fileUpload'
 						accept='.hex'
-						:label='$t("iqrfnet.trUpload.file")'
+						:label='$t("iqrfnet.trUpload.fileUpload.form.file")'
 						@input='isEmpty'
 						@click='isEmpty'
 					/>
 					<p v-if='fileEmpty && !fileUntouched' style='color:red'>
-						{{ $t('iqrfnet.trUpload.messages.file') }}
+						{{ $t('iqrfnet.trUpload.fileUpload.errors.file') }}
 					</p>
 				</div>
 				<CSelect 
 					v-if='$store.getters["user/getRole"] === "power"'
 					:value.sync='format'
-					:label='$t("iqrfnet.trUpload.fileFormat")'
+					:label='$t("iqrfnet.trUpload.fileUpload.form.fileFormat")'
 					:options='selectOptions'
-					:placeholder='$t("iqrfnet.trUpload.messages.fileFormat")'
+					:placeholder='$t("iqrfnet.trUpload.fileUpload.errors.fileFormat")'
 				/>
 				<CButton
 					type='submit'
@@ -88,10 +88,9 @@ export default class FileUpload extends Vue {
 	 * @constant {Array<IOption>} selectOptions Array of file format select options
 	 */
 	private selectOptions: Array<IOption> = [
-		{value: null, label: this.$t('iqrfnet.trUpload.messages.fileFormat')},
-		{value: FileFormat.HEX, label: this.$t('iqrfnet.trUpload.fileFormats.hex')},
-		/*{value: FileFormat.IQRF, label: this.$t('iqrfnet.trUpload.fileFormats.iqrf')},
-		{value: FileFormat.TRCNFG, label: this.$t('iqrfnet.trUpload.fileFormats.trcnfg')}*/
+		{value: FileFormat.HEX, label: this.$t('iqrfnet.trUpload.fileUpload.form.fileFormats.hex')},
+		/*{value: FileFormat.IQRF, label: this.$t('iqrfnet.trUpload.fileUpload.form.fileFormats.iqrf')},
+		{value: FileFormat.TRCNFG, label: this.$t('iqrfnet.trUpload.fileUpload.form.fileFormats.trcnfg')}*/
 	]
 
 	/**

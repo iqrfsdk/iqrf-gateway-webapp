@@ -1105,17 +1105,6 @@
 				"address": "Address has to be an integer from 0 to 239."
 			}
 		},
-		"dpaUpload": {
-			"title": "DPA plug-in",
-			"version": "DPA version",
-			"errors": {
-				"version": "Please select DPA version to upload."
-			},
-			"messages": {
-				"modalTitle": "DPA plug-in upload",
-				"modalPrompt": "The device already uses DPA version {version}, do you want to proceed with upload anyway?"
-			}
-		},
 		"enumeration": {
 			"title": "Device enumeration",
 			"deviceInfo": "Device info",
@@ -1636,25 +1625,54 @@
 		"trUpload": {
 			"title": "Coordinator upload",
 			"description": "IQRF Coordinator upload.",
-			"file": "File to upload",
-			"fileFormat": "Target of upload",
-			"fileFormats": {
-				"hex": "HEX",
-				"iqrf": "IQRF",
-				"trcnfg": "TRCNFG"
+			"dpaUpload": {
+				"title": "DPA plug-in update",
+				"form": {
+					"version": "DPA version"
+				},
+				"errors": {
+					"version": "Please select DPA version to upload."
+				},
+				"messages": {
+					"downloadFailure": "The webapp has not been able to download the DPA file.",
+					"moveFailure": "The file has not been uploaded due wrong permissions.",
+					"notFound": "DPA file not found.",
+					"badRequest": "Invalid combination of DPA version and RF mode.",
+					"modalTitle": "DPA plug-in upload",
+					"modalPrompt": "The device already uses DPA version {version}, do you want to proceed with upload anyway?"
+				}
+			},
+			"fileUpload": {
+				"title": "File upload",
+				"form": {
+					"file":"File to upload",
+					"fileFormat": "Target of upload",
+					"fileFormats": {
+						"hex": "HEX",
+						"iqrf": "IQRF",
+						"trcnfg": "TRCNFG"
+					}
+				},
+				"errors": {
+					"file": "Please select the file to upload.",
+					"fileFormat": "Please select target of upload."
+				}
+			},
+			"osUpload": {
+				"title": "IQRF OS update",
+				"form": {
+					"version": "OS version"
+				},
+				"errors": {
+					"version": "Please select IQRF OS version to upload."
+				}
 			},
 			"messages": {
 				"disabled": "TR upload is disabled.",
 				"info": "These actions can take tens of seconds.",
 				"failure": "An error occurred during the file upload.",
 				"timeout": "Daemon API file upload request timed out.",
-				"file": "Please select the file to upload.",
-				"fileFormat": "Please select target of upload.",
 				"success": "The file has been successfully uploaded into the coordinator.",
-				"downloadFailure": "The webapp has not been able to download the DPA file.",
-				"moveFailure": "The file has not been uploaded due wrong permissions.",
-				"notFound": "DPA file not found.",
-				"badRequest": "Invalid combination of DPA version and RF mode.",
 				"genericError": "An error has occured while processing request.",
 				"osBuildFail": "Failed to retrieve OS builds information.",
 				"osInfoFail": "Embed OS read request failed.",

@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<CCard>
-			<CCardHeader>{{ $t('iqrfnet.dpaUpload.title') }}</CCardHeader>
+			<CCardHeader>{{ $t('iqrfnet.trUpload.dpaUpload.title') }}</CCardHeader>
 			<CCardBody>
 				<ValidationObserver v-slot='{ invalid }'>
 					<CForm @submit.prevent='compareUploadedVersion'>
@@ -9,15 +9,15 @@
 							v-slot='{ valid, touched, errors }'
 							rules='required'
 							:custom-messages='{
-								required: "iqrfnet.dpaUpload.errors.version",
+								required: "iqrfnet.trUpload.dpaUpload.errors.version",
 							}'
 						>
 							<CSelect
 								:value.sync='version'
-								:label='$t("iqrfnet.dpaUpload.version")'
+								:label='$t("iqrfnet.trUpload.dpaUpload.form.version")'
 								:is-valid='touched ? valid : null'
 								:invalid-feedback='$t(errors[0])'
-								:placeholder='$t("iqrfnet.dpaUpload.errors.version")'
+								:placeholder='$t("iqrfnet.trUpload.dpaUpload.errors.version")'
 								:options='versions'
 							/>
 						</ValidationProvider>
@@ -34,10 +34,10 @@
 		>
 			<template #header>
 				<h5 class='modal-title'>
-					{{ $t('iqrfnet.dpaUpload.messages.modalTitle') }}
+					{{ $t('iqrfnet.trUpload.dpaUpload.messages.modalTitle') }}
 				</h5>
 			</template>
-			{{ $t('iqrfnet.dpaUpload.messages.modalPrompt', {version: prettyVersion(currentDpa)}) }}
+			{{ $t('iqrfnet.trUpload.dpaUpload.messages.modalPrompt', {version: prettyVersion(currentDpa)}) }}
 			<template #footer>
 				<CButton
 					color='secondary'
@@ -66,8 +66,7 @@ import OsService from '../../services/DaemonApi/OsService';
 import IqrfNetService from '../../services/IqrfNetService';
 import NativeUploadService from '../../services/NativeUploadService';
 import {MutationPayload} from 'vuex';
-import { WebSocketClientState } from '../../store/modules/webSocketClient.module';
-import { AxiosError, AxiosResponse } from 'axios';
+import {AxiosError, AxiosResponse} from 'axios';
 
 interface DpaVersions {
 	label: string
@@ -151,15 +150,11 @@ export default class DpaUpdater extends Vue {
 	private unsubscribe: CallableFunction = () => {return;}
 
 	/**
-	 * Component unwatch function
-	 */
-	private unwatch: CallableFunction = () => {return;}
-
-	/**
 	 * Vue lifecycle hook created
 	 */
 	created(): void {
 		extend('required', required);
+
 		this.unsubscribe = this.$store.subscribe((mutation: MutationPayload) => {
 			if (mutation.type !== 'SOCKET_ONMESSAGE') {
 				return;
@@ -169,16 +164,7 @@ export default class DpaUpdater extends Vue {
 			}
 			this.$store.dispatch('spinner/hide');
 			this.$store.dispatch('removeMessage', this.msgId);
-			if (mutation.payload.mType === 'iqrfEmbedOs_Read') {
-				if (mutation.payload.data.status === 0) {
-					this.handleOsInfoResponse(mutation.payload);
-				} else {
-					this.$toast.error(
-						this.$t('iqrfnet.trUpload.messages.osInfoFail').toString()
-					);
-					console.error(mutation.payload);
-				}
-			} else if (mutation.payload.mType === 'mngDaemon_Upload') {
+			if (mutation.payload.mType === 'mngDaemon_Upload') {
 				if (mutation.payload.data.status === 0) {
 					this.$toast.success(
 						this.$t('iqrfnet.trUpload.messages.success').toString()
@@ -199,19 +185,6 @@ export default class DpaUpdater extends Vue {
 				}
 			}
 		});
-		if (this.$store.getters.isSocketConnected) {
-			this.getOsInfo();
-		} else {
-			this.unwatch = this.$store.watch(
-				(state: WebSocketClientState, getter: any) => getter.isSocketConnected,
-				(newVal: boolean, oldVal: boolean) => {
-					if (!oldVal && newVal) {
-						this.getOsInfo();
-						this.unwatch();
-					}
-				}
-			);
-		}
 	}
 
 	/**
@@ -219,7 +192,6 @@ export default class DpaUpdater extends Vue {
 	 */
 	beforeDestroy(): void {
 		this.$store.dispatch('removeMessage', this.msgId);
-		this.unwatch();
 		this.unsubscribe();
 	}
 
@@ -248,15 +220,6 @@ export default class DpaUpdater extends Vue {
 	}
 
 	/**
-	 * Retrieves OS information (EmbedOs DPA request)
-	 */
-	private getOsInfo(): void {
-		this.$store.dispatch('spinner/show', {timeout: 30000});
-		OsService.sendRead(this.address, 30000, 'iqrfnet.trUpload.messages.osInfoFail', () => this.msgId = null)
-			.then((msgId: string) => this.msgId = msgId);
-	}
-
-	/**
 	 * Performs device enumeration
 	 */
 	private getDeviceEnumeration(): void {
@@ -268,7 +231,7 @@ export default class DpaUpdater extends Vue {
 	/**
 	 * EmbedOs info response handler
 	 */
-	private handleOsInfoResponse(response: any): void {
+	public handleOsInfoResponse(response: any): void {
 		const result = response.data.rsp.result;
 		this.osBuild = this.convertVersion(result.osBuild);
 		this.trType = result.trMcuType;
@@ -370,23 +333,23 @@ export default class DpaUpdater extends Vue {
 					switch (error.response.status) {
 						case 400:
 							this.$toast.error(
-								this.$t('iqrfnet.trUpload.messagess.badRequest').toString()
+								this.$t('iqrfnet.trUpload.dpaUpload.messagess.badRequest').toString()
 							);
 							break;
 						case 404:
 							this.$toast.error(
-								this.$t('iqrfnet.trUpload.messages.notFound').toString()
+								this.$t('iqrfnet.trUpload.dpaUpload.messages.notFound').toString()
 							);
 							break;
 						case 500: {
 							const msg = error.response.data.message;
 							if (msg === 'Filesystem failure') {
 								this.$toast.error(
-									this.$t('iqrfnet.trUpload.messagess.moveFailure').toString()
+									this.$t('iqrfnet.trUpload.dpaUpload.messagess.moveFailure').toString()
 								);
 							} else if (msg === 'Download failure') {
 								this.$toast.error(
-									this.$t('iqrfnet.trUpload.messagess.downloadFailure').toString()
+									this.$t('iqrfnet.trUpload.dpaUpload.messages.downloadFailure').toString()
 								);
 							} else {
 								this.$toast.error(
