@@ -144,6 +144,7 @@
 		"clearBonds": "Clear All Bonds",
 		"enumerate": "Enumerate",
 		"upload": "Upload",
+		"update": "Update",
 		"backup": "Backup",
 		"restore": "Restore",
 		"downloadBackup": "Download backup",
@@ -1661,10 +1662,15 @@
 			"osUpload": {
 				"title": "IQRF OS update",
 				"form": {
-					"version": "OS version"
+					"current": "Current OS version:",
+					"version": "Target OS version"
 				},
 				"errors": {
 					"version": "Please select IQRF OS version to upload."
+				},
+				"messages": {
+					"newest": "Your device has the latest version of IQRF OS.",
+					"fetchFail": "Failed to retrieve current version of IQRF OS."
 				}
 			},
 			"messages": {

@@ -22,6 +22,13 @@ class IqrfService {
 	getMacros(): Promise<AxiosResponse> {
 		return axios.get('iqrf/macros/', {headers: authorizationHeader()});
 	}
+
+	/**
+	 * Retrieves IQRF OS patches
+	 */
+	getPatches(): Promise<AxiosResponse> {
+		return axios.get('iqrf/osPatches', {headers: authorizationHeader()});
+	}
 }
 
 export default new IqrfService();
