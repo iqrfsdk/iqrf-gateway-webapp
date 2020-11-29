@@ -96,9 +96,14 @@ export default class OsUpdater extends Vue {
 	private currentOsVersion = ''
 
 	/**
+	 * @var {string} interfaceType Used IQRF interface
+	 */
+	private interfaceType = ''
+
+	/**
 	 * @var {number} osVersion Selected version of IQRF OS
 	 */
-	private osVersion = 0
+	private osVersion: number|null = null
 
 	/**
 	 * @var {Array<IqrfOsPatch} patches Array of all patches in database
@@ -119,12 +124,16 @@ export default class OsUpdater extends Vue {
 	}
 
 	/**
-	 * Handles 
+	 * Handles OS Info response
 	 */
 	public handleOsInfoResponse(response: any): void {
 		this.currentOsBuild = response.osBuild;
 		const osVersion = response.osVersion.toString(16);
 		this.currentOsVersion = osVersion.charAt(0) + '.0' + osVersion.charAt(1);
+		const flags = ('00000000' + response.flags.toString(2)).slice(-8);
+		if (flags[3] === '0') {
+			this.interfaceType = flags[6] === '0' ? 'SPI' : 'UART';
+		}
 		this.getOsPatches();
 	}
 
@@ -169,7 +178,7 @@ export default class OsUpdater extends Vue {
 	}
 
 	private uploadOs(): void {
-		this.currentOsVersion = this.prettyVersion(this.patches[this.osVersion - 1].toOsVersion.toString());
+		this.currentOsVersion = this.prettyVersion(this.patches[(this.osVersion ?? 1) - 1].toOsVersion.toString());
 		this.updateVersions();
 	}
 }
