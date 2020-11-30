@@ -202,21 +202,4 @@ class UploadController extends IqrfController {
 		return $response->writeJsonBody($patches);
 	}
 
-	/**
-	 * @Path("/osUpdate")
-	 * @Method("GET")
-	 * @OpenApi("
-	 *  summary: Updates IQRF OS
-	 *  requestBody:
-	 *      required: true
-	 *      content:
-	 *          application/json:
-	 *              schema:
-	 *                  $ref: '#/components/schemas/OsUpdate'
-	 * ")
-	 */
-	public function updateOs(ApiRequest $request, ApiResponse $response): ApiResponse {
-		return $response->writeBody('Workaround');
-	}
-
 }

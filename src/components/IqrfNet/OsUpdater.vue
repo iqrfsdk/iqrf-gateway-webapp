@@ -127,14 +127,18 @@ export default class OsUpdater extends Vue {
 	 * Handles OS Info response
 	 */
 	public handleOsInfoResponse(response: any): void {
-		this.currentOsBuild = response.osBuild;
+		/*this.currentOsBuild = response.osBuild;
 		const osVersion = response.osVersion.toString(16);
 		this.currentOsVersion = osVersion.charAt(0) + '.0' + osVersion.charAt(1);
 		const flags = ('00000000' + response.flags.toString(2)).slice(-8);
 		if (flags[3] === '0') {
 			this.interfaceType = flags[6] === '0' ? 'SPI' : 'UART';
-		}
-		this.getOsPatches();
+		}*/
+		IqrfService.getUpgrades(response)
+			.then((response: AxiosResponse) => {
+				console.error(response);
+			});
+		/*this.getOsPatches();*/
 	}
 
 	/**

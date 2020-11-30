@@ -29,6 +29,10 @@ class IqrfService {
 	getPatches(): Promise<AxiosResponse> {
 		return axios.get('iqrf/osPatches', {headers: authorizationHeader()});
 	}
+
+	getUpgrades(data: any): Promise<AxiosResponse> {
+		return axios.post('iqrf/osUpgrades', data, {headers: authorizationHeader()});
+	}
 }
 
 export default new IqrfService();
