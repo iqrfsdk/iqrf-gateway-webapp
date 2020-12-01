@@ -1,49 +1,34 @@
 /**
- * IQRF OS patch metadata interface
+ * IQRF OS upgrade metadata interface
  */
-export interface IqrfOsPatch {
+export interface IqrfOsUpgrade {
 	/**
-	 * Patch ID
+	 * IQRF OS build
 	 */
-	id: number
+	osBuild: string
 
 	/**
-	 * Type of module the patch is for
+	 * IQRF OS version
 	 */
-	moduleType: string
+	osVersion: string
 
 	/**
-	 * OS version to upgrade from
+	 * DPA pretty version
 	 */
-	fromOsVersion: number
+	dpa: string
 
 	/**
-	 * OS build to upgrade from
+	 * DPA raw version
 	 */
-	fromOsBuild: number
+	dpaRaw: string
 
 	/**
-	 * OS version to upgrade to
+	 * IQRF OS notes
 	 */
-	toOsVersion: number
+	notes: string
 
 	/**
-	 * OS build to upgrade to
+	 * Download path
 	 */
-	toOsBuild: number
-
-	/**
-	 * Patch part number
-	 */
-	partNumber: number
-
-	/**
-	 * Number of patch parts
-	 */
-	parts: number
-
-	/**
-	 * Patch file name
-	 */
-	fileName: string
+	downloadPath: string
 }

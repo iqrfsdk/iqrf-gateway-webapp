@@ -38,8 +38,6 @@ use App\IqrfNetModule\Enums\TrSeries;
 use App\IqrfNetModule\Enums\UploadFormats;
 use App\IqrfNetModule\Models\DpaManager;
 use App\IqrfNetModule\Models\UploadManager;
-use App\Models\Database\EntityManager;
-use App\Models\Database\Repositories\IqrfOsPatchRepository;
 use GuzzleHttp\Exception\ClientException;
 use Nette\IOException;
 
@@ -60,21 +58,14 @@ class UploadController extends IqrfController {
 	private $dpaManager;
 
 	/**
-	 * @var IqrfOsPatchRepository IQRF OS patch database repository
-	 */
-	private $repository;
-
-	/**
 	 * Constructor
 	 * @param DpaManager $dpaManager IQRF DPA Manager
 	 * @param UploadManager $uploadManager Upload manager
-	 * @param EntityManager $entityManager Entity manager
 	 * @param RestApiSchemaValidator $validator REST API JSON schema validator
 	 */
-	public function __construct(DpaManager $dpaManager, UploadManager $uploadManager, EntityManager $entityManager, RestApiSchemaValidator $validator) {
+	public function __construct(DpaManager $dpaManager, UploadManager $uploadManager, RestApiSchemaValidator $validator) {
 		$this->dpaManager = $dpaManager;
 		$this->uploadManager = $uploadManager;
-		$this->repository = $entityManager->getIqrfOsPatchRepository();
 		parent::__construct($validator);
 	}
 
@@ -173,33 +164,6 @@ class UploadController extends IqrfController {
 		} catch (ClientException $e) {
 			throw new ServerErrorException('Download failure', ApiResponse::S500_INTERNAL_SERVER_ERROR);
 		}
-	}
-
-	/**
-	 * @Path("/osPatches")
-	 * @Method("GET")
-	 * @OpenApi("
-	 *  summary: Lists all IQRF OS patch files
-	 *  responses:
-	 *      '200':
-	 *          description: Success
-	 *          content:
-	 *              application/json:
-	 *                  schema:
-	 *                      type: array
-	 *                      items:
-	 *                          $ref: '#/components/schemas/IqrfOsPatchDetail'
-	 * ")
-	 * @param ApiRequest $request API request
-	 * @param ApiResponse $response API response
-	 * @return ApiResponse API response
-	 */
-	public function listOsFiles(ApiRequest $request, ApiResponse $response): ApiResponse {
-		$patches = [];
-		foreach ($this->repository->findAll() as $patch) {
-			array_push($patches, $patch->jsonSerialize());
-		}
-		return $response->writeJsonBody($patches);
 	}
 
 }

@@ -1,4 +1,5 @@
 import axios, {AxiosResponse} from 'axios';
+import { Dictionary } from 'vue-router/types/router';
 import {authorizationHeader} from '../helpers/authorizationHeader';
 
 /**
@@ -25,14 +26,28 @@ class IqrfService {
 
 	/**
 	 * Retrieves IQRF OS patches
+	 * @param {Dictionary<number|string>} data API request body
 	 */
-	getPatches(): Promise<AxiosResponse> {
-		return axios.get('iqrf/osPatches', {headers: authorizationHeader()});
-	}
-
-	getUpgrades(data: any): Promise<AxiosResponse> {
+	getUpgrades(data: Dictionary<number|string>): Promise<AxiosResponse> {
 		return axios.post('iqrf/osUpgrades', data, {headers: authorizationHeader()});
 	}
+
+	/**
+	 * Retrieves IQRF OS and DPA upgrade file names
+	 * @param {Dictionary<number|string>} data API request body
+	 */
+	getUpgradeFiles(data: Dictionary<number|string>): Promise<AxiosResponse> {
+		return axios.post('iqrf/osUpgradeFiles', data, {headers: authorizationHeader()});
+	}
+
+	/**
+	 * Executes upload via IQRF Upload Utility
+	 * @param {Dictionary<string>} data API request body
+	 */
+	utilUpload(data: Dictionary<string>): Promise<AxiosResponse> {
+		return axios.post('iqrf/utilUpload', data, {headers: authorizationHeader()});
+	}
+
 }
 
 export default new IqrfService();

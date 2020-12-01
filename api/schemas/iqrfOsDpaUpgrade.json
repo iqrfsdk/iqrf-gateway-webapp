@@ -1,0 +1,74 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"$id": "https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/iqrfOsDpaUpgrade.json",
+	"type": "object",
+	"title": "IQRF OS and DPA upgrade",
+	"additionalProperties": false,
+	"required": [
+		"dpa",
+		"interface",
+		"fromBuild",
+		"fromVersion",
+		"toBuild",
+		"toVersion",
+		"trMcuType"
+	],
+	"properties": {
+		"dpa": {
+			"$id": "#/properties/dpa",
+			"type": "string",
+			"title": "DPA plugin version",
+			"example": "0415"
+		},
+		"interface": {
+			"$id": "#/properties/interface",
+			"type": "string",
+			"title": "IQRF interface",
+			"enum": [
+				"SPI",
+				"UART"
+			],
+			"example": "SPI"
+		},
+		"fromBuild": {
+			"$id": "#/properties/fromBuild",
+			"type": "string",
+			"title": "Current IQRF OS build",
+			"example": "08C8"
+		},
+		"fromVersion": {
+			"$id": "#/properties/fromVersion",
+			"type": "string",
+			"title": "Current IQRF OS version",
+			"example": "403"
+		},
+		"toBuild": {
+			"$id": "#/properties/toBuild",
+			"type": "string",
+			"title": "Target IQRF OS build",
+			"example": "08D5"
+		},
+		"toVersion": {
+			"$id": "#/properties/toVersion",
+			"type": "string",
+			"title": "Target IQRF OS version",
+			"example": "404"
+		},
+		"trMcuType": {
+			"$id": "#/properties/trMcuType",
+			"type": "integer",
+			"title": "TR and MCU type",
+			"example": 36
+		},
+		"rfMode": {
+			"$id": "#/properties/rfMode",
+			"type": "string",
+			"title": "RF mode",
+			"enum": [
+				"STD",
+				"LP"
+			],
+			"example": "STD"
+		}
+	}
+}

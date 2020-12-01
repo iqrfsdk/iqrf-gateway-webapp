@@ -62,7 +62,6 @@ class IqrfOs {
 	 */
 	public static function fromOsRead(array $api): self {
 		$data = $api['response']->data->rsp->result;
-		//VYPRINTOVAT DO SOUBORU CO PŘÍŠLO!!!!!!!!!!!!
 		$build = Strings::upper(Strings::padLeft(dechex($data->osBuild), 4, '0'));
 		$versionHi = dechex($data->osVersion >> 4);
 		$versionLo = Strings::padLeft(dechex($data->osVersion & 0xf), 2, '0');

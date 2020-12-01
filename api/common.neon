@@ -81,10 +81,12 @@ components:
 			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/iqrfIdeMacros.json
 		IqrfInterfaces:
 			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/iqrfInterfaces.json
+		IqrfOsDpaUpgrade:
+			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/iqrfOsDpaUpgrade.json
 		IqrfOsPatchDetail:
 			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/iqrfOsPatchDetail.json
-		IqrfOsPatchUpdate:
-			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/iqrfOsPatchUpdate.json
+		IqrfOsPatchUpgrade:
+			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/iqrfOsPatchUpgrade.json
 		InstallationCheck:
 			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/installationCheck.json
 		MainConfiguration:
@@ -123,6 +125,8 @@ components:
 			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/taskList.json
 		TranslatorConfig:
 			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/translatorConfig.json
+		UploadUtil:
+			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/uploadUtil.json
 		UserCreate:
 			$ref: https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/userCreate.json
 		UserDetail:

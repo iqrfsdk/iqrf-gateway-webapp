@@ -121,7 +121,7 @@ export default class TrUpload extends Vue {
 	private handleOsInfoResponse(response): void {
 		if (response.data.status === 0) {
 			(this.$refs.dpaUpdater as DpaUpdater).handleOsInfoResponse(response);
-			(this.$refs.osUpdater as OsUpdater).handleOsInfoResponse(response);
+			(this.$refs.osUpdater as OsUpdater).handleOsInfoResponse(response.data.rsp.result);
 		} else {
 			this.$toast.error(
 				this.$t('iqrfnet.trUpload.messages.osInfoFail').toString()

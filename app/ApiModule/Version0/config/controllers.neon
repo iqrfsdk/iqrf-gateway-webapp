@@ -20,8 +20,8 @@ services:
 	- App\ApiModule\Version0\Controllers\InstallationController
 	- App\ApiModule\Version0\Controllers\MappingController
 	- App\ApiModule\Version0\Controllers\Iqrf\InterfacesController
+	- App\ApiModule\Version0\Controllers\Iqrf\IqrfOsController
 	- App\ApiModule\Version0\Controllers\Iqrf\MacrosController
-	- App\ApiModule\Version0\Controllers\Iqrf\OsController
 	- App\ApiModule\Version0\Controllers\Iqrf\UploadController
 	- App\ApiModule\Version0\Controllers\Network\ConnectionsController
 	- App\ApiModule\Version0\Controllers\Network\ConnectivityController

@@ -21,11 +21,12 @@ declare(strict_types = 1);
 namespace App\IqrfNetModule\Models;
 
 use App\IqrfNetModule\Entities\Dpa;
-use App\IqrfNetModule\Entities\IqrfOs;
+use App\IqrfNetModule\Enums\DpaInterfaces;
+use App\IqrfNetModule\Enums\RfModes;
 use App\IqrfNetModule\Enums\TrSeries;
-use App\Models\Database\Entities\IqrfOsPatch;
 use App\Models\Database\EntityManager;
 use App\Models\Database\Repositories\IqrfOsPatchRepository;
+use Iqrf\Repository\Models\OsAndDpaManager;
 
 /**
  * IQRF OS manager
@@ -38,90 +39,110 @@ class IqrfOsManager {
 	private $dpaManager;
 
 	/**
+	 * @var OsAndDpaManager IQRF OS and DPA manager
+	 */
+	private $osDpaManager;
+
+	/**
 	 * @var IqrfOsPatchRepository IQRF OS patch database repository
 	 */
 	private $repository;
 
 	/**
 	 * Constructor
-	 * @param DpaManager $dpaManager DPA manager
 	 * @param EntityManager $entityManager Entity manager
 	 */
-	public function __construct(DpaManager $dpaManager, EntityManager $entityManager) {
+	public function __construct(DpaManager $dpaManager, OsAndDpaManager $osDpaManager, EntityManager $entityManager) {
 		$this->dpaManager = $dpaManager;
+		$this->osDpaManager = $osDpaManager;
 		$this->repository = $entityManager->getIqrfOsPatchRepository();
 	}
 
 	/**
-	 * Lists available IQRF OS changes
-	 * @param IqrfOs $os Current IQRF OS entity
-	 * @return array<string> Available IQRF OS changes
+	 * Lists all IQRF OS patches
+	 * @return array<int, array<string, int|string>> IQRF OS patches
 	 */
-	public function list(IqrfOs $os): array {
-		$array = [];
-		$osVersions = $this->listVersions($os);
-		foreach ($osVersions as $osBuild => $osVersion) {
-			foreach ($this->dpaManager->list($osBuild) as $dpa) {
-				$index = $osBuild . ',' . $dpa->getDpa();
-				$versions = $osVersion . ', DPA ' . $dpa->getDpa(true);
-				if (hexdec($dpa->getDpa()) < 0x400) {
-					$array[$index . ',LP'] = $versions . ', LP RF mode';
-					$array[$index . ',STD'] = $versions . ', STD RF mode';
-				} else {
-					$array[$index] = $versions;
-				}
-			}
+	public function listOsPatches(): array {
+		$patches = [];
+		foreach ($this->repository->findAll() as $patch) {
+			array_push($patches, $patch->jsonSerialize());
 		}
-		krsort($array);
-		return $array;
+		return $patches;
 	}
 
 	/**
-	 * Lists IQRF OS versions
-	 * @param IqrfOs $os Current IQRF OS
-	 * @return array<string,string> IQRF OS versions
+	 * Lists available IQRF OS upgrades
+	 * @param string $currentVersion Current version of IQRF OS
+	 * @param string $currentBuild Current build of IQRF OS
+	 * @param int $mcuType Module MCU type
+	 * @return array<int, array<string, int|string>> Available IQRF OS upgrades
 	 */
-	private function listVersions(IqrfOs $os): array {
+	public function listOsUpgrades(string $currentVersion, string $currentBuild, int $mcuType): array {
 		$versions = [];
-		$versions[$os->getBuild()] = $os->getDescription();
-		$patches = $this->repository->findBy(['fromBuild' => $os->getBuild(), 'part' => 1]);
+		if ($mcuType !== 4) {
+			return $versions;
+		}
+		$patches = $this->repository->findBy(['fromBuild' => hexdec($currentBuild), 'part' => 1]);
 		foreach ($patches as $patch) {
-			assert($patch instanceof IqrfOsPatch);
-			$trType = TrSeries::fromIqrfOsFileName($patch->getModuleType());
-			$toBuild = dechex($patch->getToBuild());
-			$entity = new IqrfOs($toBuild, (string) $patch->getToVersion(), $trType);
-			$versions[$toBuild] = $entity->getDescription();
+			$toBuild = str_pad(dechex($patch->getToBuild()), 4, '0', STR_PAD_LEFT);
+			$toVersion = strval($patch->getToVersion());
+			if ($toVersion <= $currentVersion || $toBuild <= $currentBuild) {
+				continue;
+			}
+			foreach ($this->osDpaManager->get($toBuild) as $dpa) {
+				$upgrade = $dpa->jsonSerialize();
+				$upgrade['osVersion'] = $toVersion;
+				if (hexdec($dpa->getDpa()) < 0x400) {
+					$upgrade['dpa'] = $dpa->getDpa(true) . ', LP';
+					array_push($versions, $upgrade);
+					$upgrade['dpa'] = $dpa->getDpa(true) . ', STD';
+				}
+				array_push($versions, $upgrade);
+			}
 		}
 		return $versions;
 	}
 
 	/**
-	 * Returns files to upload
-	 * @param string $fromBuild Current IQRF OS build
-	 * @param string $toBuild Target IQRF OS build
-	 * @param Dpa $dpa DPA entity
-	 * @return array<string> Files to upload
+	 * Retrieves names of files to be used in IQRF OS upgrade
+	 * @param array<string, int|string> $request API request body
+	 * @return array<string, string|array<int, string>> Array containing names of files to be used in upgrade
 	 */
-	public function getFiles(string $fromBuild, string $toBuild, Dpa $dpa): array {
-		$files = $this->getOsFiles($fromBuild, $toBuild);
-		$files[] = $this->dpaManager->getFile($toBuild, $dpa);
-		return $files;
+	public function getUpgradeFiles(array $request): array {
+		$dpaFile = $this->getDpaFileName($request);
+		$osFiles = $this->getOsFileNames($request);
+		return ['dpa' => $dpaFile, 'os' => $osFiles];
 	}
 
 	/**
-	 * Returns IQRF OS diff files
-	 * @param string $fromBuild From IQRF OS build
-	 * @param string $toBuild To IQRF OS build
-	 * @return array<string> Array of IQRF OS diff files
+	 * Retrieves DPA file name for upgrade
+	 * @param array<string, int|string> $request API request body
+	 * @return string Name of DPA file
 	 */
-	public function getOsFiles(string $fromBuild, string $toBuild): array {
-		$patches = $this->repository->findBy([
-			'fromBuild' => hexdec($fromBuild),
-			'toBuild' => hexdec($toBuild),
-		], ['part' => 'ASC']);
-		return array_map(function (IqrfOsPatch $patch): string {
-			return __DIR__ . '/../../../iqrf/os/' . $patch->getFileName();
-		}, $patches);
+	private function getDpaFileName(array $request): string {
+		$iface = DpaInterfaces::fromScalar($request['interface']);
+		$trSeries = TrSeries::fromTrMcuType($request['trMcuType']);
+		$rfMode = isset($request['rfMode']) ? RfModes::fromScalar($request['rfMode']) : null;
+		$dpa = new Dpa($request['dpa'], $iface, $trSeries, $rfMode);
+		return $this->dpaManager->getFile($request['toBuild'], $dpa);
+	}
+
+	/**
+	 * Retrieves OS file names for upgrade
+	 * @param array<string, int|string> $request API request body
+	 * @return array<int, string> Name of DPA file
+	 */
+	private function getOsFileNames(array $request): array {
+		$files = [];
+		$oldVersion = intval($request['fromVersion']);
+		$newVersion = intval($request['toVersion']);
+		$oldBuild = hexdec($request['fromBuild']);
+		$newBuild = hexdec($request['toBuild']);
+		$patches = $this->repository->findBy(['fromVersion' => $oldVersion, 'toVersion' => $newVersion, 'fromBuild' => $oldBuild, 'toBuild' => $newBuild]);
+		foreach ($patches as $patch) {
+			array_push($files, $patch->getFileName());
+		}
+		return $files;
 	}
 
 }

@@ -1,0 +1,44 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"$id": "https://apidocs.iqrf.org/iqrf-gateway-webapp-api/schemas/uploadUtil.json",
+	"type": "object",
+	"title": "Upload utility schema",
+	"additionalProperties": false,
+	"required": [
+		"file"
+	],
+	"properties": {
+		"file": {
+			"$id": "#/properties/file",
+			"type": "array",
+			"title": "Files to upload",
+			"items": {
+				"$id": "#/properties/file/items",
+				"type": "object",
+				"title": "File to upload",
+				"additionalProperties": false,
+				"required": [
+					"name",
+					"type"
+				],
+				"properties": {
+					"name": {
+						"$id": "#/properties/file/items/name",
+						"type": "string",
+						"title": "File name"
+					},
+					"type": {
+						"$id": "#/properties/file/items/type",
+						"type": "string",
+						"title": "File type",
+						"enum": [
+							"OS",
+							"DPA"
+						],
+						"example": "OS"
+					}
+				}
+			}
+		}
+	}
+}
