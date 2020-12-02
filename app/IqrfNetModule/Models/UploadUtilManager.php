@@ -83,7 +83,8 @@ class UploadUtilManager {
 		$this->serviceManager->stop(self::DAEMON);
 		foreach ($files as $file) {
 			if ($file->type === 'OS') {
-				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -I ' . $file->name, true);
+				$fileName = str_replace(['(', ')'], ['\(', '\)'], $file->name);
+				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -I ' . $fileName, true);
 			} else {
 				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -I ' . self::UPLOAD_DIR . $file->name, true);
 			}

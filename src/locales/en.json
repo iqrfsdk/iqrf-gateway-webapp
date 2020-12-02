@@ -1646,20 +1646,13 @@
 					"modalPrompt": "The device already uses DPA version {version}, do you want to proceed with upload anyway?"
 				}
 			},
-			"fileUpload": {
-				"title": "File upload",
+			"hexUpload": {
+				"title": "Custom DPA handler upload",
 				"form": {
-					"file":"File to upload",
-					"fileFormat": "Target of upload",
-					"fileFormats": {
-						"hex": "HEX",
-						"iqrf": "IQRF",
-						"trcnfg": "TRCNFG"
-					}
+					"file":"File to upload"
 				},
 				"errors": {
-					"file": "Please select the file to upload.",
-					"fileFormat": "Please select target of upload."
+					"file": "Please select the file to upload."
 				}
 			},
 			"osUpload": {

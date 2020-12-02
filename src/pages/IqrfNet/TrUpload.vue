@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<h1>{{ $t('iqrfnet.trUpload.title') }}</h1>
-		<FileUpload />
+		<HexUpload />
 		<DpaUpdater ref='dpaUpdater' />
 		<OsUpdater ref='osUpdater' />
 	</div>
@@ -14,13 +14,13 @@ import {MutationPayload} from 'vuex';
 import {WebSocketClientState} from '../../store/modules/webSocketClient.module';
 import OsService from '../../services/DaemonApi/OsService';
 import DpaUpdater from '../../components/IqrfNet/DpaUpdater.vue';
-import FileUpload from '../../components/IqrfNet/FileUpload.vue';
+import HexUpload from '../../components/IqrfNet/HexUpload.vue';
 import OsUpdater from '../../components/IqrfNet/OsUpdater.vue';
 
 @Component({
 	components: {
 		DpaUpdater,
-		FileUpload,
+		HexUpload,
 		OsUpdater,
 	},
 	beforeRouteEnter(to: Route, from: Route, next: NavigationGuardNext): void {
