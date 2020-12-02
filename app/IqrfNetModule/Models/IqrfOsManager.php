@@ -140,7 +140,7 @@ class IqrfOsManager {
 		$newBuild = hexdec($request['toBuild']);
 		$patches = $this->repository->findBy(['fromVersion' => $oldVersion, 'toVersion' => $newVersion, 'fromBuild' => $oldBuild, 'toBuild' => $newBuild]);
 		foreach ($patches as $patch) {
-			array_push($files, $patch->getFileName());
+			array_push($files, __DIR__ . '/../../../iqrf/os/' . $patch->getFileName());
 		}
 		return $files;
 	}

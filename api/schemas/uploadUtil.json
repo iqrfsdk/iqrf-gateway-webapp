@@ -5,10 +5,10 @@
 	"title": "Upload utility schema",
 	"additionalProperties": false,
 	"required": [
-		"file"
+		"files"
 	],
 	"properties": {
-		"file": {
+		"files": {
 			"$id": "#/properties/file",
 			"type": "array",
 			"title": "Files to upload",

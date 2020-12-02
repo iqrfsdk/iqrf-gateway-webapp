@@ -20,8 +20,11 @@ declare(strict_types = 1);
 
 namespace App\IqrfNetModule\Models;
 
+use App\CoreModule\Entities\ICommand;
 use App\CoreModule\Models\CommandManager;
+use App\IqrfNetModule\Exceptions\UploadUtilFileException;
 use App\IqrfNetModule\Exceptions\UploadUtilMissingException;
+use App\IqrfNetModule\Exceptions\UploadUtilSpiException;
 use App\ServiceModule\Models\ServiceManager;
 
 /**
@@ -33,6 +36,21 @@ class UploadUtilManager {
 	 * IQRF Gateway Daemon service name
 	 */
 	private const DAEMON = 'iqrf-gateway-daemon';
+
+	/**
+	 * Path to uploaded files
+	 */
+	private const UPLOAD_DIR = '/var/cache/iqrf-gateway-daemon/upload/';
+
+	/**
+	 * IQRF Upload Utility command
+	 */
+	private const UPLOAD_UTIL = 'iqrf-upload-util';
+
+	/**
+	 * IQRF Upload Utility launch config
+	 */
+	private const UPLOAD_UTIL_CONF = '-c /etc/iqrf-upload-util/config.json';
 
 	/**
 	 * @var CommandManager Command manager
@@ -59,11 +77,36 @@ class UploadUtilManager {
 	 * @param array<int, array<string, string>> $files Array of files to upload
 	 */
 	public function executeUpload(array $files): void {
-		if (!$this->commandManager->commandExist('iqrf-upload-util')) {
+		if (!$this->commandManager->commandExist(self::UPLOAD_UTIL)) {
 			throw new UploadUtilMissingException('IQRF Upload Utility is not installed.');
 		}
-		$this->serviceManager->disable(self::DAEMON);
-		$this->serviceManager->enable(self::DAEMON);
+		$this->serviceManager->stop(self::DAEMON);
+		foreach ($files as $file) {
+			if ($file->type === 'OS') {
+				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -I ' . $file->name);
+			} else {
+				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -I ' . self::UPLOAD_DIR . $file->name);
+			}
+			if ($result->getExitCode() !== 0) {
+				$this->handleError($result);
+			}
+		}
+		$this->serviceManager->start(self::DAEMON);
+	}
+
+	/**
+	 * Handles IQRF Upload Utility errors
+	 * @param ICommand $result Command result
+	 */
+	private function handleError(ICommand $result): void {
+		$command = $result->getCommand();
+		$exitCode = $result->getExitCode();
+		$errorMsg = $result->getStderr();
+		if ($exitCode >= 1 && $exitCode <= 5) {
+			$this->serviceManager->start(self::DAEMON);
+			throw new UploadUtilFileException($errorMsg . ' Command executed: ' . $command);
+		}
+		throw new UploadUtilSpiException($errorMsg . ' Command executed: ' . $command);
 	}
 
 }

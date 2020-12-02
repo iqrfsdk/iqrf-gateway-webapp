@@ -324,10 +324,7 @@ export default class DpaUpdater extends Vue {
 		}
 		DpaService.getDpaFile(request)
 			.then((response: AxiosResponse) => {
-				/*this.$store.dispatch('spinner/show', {timeout: 30000});
-				NativeUploadService.upload(response.data.fileName, FileFormat.IQRF, 30000, 'iqrfnet.trUpload.messagess.genericError', () => this.msgId = null)
-					.then((msgId: string) => this.msgId = msgId);*/
-				IqrfService.utilUpload({fileName: response.data.fileName})
+				IqrfService.utilUpload([{name: response.data.fileName, type: 'DPA'}])
 					.then((response: AxiosResponse) => console.error(response))
 					.catch((error: AxiosError) => console.error(error));
 			})

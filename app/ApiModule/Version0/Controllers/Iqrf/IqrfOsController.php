@@ -23,12 +23,15 @@ namespace App\ApiModule\Version0\Controllers\Iqrf;
 use Apitte\Core\Annotation\Controller\Method;
 use Apitte\Core\Annotation\Controller\OpenApi;
 use Apitte\Core\Annotation\Controller\Path;
+use Apitte\Core\Exception\Api\ClientErrorException;
 use Apitte\Core\Exception\Api\ServerErrorException;
 use Apitte\Core\Http\ApiRequest;
 use Apitte\Core\Http\ApiResponse;
 use App\ApiModule\Version0\Controllers\IqrfController;
 use App\ApiModule\Version0\Models\RestApiSchemaValidator;
+use App\IqrfNetModule\Exceptions\UploadUtilFileException;
 use App\IqrfNetModule\Exceptions\UploadUtilMissingException;
+use App\IqrfNetModule\Exceptions\UploadUtilSpiException;
 use App\IqrfNetModule\Models\IqrfOsManager;
 use App\IqrfNetModule\Models\UploadUtilManager;
 
@@ -149,6 +152,12 @@ class IqrfOsController extends IqrfController {
 	 *  responses:
 	 *      '200':
 	 *          description: Success
+	 *      '400':
+	 *          $ref: '#/components/responses/BadRequest'
+	 *      '404':
+	 *          description: Not found
+	 *      '500':
+	 *          $ref: '#/components/responses/ServerError'
 	 * ")
 	 * @param ApiRequest $request API request
 	 * @param ApiResponse $response API response
@@ -157,10 +166,12 @@ class IqrfOsController extends IqrfController {
 	public function utilUpload(ApiRequest $request, ApiResponse $response): ApiResponse {
 		$this->validator->validateRequest('uploadUtil', $request);
 		try {
-			$data = (array) $request->getJsonBody(false);
-			$this->uploadUtilManager->executeUpload($data);
+			$data = $request->getJsonBody(false);
+			$this->uploadUtilManager->executeUpload($data->files);
 			return $response->writeBody('Workaround');
-		} catch (UploadUtilMissingException $e) {
+		} catch (UploadUtilFileException $e) {
+			throw new ClientErrorException($e->getMessage(), ApiResponse::S400_BAD_REQUEST);
+		} catch (UploadUtilMissingException | UploadUtilSpiException $e) {
 			throw new ServerErrorException($e->getMessage(), ApiResponse::S500_INTERNAL_SERVER_ERROR);
 		}
 	}
