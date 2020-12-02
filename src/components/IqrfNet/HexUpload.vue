@@ -32,8 +32,7 @@ import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CCardHeader, CForm, CInputFile, CSelect} from '@coreui/vue/src';
 import {FileFormat} from '../../iqrfNet/fileFormat';
 import NativeUploadService from '../../services/NativeUploadService';
-import {IOption} from '../../interfaces/coreui';
-import {AxiosResponse} from 'axios';
+import {AxiosResponse, AxiosError} from 'axios';
 
 @Component({
 	components: {
@@ -94,6 +93,9 @@ export default class HexUpload extends Vue {
 		}
 		formData.append('file', this.getFiles()[0]);
 		this.$store.commit('spinner/SHOW');
+		NativeUploadService.uploadREST(formData)
+			.then((response: AxiosResponse) => console.error(response))
+			.catch((error: AxiosError) => console.error(error));
 	}
 
 	/**

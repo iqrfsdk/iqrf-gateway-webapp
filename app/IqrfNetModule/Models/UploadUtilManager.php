@@ -91,6 +91,7 @@ class UploadUtilManager {
 			if ($result->getExitCode() !== 0) {
 				$this->handleError($result);
 			}
+			usleep(100 * 1000);
 		}
 		$this->serviceManager->start(self::DAEMON);
 	}
