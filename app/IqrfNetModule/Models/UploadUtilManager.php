@@ -74,7 +74,7 @@ class UploadUtilManager {
 
 	/**
 	 * Uploads file content using the IQRF Upload Utility
-	 * @param array<int, array<string, string>> $files Array of files to upload
+	 * @param array<int, mixed> $files Array of files to upload
 	 */
 	public function executeUpload(array $files): void {
 		if (!$this->commandManager->commandExist(self::UPLOAD_UTIL)) {
