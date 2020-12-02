@@ -165,18 +165,7 @@ export default class DpaUpdater extends Vue {
 			}
 			this.$store.dispatch('spinner/hide');
 			this.$store.dispatch('removeMessage', this.msgId);
-			if (mutation.payload.mType === 'mngDaemon_Upload') {
-				if (mutation.payload.data.status === 0) {
-					this.$toast.success(
-						this.$t('iqrfnet.trUpload.messages.success').toString()
-					);
-					this.updateVersions();
-				} else {
-					this.$toast.error(
-						this.$t('iqrfnet.trUpload.messages.failure').toString()
-					);
-				}
-			} else if (mutation.payload.mType === 'iqmeshNetwork_EnumerateDevice') {
+			if (mutation.payload.mType === 'iqmeshNetwork_EnumerateDevice') {
 				if (mutation.payload.data.status === 0) {
 					this.interfaceType = mutation.payload.data.rsp.osRead.flags.interfaceType;
 				} else {
@@ -289,6 +278,9 @@ export default class DpaUpdater extends Vue {
 		this.currentDpa = this.version;
 	}
 
+	/**
+	 * Displays a modal window if new version is the same as current version, otherwise executes upload
+	 */
 	private compareUploadedVersion(): void {
 		if (this.version === null) {
 			return;
@@ -322,16 +314,28 @@ export default class DpaUpdater extends Vue {
 		} else {
 			Object.assign(request, {'dpa': this.version});
 		}
+		this.$store.commit('spinner/SHOW');
 		DpaService.getDpaFile(request)
 			.then((response: AxiosResponse) => {
 				IqrfService.utilUpload([{name: response.data.fileName, type: 'DPA'}])
-					.then(() => this.$toast.success(this.$t('iqrfnet.trUpload.dpaUpload.messages.uploadSuccess').toString()))
+					.then(() => {
+						this.updateVersions();
+						this.$store.commit('spinner/HIDE');
+						this.$toast.success(
+							this.$t('iqrfnet.trUpload.dpaUpload.messages.uploadSuccess').toString()
+						);
+					})
 					.catch((error: AxiosError) => this.handleUtilUploadError(error));
 			})
 			.catch((error: AxiosError) => this.handleDpaFileError(error));
 	}
 
+	/**
+	 * Handles IQRF Utility Upload errors
+	 * @param {AxiosError} error REST API response errors
+	 */
 	private handleUtilUploadError(error: AxiosError): void {
+		this.$store.commit('spinner/HIDE');
 		if (error.response === undefined) {
 			console.error(error);
 			return;
@@ -352,6 +356,10 @@ export default class DpaUpdater extends Vue {
 		}
 	}
 
+	/**
+	 * Handles DPA file fetch errors
+	 * @param {AxiosError} error REST API response errors
+	 */
 	private handleDpaFileError(error: AxiosError): void {
 		this.$store.commit('spinner/HIDE');
 		if (error.response === undefined) {
