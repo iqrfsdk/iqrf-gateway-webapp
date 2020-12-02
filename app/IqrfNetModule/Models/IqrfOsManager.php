@@ -24,6 +24,8 @@ use App\IqrfNetModule\Entities\Dpa;
 use App\IqrfNetModule\Enums\DpaInterfaces;
 use App\IqrfNetModule\Enums\RfModes;
 use App\IqrfNetModule\Enums\TrSeries;
+use App\IqrfNetModule\Exceptions\DpaFileNotFoundException;
+use App\IqrfNetModule\Exceptions\DpaRfMissingException;
 use App\Models\Database\EntityManager;
 use App\Models\Database\Repositories\IqrfOsPatchRepository;
 use Iqrf\Repository\Models\OsAndDpaManager;
@@ -124,7 +126,14 @@ class IqrfOsManager {
 		$trSeries = TrSeries::fromTrMcuType($request['trMcuType']);
 		$rfMode = isset($request['rfMode']) ? RfModes::fromScalar($request['rfMode']) : null;
 		$dpa = new Dpa($request['dpa'], $iface, $trSeries, $rfMode);
-		return $this->dpaManager->getFile($request['toBuild'], $dpa);
+		if (hexdec($dpa->getVersion()) < 0x400 && $rfMode === null) {
+			throw new DpaRfMissingException('Missing RF mode for DPA version older than 4.00');
+		}
+		$fileName = $this->dpaManager->getFile($request['toBuild'], $dpa);
+		if ($fileName === null) {
+			throw new DpaFileNotFoundException('No DPA file matched the metadata');
+		}
+		return $fileName;
 	}
 
 	/**
