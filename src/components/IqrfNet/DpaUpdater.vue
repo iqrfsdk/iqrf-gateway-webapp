@@ -325,43 +325,59 @@ export default class DpaUpdater extends Vue {
 		DpaService.getDpaFile(request)
 			.then((response: AxiosResponse) => {
 				IqrfService.utilUpload([{name: response.data.fileName, type: 'DPA'}])
-					.then((response: AxiosResponse) => console.error(response))
-					.catch((error: AxiosError) => console.error(error));
+					.then(() => this.$toast.success(this.$t('iqrfnet.trUpload.dpaUpload.messages.uploadSuccess').toString()))
+					.catch((error: AxiosError) => this.handleUtilUploadError(error));
 			})
 			.catch((error: AxiosError) => this.handleDpaFileError(error));
 	}
 
-	private handleDpaFileError(error: AxiosError) {
+	private handleUtilUploadError(error: AxiosError): void {
+		if (error.response === undefined) {
+			console.error(error);
+			return;
+		}
+		const errorMsg = error.response.data.message;
+		if (error.response.status === 400) {
+			this.$toast.error(
+				this.$t('iqrfnet.trUpload.dpaUpload.messages.fileError', {error: errorMsg}).toString()
+			);
+		} else if (error.response.status === 500) {
+			this.$toast.error(
+				this.$t('iqrfnet.trUpload.dpaUpload.messages.uploadError', {error: errorMsg}).toString()
+			);
+		} else {
+			this.$toast.error(
+				this.$t('iqrfnet.trUpload.messagess.genericError').toString()
+			);
+		}
+	}
+
+	private handleDpaFileError(error: AxiosError): void {
 		this.$store.commit('spinner/HIDE');
-		if (error.response) {
-			switch (error.response.status) {
-				case 400:
-					this.$toast.error(
-						this.$t('iqrfnet.trUpload.dpaUpload.messagess.badRequest').toString()
-					);
-					break;
-				case 404:
-					this.$toast.error(
-						this.$t('iqrfnet.trUpload.dpaUpload.messages.notFound').toString()
-					);
-					break;
-				case 500: {
-					const msg = error.response.data.message;
-					if (msg === 'Filesystem failure') {
-						this.$toast.error(
-							this.$t('iqrfnet.trUpload.dpaUpload.messagess.moveFailure').toString()
-						);
-					} else if (msg === 'Download failure') {
-						this.$toast.error(
-							this.$t('iqrfnet.trUpload.dpaUpload.messages.downloadFailure').toString()
-						);
-					} else {
-						this.$toast.error(
-							this.$t('iqrfnet.trUpload.messagess.genericError').toString()
-						);
-					}
-					break;
-				}	
+		if (error.response === undefined) {
+			this.$toast.error(
+				this.$t('iqrfnet.trUpload.messagess.genericError').toString()
+			);
+			return;
+		}
+		if (error.response.status === 400) {
+			this.$toast.error(
+				this.$t('iqrfnet.trUpload.dpaUpload.messagess.badRequest').toString()
+			);
+		} else if (error.response.status === 404) {
+			this.$toast.error(
+				this.$t('iqrfnet.trUpload.dpaUpload.messages.notFound').toString()
+			);
+		} else if (error.response.status === 500) {
+			const msg = error.response.data.message;
+			if (msg === 'Filesystem failure') {
+				this.$toast.error(
+					this.$t('iqrfnet.trUpload.dpaUpload.messagess.moveFailure').toString()
+				);
+			} else if (msg === 'Download failure') {
+				this.$toast.error(
+					this.$t('iqrfnet.trUpload.dpaUpload.messages.downloadFailure').toString()
+				);
 			}
 		} else {
 			this.$toast.error(

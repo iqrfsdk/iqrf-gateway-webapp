@@ -1635,6 +1635,9 @@
 					"version": "Please select DPA version to upload."
 				},
 				"messages": {
+					"fileError": "DPA plug-in upload has not been executed: \n{error}",
+					"uploadError": "An error has occured during DPA plug-in upload: \n{error}",
+					"uploadSuccess": "DPA plug-in has been successfully changed.",
 					"downloadFailure": "The webapp has not been able to download the DPA file.",
 					"moveFailure": "The file has not been uploaded due wrong permissions.",
 					"notFound": "DPA file not found.",
