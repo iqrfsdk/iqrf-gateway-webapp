@@ -65,6 +65,7 @@ import IqrfNetService from '../../services/IqrfNetService';
 import {MutationPayload} from 'vuex';
 import {AxiosError, AxiosResponse} from 'axios';
 import IqrfService from '../../services/IqrfService';
+import FormErrorHandler from '../../helpers/FormErrorHandler';
 
 interface DpaVersions {
 	label: string
@@ -93,14 +94,6 @@ export default class DpaUpdater extends Vue {
 	 * @constant {number} address Network address of device
 	 */
 	private address = 0
-
-	/**
-	 * @constant {Array<string>} allowedMTypes Array of allowed daemon api messages
-	 */
-	private allowedMTypes: Array<string> = [
-		'iqrfEmbedOs_Read',
-		'mngDaemon_Upload'
-	]
 
 	/**
 	 * @var {string|null} currentDpa Current version of DPA
@@ -322,75 +315,10 @@ export default class DpaUpdater extends Vue {
 							this.$t('iqrfnet.trUpload.dpaUpload.messages.uploadSuccess').toString()
 						);
 					})
-					.catch((error: AxiosError) => this.handleUtilUploadError(error));
+					.catch((error: AxiosError) => FormErrorHandler.uploadUtilError(error));
 			})
-			.catch((error: AxiosError) => this.handleDpaFileError(error));
+			.catch((error: AxiosError) => FormErrorHandler.fileFetchError(error));
 	}
-
-	/**
-	 * Handles IQRF Utility Upload errors
-	 * @param {AxiosError} error REST API response errors
-	 */
-	private handleUtilUploadError(error: AxiosError): void {
-		this.$store.commit('spinner/HIDE');
-		if (error.response === undefined) {
-			console.error(error);
-			return;
-		}
-		const errorMsg = error.response.data.message;
-		if (error.response.status === 400) {
-			this.$toast.error(
-				this.$t('iqrfnet.trUpload.dpaUpload.messages.fileError', {error: errorMsg}).toString()
-			);
-		} else if (error.response.status === 500) {
-			this.$toast.error(
-				this.$t('iqrfnet.trUpload.dpaUpload.messages.uploadError', {error: errorMsg}).toString()
-			);
-		} else {
-			this.$toast.error(
-				this.$t('iqrfnet.trUpload.messagess.genericError').toString()
-			);
-		}
-	}
-
-	/**
-	 * Handles DPA file fetch errors
-	 * @param {AxiosError} error REST API response errors
-	 */
-	private handleDpaFileError(error: AxiosError): void {
-		this.$store.commit('spinner/HIDE');
-		if (error.response === undefined) {
-			this.$toast.error(
-				this.$t('iqrfnet.trUpload.messagess.genericError').toString()
-			);
-			return;
-		}
-		if (error.response.status === 400) {
-			this.$toast.error(
-				this.$t('iqrfnet.trUpload.dpaUpload.messagess.badRequest').toString()
-			);
-		} else if (error.response.status === 404) {
-			this.$toast.error(
-				this.$t('iqrfnet.trUpload.dpaUpload.messages.notFound').toString()
-			);
-		} else if (error.response.status === 500) {
-			const msg = error.response.data.message;
-			if (msg === 'Filesystem failure') {
-				this.$toast.error(
-					this.$t('iqrfnet.trUpload.dpaUpload.messagess.moveFailure').toString()
-				);
-			} else if (msg === 'Download failure') {
-				this.$toast.error(
-					this.$t('iqrfnet.trUpload.dpaUpload.messages.downloadFailure').toString()
-				);
-			}
-		} else {
-			this.$toast.error(
-				this.$t('iqrfnet.trUpload.messagess.genericError').toString()
-			);
-		}
-	}
-
 }
 </script>
 

@@ -40,7 +40,7 @@
 								type='submit'
 								:disabled='invalid'
 							>
-								{{ $t('forms.update') }}
+								{{ $t('forms.upload') }}
 							</CButton>
 						</div>
 						<CAlert 
@@ -64,8 +64,9 @@ import {required} from 'vee-validate/dist/rules';
 import {IOption} from '../../interfaces/coreui';
 import IqrfService from '../../services/IqrfService';
 import {AxiosError, AxiosResponse} from 'axios';
-import {IqrfOsUpgrade} from '../../interfaces/iqrfOs';
+import {IqrfOsUpgrade, IqrfOsUpgradeFile, IqrfOsUpgradeFiles} from '../../interfaces/iqrfOs';
 import {Dictionary} from 'vue-router/types/router';
+import FormErrorHandler from '../../helpers/FormErrorHandler';
 
 @Component({
 	components: {
@@ -186,6 +187,10 @@ export default class OsUpdater extends Vue {
 		return version.charAt(0) + '.' + version.substring(1, version.length);
 	}
 
+	/**
+	 * Creates REST API request body to fetch files needed to upgrade IQRF OS,
+	 * then executes upgrade using the IQRF Upload Utility via REST API.
+	 */
 	private upgradeOs(): void {
 		if (this.osVersion === null) {
 			return;
@@ -203,9 +208,32 @@ export default class OsUpdater extends Vue {
 		if (upgrade.dpaRaw < '0400') {
 			Object.assign(data, {rfMode: upgrade.dpa.endsWith('STD') ? 'STD' : 'LP'});
 		}
+		this.$store.commit('spinner/SHOW');
 		IqrfService.getUpgradeFiles(data)
-			.then((response: AxiosResponse) => console.error(response))
-			.catch((error: AxiosError) => console.error(error));
+			.then((response: AxiosResponse) => {
+				this.uploadFiles(response.data);
+			})
+			.catch((error: AxiosError) => FormErrorHandler.fileFetchError(error));
+	}
+
+	/**
+	 * Creates REST API request body to upgrade IQRF OS and executes upgrade.
+	 * @param {IqrfOsUpgradeFiles} responseFiles Files needed to upgrade IQRF OS
+	 */
+	private uploadFiles(responseFiles: IqrfOsUpgradeFiles): void {
+		let files: Array<IqrfOsUpgradeFile> = [];
+		for (let file of responseFiles.os) {
+			files.push({name: file, type: 'OS'});
+		}
+		files.push({name: responseFiles.dpa, type: 'DPA'});
+		IqrfService.utilUpload(files)
+			.then(() => {
+				this.$store.commit('spinner/HIDE');
+				this.$toast.success(
+					this.$t('iqrfnet.trUpload.osUpload.messages.upgradeSuccess').toString()
+				);
+			})
+			.catch((error: AxiosError) => FormErrorHandler.uploadUtilError(error));
 	}
 }
 </script>

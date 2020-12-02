@@ -117,6 +117,52 @@ class FormErrorHandler {
 			Vue.$toast.error(i18n.t('config.interfaceMappings.messages.notFound').toString());
 		}
 	}
+
+	/**
+	 * Handles IQRF Utility Upload errors
+	 * @param {AxiosError} error REST API response errors
+	 */
+	uploadUtilError(error: AxiosError): void {
+		store.commit('spinner/HIDE');
+		if (error.response === undefined) {
+			Vue.$toast.error(i18n.t('iqrfnet.trUpload.messages.genericError').toString());
+			return;
+		}
+		const errorMsg = error.response.data.message;
+		if (error.response.status === 400) {
+			Vue.$toast.error(i18n.t('iqrfnet.trUpload.dpaUpload.messages.fileError', {error: errorMsg}).toString());
+		} else if (error.response.status === 500) {
+			Vue.$toast.error(i18n.t('iqrfnet.trUpload.dpaUpload.messages.uploadError', {error: errorMsg}).toString());
+		} else {
+			Vue.$toast.error(i18n.t('iqrfnet.trUpload.messages.genericError').toString());
+		}
+	}
+
+	/**
+	 * Handles DPA file fetch errors
+	 * @param {AxiosError} error REST API response errors
+	 */
+	fileFetchError(error: AxiosError): void {
+		store.commit('spinner/HIDE');
+		if (error.response === undefined) {
+			Vue.$toast.error(i18n.t('iqrfnet.trUpload.messages.genericError').toString());
+			return;
+		}
+		if (error.response.status === 400) {
+			Vue.$toast.error(i18n.t('iqrfnet.trUpload.dpaUpload.messages.badRequest').toString());
+		} else if (error.response.status === 404) {
+			Vue.$toast.error(i18n.t('iqrfnet.trUpload.dpaUpload.messages.notFound').toString());
+		} else if (error.response.status === 500) {
+			const msg = error.response.data.message;
+			if (msg === 'Filesystem failure') {
+				Vue.$toast.error(i18n.t('iqrfnet.trUpload.dpaUpload.messages.moveFailure').toString());
+			} else if (msg === 'Download failure') {
+				Vue.$toast.error(i18n.t('iqrfnet.trUpload.dpaUpload.messages.downloadFailure').toString());
+			}
+		} else {
+			Vue.$toast.error(i18n.t('iqrfnet.trUpload.messages.genericError').toString());
+		}
+	}
 }
 
 export default new FormErrorHandler();

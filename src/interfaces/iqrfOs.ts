@@ -32,3 +32,33 @@ export interface IqrfOsUpgrade {
 	 */
 	downloadPath: string
 }
+
+/**
+ * IQRF OS upgrade files interface
+ */
+export interface IqrfOsUpgradeFiles {
+	/**
+	 * DPA file name
+	 */
+	dpa: string
+
+	/**
+	 * Array of IQRF OS patch file names
+	 */
+	os: Array<string>
+}
+
+/**
+ * IQRF OS upgrade file interface
+ */
+export interface IqrfOsUpgradeFile {
+	/**
+	 * File name
+	 */
+	name: string
+	
+	/**
+	 * File type
+	 */
+	type: string
+}

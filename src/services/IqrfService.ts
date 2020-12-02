@@ -1,6 +1,7 @@
 import axios, {AxiosResponse} from 'axios';
-import { Dictionary } from 'vue-router/types/router';
+import {Dictionary} from 'vue-router/types/router';
 import {authorizationHeader} from '../helpers/authorizationHeader';
+import {IqrfOsUpgradeFile} from '../interfaces/iqrfOs';
 
 /**
  * IQRF networks service
@@ -44,8 +45,8 @@ class IqrfService {
 	 * Executes upload via IQRF Upload Utility
 	 * @param {Array<Dictionary<string>>} data API request body
 	 */
-	utilUpload(data: Array<Dictionary<string>>): Promise<AxiosResponse> {
-		return axios.post('iqrf/utilUpload', {files: data}, {headers: authorizationHeader()});
+	utilUpload(data: Array<IqrfOsUpgradeFile>): Promise<AxiosResponse> {
+		return axios.post('iqrf/utilUpload', {files: data}, {headers: authorizationHeader(), timeout: 30000 * data.length});
 	}
 
 }
