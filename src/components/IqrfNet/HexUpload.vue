@@ -109,7 +109,10 @@ export default class HexUpload extends Vue {
 	 */
 	private uploadFile(response: FileUpload): void {
 		IqrfService.utilUpload([{name: response.fileName, type: 'HEX'}])
-			.then(() => this.$toast.success(this.$t('iqrfnet.trUpload.hexUpload.messages.uploadSuccess').toString()))
+			.then(() => {
+				this.$store.commit('spinner/HIDE');
+				this.$toast.success(this.$t('iqrfnet.trUpload.hexUpload.messages.uploadSuccess').toString());
+			})
 			.catch((error: AxiosError) => FormErrorHandler.uploadUtilError(error));
 	}
 
