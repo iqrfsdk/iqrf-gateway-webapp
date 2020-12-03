@@ -1653,6 +1653,10 @@
 				},
 				"errors": {
 					"file": "Please select the file to upload."
+				},
+				"messages": {
+					"invalidFormat": "The uploaded file is not a .hex file.",
+					"uploadSuccess": "Custom DPA handler has been successfully uploaded."
 				}
 			},
 			"osUpload": {
@@ -1678,8 +1682,7 @@
 				"success": "The file has been successfully uploaded into the coordinator.",
 				"genericError": "An error has occured while processing request.",
 				"osBuildFail": "Failed to retrieve OS builds information.",
-				"osInfoFail": "Embed OS read request failed.",
-				"invalidFormat": "The uploaded file is not a .hex file."
+				"osInfoFail": "Embed OS read request failed."
 			}
 		}
 	},

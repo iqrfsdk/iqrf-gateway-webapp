@@ -85,8 +85,10 @@ class UploadUtilManager {
 			if ($file->type === 'OS') {
 				$fileName = str_replace(['(', ')'], ['\(', '\)'], $file->name);
 				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -I ' . $fileName, true);
-			} else {
+			} elseif ($file->type === 'DPA') {
 				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -I ' . self::UPLOAD_DIR . $file->name, true);
+			} else {
+				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -H ' . self::UPLOAD_DIR . $file->name, true);
 			}
 			if ($result->getExitCode() !== 0) {
 				$this->handleError($result);

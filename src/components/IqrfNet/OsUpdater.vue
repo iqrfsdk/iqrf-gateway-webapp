@@ -64,7 +64,7 @@ import {required} from 'vee-validate/dist/rules';
 import {IOption} from '../../interfaces/coreui';
 import IqrfService from '../../services/IqrfService';
 import {AxiosError, AxiosResponse} from 'axios';
-import {IqrfOsUpgrade, IqrfOsUpgradeFile, IqrfOsUpgradeFiles} from '../../interfaces/iqrfOs';
+import {IqrfOsUpgrade, UploadUtilFile, IqrfOsUpgradeFiles} from '../../interfaces/trUpload';
 import {Dictionary} from 'vue-router/types/router';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
 
@@ -221,7 +221,7 @@ export default class OsUpdater extends Vue {
 	 * @param {IqrfOsUpgradeFiles} responseFiles Files needed to upgrade IQRF OS
 	 */
 	private uploadFiles(responseFiles: IqrfOsUpgradeFiles): void {
-		let files: Array<IqrfOsUpgradeFile> = [];
+		let files: Array<UploadUtilFile> = [];
 		for (let file of responseFiles.os) {
 			files.push({name: file, type: 'OS'});
 		}

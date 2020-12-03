@@ -51,7 +51,7 @@ export interface IqrfOsUpgradeFiles {
 /**
  * IQRF OS upgrade file interface
  */
-export interface IqrfOsUpgradeFile {
+export interface UploadUtilFile {
 	/**
 	 * File name
 	 */
@@ -61,4 +61,19 @@ export interface IqrfOsUpgradeFile {
 	 * File type
 	 */
 	type: string
+}
+
+/**
+ * File upload response interface
+ */
+export interface FileUpload {
+	/**
+	 * File name
+	 */
+	fileName: string
+
+	/**
+	 * File format
+	 */
+	format: string
 }

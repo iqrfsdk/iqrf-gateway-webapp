@@ -125,7 +125,7 @@ class FormErrorHandler {
 	uploadUtilError(error: AxiosError): void {
 		store.commit('spinner/HIDE');
 		if (error.response === undefined) {
-			Vue.$toast.error(i18n.t('iqrfnet.trUpload.messages.genericError').toString());
+			Vue.$toast.error(i18n.t('iqrfnet.trUpload.messages.failure').toString());
 			return;
 		}
 		const errorMsg = error.response.data.message;
@@ -134,7 +134,7 @@ class FormErrorHandler {
 		} else if (error.response.status === 500) {
 			Vue.$toast.error(i18n.t('iqrfnet.trUpload.dpaUpload.messages.uploadError', {error: errorMsg}).toString());
 		} else {
-			Vue.$toast.error(i18n.t('iqrfnet.trUpload.messages.genericError').toString());
+			Vue.$toast.error(i18n.t('iqrfnet.trUpload.messages.failure').toString());
 		}
 	}
 

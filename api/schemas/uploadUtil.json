@@ -33,7 +33,8 @@
 						"title": "File type",
 						"enum": [
 							"OS",
-							"DPA"
+							"DPA",
+							"HEX"
 						],
 						"example": "OS"
 					}

@@ -31,8 +31,12 @@
 import {Component, Vue} from 'vue-property-decorator';
 import {CButton, CCard, CCardBody, CCardHeader, CForm, CInputFile, CSelect} from '@coreui/vue/src';
 import {FileFormat} from '../../iqrfNet/fileFormat';
-import NativeUploadService from '../../services/NativeUploadService';
 import {AxiosResponse, AxiosError} from 'axios';
+import {FileUpload} from '../../interfaces/trUpload';
+import NativeUploadService from '../../services/NativeUploadService';
+import IqrfService from '../../services/IqrfService';
+import FormErrorHandler from '../../helpers/FormErrorHandler';
+
 
 @Component({
 	components: {
@@ -81,21 +85,32 @@ export default class HexUpload extends Vue {
 		const formData = new FormData();
 		formData.append('format', FileFormat.HEX);
 		const files = this.getFiles();
-		if (files.length === 0) {
-			this.$toast.error(this.$t('iqrfnet.trUpload.messages.file').toString());
-			return;
-		}
 		if (!files[0].name.endsWith('.hex')) {
 			this.$toast.error(
-				this.$t('iqrfnet.trUpload.messages.invalidFormat').toString()
+				this.$t('iqrfnet.trUpload.hexUpload.messages.invalidFormat').toString()
 			);
 			return;
 		}
 		formData.append('file', this.getFiles()[0]);
 		this.$store.commit('spinner/SHOW');
 		NativeUploadService.uploadREST(formData)
-			.then((response: AxiosResponse) => console.error(response))
-			.catch((error: AxiosError) => console.error(error));
+			.then((response: AxiosResponse) => this.uploadFile(response.data))
+			.catch(() => {
+				this.$store.commit('spinner/HIDE');
+				this.$toast.error(
+					this.$t('iqrfnet.trUpload.messages.failure').toString()
+				);
+			});
+	}
+
+	/**
+	 * Sends IQRF Upload Utility REST API request to upload Custom DPA handler
+	 * @param {FileUpload} response REST API response containing uploaded file metadata
+	 */
+	private uploadFile(response: FileUpload): void {
+		IqrfService.utilUpload([{name: response.fileName, type: 'HEX'}])
+			.then(() => this.$toast.success(this.$t('iqrfnet.trUpload.hexUpload.messages.uploadSuccess').toString()))
+			.catch((error: AxiosError) => FormErrorHandler.uploadUtilError(error));
 	}
 
 	/**
