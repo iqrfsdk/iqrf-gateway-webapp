@@ -3,7 +3,7 @@
 		<h1>{{ $t('iqrfnet.trUpload.title') }}</h1>
 		<HexUpload />
 		<DpaUpdater ref='dpaUpdater' />
-		<OsUpdater ref='osUpdater' />
+		<OsUpdater v-if='powerUser' ref='osUpdater' />
 	</div>
 </template>
 
@@ -53,6 +53,11 @@ export default class TrUpload extends Vue {
 	private msgId: string|null = null
 
 	/**
+	 * @var {boolean} powerUser Indicates whether user has power user role
+	 */
+	private powerUser = false
+
+	/**
 	 * Component unsubscribe function
 	 */
 	private unsubscribe: CallableFunction = () => {return;}
@@ -67,6 +72,9 @@ export default class TrUpload extends Vue {
 	 * Initializes validation rules and websocket callbacks
 	 */
 	created(): void {
+		if (this.$store.getters['user/getRole'] === 'power') {
+			this.powerUser = true;
+		}
 		this.unsubscribe = this.$store.subscribe((mutation: MutationPayload) => {
 			if (mutation.type !== 'SOCKET_ONMESSAGE') {
 				return;
