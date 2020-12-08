@@ -48,11 +48,6 @@ class UploadUtilManager {
 	private const UPLOAD_UTIL = 'iqrf-upload-util';
 
 	/**
-	 * IQRF Upload Utility launch config
-	 */
-	private const UPLOAD_UTIL_CONF = '-c /etc/iqrf-upload-util/config.json';
-
-	/**
 	 * @var CommandManager Command manager
 	 */
 	private $commandManager;
@@ -84,15 +79,16 @@ class UploadUtilManager {
 		foreach ($files as $file) {
 			if ($file->type === 'OS') {
 				$fileName = str_replace(['(', ')'], ['\(', '\)'], $file->name);
-				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -I ' . $fileName, true);
+				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . $fileName, true);
 			} elseif ($file->type === 'DPA') {
-				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -I ' . self::UPLOAD_DIR . $file->name, true);
+				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_DIR . $file->name, true);
 			} else {
-				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -H ' . self::UPLOAD_DIR . $file->name, true);
+				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_DIR . $file->name, true);
 			}
 			if ($result->getExitCode() !== 0) {
 				$this->handleError($result);
 			}
+			sleep(5);
 		}
 		$this->serviceManager->start(self::DAEMON);
 	}
