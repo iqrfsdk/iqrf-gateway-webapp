@@ -75,16 +75,13 @@ class UploadUtilManager {
 	/**
 	 * Uploads file content using the IQRF Upload Utility
 	 * @param array<int, mixed> $files Array of files to upload
-	 * @return array<int, string> Timestamps
 	 */
-	public function executeUpload(array $files): array {
+	public function executeUpload(array $files): void {
 		if (!$this->commandManager->commandExist(self::UPLOAD_UTIL)) {
 			throw new UploadUtilMissingException('IQRF Upload Utility is not installed.');
 		}
-		$timestamps = [];
 		$this->serviceManager->stop(self::DAEMON);
 		foreach ($files as $file) {
-			array_push($timestamps, date('H:i:s'));
 			if ($file->type === 'OS') {
 				$fileName = str_replace(['(', ')'], ['\(', '\)'], $file->name);
 				$result = $this->commandManager->run(self::UPLOAD_UTIL . ' ' . self::UPLOAD_UTIL_CONF . ' -I ' . $fileName, true);
@@ -96,12 +93,8 @@ class UploadUtilManager {
 			if ($result->getExitCode() !== 0) {
 				$this->handleError($result);
 			}
-			array_push($timestamps, date('H:i:s'));
-			sleep(3);
-			array_push($timestamps, date('H:i:s'));
 		}
 		$this->serviceManager->start(self::DAEMON);
-		return $timestamps;
 	}
 
 	/**
