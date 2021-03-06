@@ -2,6 +2,7 @@ import store from '../store';
 import axios, {AxiosResponse} from 'axios';
 import {authorizationHeader} from '../helpers/authorizationHeader';
 import { WebSocketOptions } from '../store/modules/webSocketClient.module';
+import { ITaskTimeSpec } from '../interfaces/scheduler';
 
 /**
  * Scheduler service
@@ -15,7 +16,7 @@ class SchedulerService {
 	 * @param timeSpec scheduler task time settings
 	 * @param options WebSocket request options
 	 */
-	addTask(taskId: number, clientId: string, task: any, timeSpec: Record<string, unknown>, options: WebSocketOptions): Promise<string> {
+	addTask(taskId: number, clientId: string, task: any, timeSpec: ITaskTimeSpec, options: WebSocketOptions): Promise<string> {
 		const tasks = JSON.parse(JSON.stringify(task));
 		tasks.forEach((item: any) => {
 			item.message = JSON.parse(item.message);
@@ -43,7 +44,7 @@ class SchedulerService {
 	 * @param task scheduler task
 	 * @param timeSpec scheduler task time settings
 	 */
-	addTaskREST(taskId: number, clientId: string, task: any, timeSpec: Record<string, unknown>): Promise<AxiosResponse> {
+	addTaskREST(taskId: number, clientId: string, task: any, timeSpec: ITaskTimeSpec): Promise<AxiosResponse> {
 		const tasks = JSON.parse(JSON.stringify(task));
 		tasks.forEach((item: any) => {
 			item.message = JSON.parse(item.message);
@@ -65,7 +66,7 @@ class SchedulerService {
 	 * @param task scheduler task
 	 * @param timeSpec scheduler task time settings
 	 */
-	editTaskREST(oldTaskId: number, taskId: number, clientId: string, task: any, timeSpec: Record<string, unknown>): Promise<AxiosResponse> {
+	editTaskREST(oldTaskId: number, taskId: number, clientId: string, task: any, timeSpec: ITaskTimeSpec): Promise<AxiosResponse> {
 		const tasks = JSON.parse(JSON.stringify(task));
 		tasks.forEach((item: any) => {
 			item.message = JSON.parse(item.message);

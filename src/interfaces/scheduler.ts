@@ -3,7 +3,7 @@ import { Dictionary } from 'vue-router/types/router';
 /**
  * Scheduler task time interface
  */
-export interface TaskTimeSpec {
+export interface ITaskTimeSpec {
 	cronTime: Array<string>|string
 	exactTime: boolean
 	period: number
@@ -14,7 +14,7 @@ export interface TaskTimeSpec {
 /**
  * Scheduler task dpa message interface
  */
-export interface TaskDpaMessage {
+export interface ITaskDpaMessage {
 	mType: string
 	data: Dictionary<unknown>
 }
@@ -22,17 +22,30 @@ export interface TaskDpaMessage {
 /**
  * Scheduler task message interface
  */
-export interface TaskMessage {
-	message: TaskDpaMessage
+export interface ITaskMessage {
+	message: ITaskDpaMessage
 	messaging: string
 }
 
 /**
  * Scheduler task interface
  */
-export interface Task {
+export interface ITaskBase {
 	clientId: string
-	task: Array<TaskMessage>
 	taskId: number
-	timeSpec: TaskTimeSpec
+	timeSpec: ITaskTimeSpec
+}
+
+/**
+ * Scheduler task from REST interface
+ */
+export interface ITaskRest extends ITaskBase {
+	task: Array<ITaskMessage>
+}
+
+/**
+ * Scheduler task from Daemon interface
+ */
+export interface ITaskDaemon extends ITaskBase {
+	task: Array<ITaskMessage>|ITaskMessage
 }

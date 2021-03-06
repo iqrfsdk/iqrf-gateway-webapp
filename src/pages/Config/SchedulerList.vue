@@ -165,11 +165,10 @@ import {WebSocketOptions} from '../../store/modules/webSocketClient.module';
 import {Dictionary} from 'vue-router/types/router';
 import {IField} from '../../interfaces/coreui';
 import {AxiosError, AxiosResponse} from 'axios';
-import {Task, TaskTimeSpec} from '../../interfaces/scheduler';
+import {ITaskDaemon, ITaskRest, ITaskTimeSpec} from '../../interfaces/scheduler';
 import {MutationPayload} from 'vuex';
 import {mapGetters} from 'vuex';
 import {versionHigherEqual} from '../../helpers/versionChecker';
-import { parse } from 'uuid';
 
 @Component({
 	components: {
@@ -290,7 +289,7 @@ export default class SchedulerList extends Vue {
 	/**
 	 * @var {Array<Task>} tasks Array of scheduler tasks
 	 */
-	private tasks: Array<Task>|null = null
+	private tasks: Array<ITaskRest>|null = null
 
 	/**
 	 * @var {boolean} untouched Indicates whether or not scheduler tasks have been retrieved
@@ -609,7 +608,7 @@ export default class SchedulerList extends Vue {
 	 * @param {TaskTimeSpec} item Scheduler task time specification
 	 * @returns {string} Human readable time message
 	 */
-	private timeString(item: TaskTimeSpec): string|undefined {
+	private timeString(item: ITaskTimeSpec): string|undefined {
 		try {
 			if (item.exactTime) {
 				return 'oneshot (' + DateTime.fromISO(item.startTime).toLocaleString(this.dateFormat) + ')';

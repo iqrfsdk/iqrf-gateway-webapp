@@ -549,6 +549,12 @@
 				"form": {
 					"task": {
 						"taskId": "Task ID",
+						"timeSpec": "Start time type",
+						"timeSpecTypes": {
+							"exact": "Oneshot - execute task once at specified time",
+							"periodic": "Periodic - frequency of task execution in seconds",
+							"cron": "Cron time expression - specifies when and how often a task is executed"
+						},
 						"cronTime": "Time in cron format",
 						"exactTime": "Exact time",
 						"periodic": "Periodic",
