@@ -660,7 +660,11 @@ export default class SchedulerForm extends Vue {
 		if (!isNaN(cronDay)) {
 			cronArray[5] = (cronDay + 1).toString();
 		}
+<<<<<<< HEAD
 		return cronArray.join(' ').trim();
+=======
+		return cronArray.join(' ');
+>>>>>>> Scheduler: refactor form logic and handling
 	}
 
 	/**

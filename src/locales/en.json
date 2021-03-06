@@ -549,7 +549,7 @@
 				"form": {
 					"task": {
 						"taskId": "Task ID",
-						"timeSpec": "Task execution",
+						"timeSpec": "Start time type",
 						"timeSpecTypes": {
 							"exact": "Oneshot - execute task once at specified time",
 							"periodic": "Periodic - frequency of task execution in seconds",
