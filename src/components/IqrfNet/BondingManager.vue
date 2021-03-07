@@ -1,5 +1,5 @@
 <template>
-	<CCard class='border-top-0 border-left-0 border-right-0'>
+	<CCard class='border-top-0 border-left-0 border-right-0 card-margin-bottom'>
 		<CCardBody>
 			<h4>{{ $t('iqrfnet.networkManager.bondingManager.title') }}</h4><br>
 			<ValidationObserver v-slot='{ invalid }'>

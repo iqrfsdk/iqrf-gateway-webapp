@@ -40,7 +40,7 @@
 				{{ $t('forms.pingNodes') }}
 			</CButton>
 			<div v-if='devices.length !== 0' class='table-responsive'>
-				<table class='table table-striped device-info'>
+				<table class='table table-striped device-info card-margin-bottom'>
 					<tbody>
 						<tr>
 							<th />

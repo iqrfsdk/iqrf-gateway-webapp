@@ -1,5 +1,5 @@
 <template>
-	<CCard class='border-0'>
+	<CCard class='border-0 card-margin-bottom'>
 		<CCardHeader>
 			{{ $t("config.daemon.misc.iqmesh.otaUpload.title") }}
 		</CCardHeader>

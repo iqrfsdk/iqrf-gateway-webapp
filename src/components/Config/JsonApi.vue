@@ -1,5 +1,5 @@
 <template>
-	<CCard body-wrapper class='border-0'>
+	<CCard body-wrapper class='border-0 card-margin-bottom'>
 		<ValidationObserver
 			v-slot='{invalid}'
 		>
