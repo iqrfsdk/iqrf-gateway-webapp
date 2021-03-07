@@ -122,10 +122,10 @@
 		<CCardFooter>
 			<h4>{{ $t('config.daemon.interfaces.iqrfSpi.mappings' ) }}</h4><hr>
 			<CRow>
-				<CCol lg='6'>
+				<CCol md='6'>
 					<InterfaceMappings interface-type='spi' @update-mapping='updateMapping' />
 				</CCol>
-				<CCol lg='6'>
+				<CCol md='6'>
 					<InterfacePorts interface-type='spi' @update-port='updatePort' />
 				</CCol>
 			</CRow>
