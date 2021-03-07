@@ -118,6 +118,7 @@
 										:placeholder='$t("config.daemon.messagings.mqtt.form.QoS")'
 										:options='qosOptions'
 									/>
+									<p>{{ $t('config.daemon.messagings.mqtt.messages.qos.' + configuration.Qos) }}</p>
 								</ValidationProvider>
 							</CCol>
 							<CCol md='6'>
@@ -136,6 +137,7 @@
 										:placeholder='$t("config.daemon.messagings.mqtt.form.Persistence")'
 										:options='persistenceOptions'
 									/>
+									<p>{{ $t('config.daemon.messagings.mqtt.messages.persistence.' + configuration.Persistence) }}</p>
 								</ValidationProvider>
 							</CCol>
 							<CCol md='6'>

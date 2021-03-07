@@ -383,15 +383,15 @@
 						"BrokerAddr": "Broker address",
 						"Persistence": "Persistence",
 						"Persistences": {
-							"0": "In-memory - State of in-flight messages is lost upon failure",
-							"1": "File system-based - State of in-flight messages is held in persistent storage",
-							"2": "Application-specific - Persistence control is delegated to the application"
+							"0": "In-memory",
+							"1": "File system-based",
+							"2": "Application-specific"
 						},
 						"QoS": "QoS",
 						"QoSes": {
-							"0": "QoS 0 - Message delivery is not guaranteed, fastest",
-							"1": "QoS 1 - Message is guaranteed to be delivered at least once",
-							"2": "QoS 2 - Message is guaranteed to be delivered exactly once, slowest"
+							"0": "QoS 0",
+							"1": "QoS 1",
+							"2": "QoS 2"
 						},
 						"User": "User",
 						"EnabledSSL": "Enabled TLS",
@@ -409,7 +409,17 @@
 						"deletePrompt": "Do you really want to delete MQTT interface instance {instance}?",
 						"deleteTitle": "Delete MQTT interface instance",
 						"deleteSuccess": "MQTT interface instance {instance} has been deleted.",
-						"editSuccess": "MQTT interface instance {instance} has been edited."
+						"editSuccess": "MQTT interface instance {instance} has been edited.",
+						"persistence": {
+							"0": "State of in-flight messages is lost in case of a client shutsdown or failure. Some messages may not be delivered even with QoS 1 or higher.",
+							"1": "State of in-flight messages is held in persistent storage and prevents loss of messages to some degree in case of a client failure.",
+							"2": "Persistence control is delegated to the application."
+						},
+						"qos": {
+							"0": "Fastest method, but the delivery of a message is not guaranteed.",
+							"1": "Messages are guaranteed to be delivered at least once by acknowledging receipt of a message.",
+							"2": "Safest but slowest method. Message is guaranteed to be delivered exactly once utilizing a 4-part handshake."
+						}
 					},
 					"errors": {
 						"instance": "Please enter name of MQTT instance.",
