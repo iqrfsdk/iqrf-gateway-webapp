@@ -4,9 +4,9 @@
 		<CCard body-wrapper>
 			<ValidationObserver v-slot='{invalid}'>
 				<CForm @submit.prevent='saveTunnel'>
+					<legend>{{ $t('network.wireguard.tunnels.form.interface') }}</legend>
 					<CRow>
 						<CCol md='6'>
-							<legend>{{ $t('network.wireguard.tunnels.form.interface') }}</legend>
 							<ValidationProvider
 								v-slot='{errors, touched, valid}'
 								rules='required'
@@ -55,6 +55,32 @@
 									{{ tunnel.publicKey }}
 								</p>
 							</div>
+							<CInputCheckbox
+								:checked.sync='optionalPort'
+								:label='$t("network.wireguard.tunnels.form.portOptional")'
+							/>
+							<ValidationProvider
+								v-if='optionalPort'
+								v-slot='{errors, touched, valid}'
+								rules='required|integer|between:0,65535'
+								:custom-messages='{
+									required: "network.wireguard.tunnels.errors.portIface",
+									integer: "network.wireguard.tunnels.errors.portInvalid",
+									between: "network.wireguard.tunnels.errors.portInvalid"
+								}'
+							>
+								<CInput
+									v-model.number='tunnel.port'
+									type='number'
+									min='0'
+									max='65535'
+									:label='$t("network.wireguard.tunnels.form.port")'
+									:is-valid='touched ? valid : null'
+									:invalid-feedback='$t(errors[0])'
+								/>
+							</ValidationProvider>
+						</CCol>
+						<CCol md='6'>
 							<CSelect
 								:value.sync='stack'
 								:options='stackOptions'
@@ -138,45 +164,17 @@
 									/>
 								</ValidationProvider>
 							</div>
-							<CInputCheckbox
-								:checked.sync='optionalPort'
-								:label='$t("network.wireguard.tunnels.form.portOptional")'
-							/>
-							<ValidationProvider
-								v-if='optionalPort'
-								v-slot='{errors, touched, valid}'
-								rules='required|integer|between:0,65535'
-								:custom-messages='{
-									required: "network.wireguard.tunnels.errors.portIface",
-									integer: "network.wireguard.tunnels.errors.portInvalid",
-									between: "network.wireguard.tunnels.errors.portInvalid"
-								}'
-							>
-								<CInput
-									v-model.number='tunnel.port'
-									type='number'
-									min='0'
-									max='65535'
-									:label='$t("network.wireguard.tunnels.form.port")'
-									:is-valid='touched ? valid : null'
-									:invalid-feedback='$t(errors[0])'
-								/>
-							</ValidationProvider>
-							<CButton
-								color='primary'
-								type='submit'
-								:disabled='invalid'
-							>
-								{{ $t('forms.save') }}
-							</CButton>
 						</CCol>
-						<CCol md='6'>
-							<div
-								v-for='(peer, index) of tunnel.peers'
-								:key='index'
-								class='form-group'
-							>
-								<legend>{{ $t('network.wireguard.tunnels.form.peers') }}</legend>
+					</CRow>
+					<div
+						v-for='(peer, index) of tunnel.peers'
+						:key='index'
+						class='form-group'
+					>
+						<hr>
+						<legend>{{ $t('network.wireguard.tunnels.form.peers') }}</legend>
+						<CRow>
+							<CCol md='6'>
 								<ValidationProvider
 									v-slot='{errors, touched, valid}'
 									rules='required|base64Key'
@@ -251,6 +249,8 @@
 									</ValidationProvider>
 									<i>{{ $t("network.wireguard.tunnels.form.keepaliveNote") }}</i>
 								</div>
+							</CCol>
+							<CCol>
 								<CSelect
 									:value.sync='peerStacks[index]'
 									:options='stackOptions'
@@ -261,11 +261,11 @@
 										v-if='peerStacks[index] === "ipv4" || peerStacks[index] === "both"' 
 										:md='peerStacks[index] === "ipv4" ? 12 : 6'
 									>
-										<legend>{{ $t('network.wireguard.tunnels.form.allowedIPv4Addrs') }}</legend>
 										<div
 											v-for='(ip, ipIndex) of peer.allowedIPs.ipv4'
 											:key='ipIndex'
 										>
+											<hr v-if='ipIndex > 0'>
 											<ValidationProvider
 												v-slot='{errors, touched, valid}'
 												rules='required|ipv4'
@@ -312,18 +312,18 @@
 												@click='addIPv4(index)'
 											>
 												{{ $t('network.connection.ipv4.addresses.add') }}
-											</CButton><hr>
+											</CButton>
 										</div>
 									</CCol>
 									<CCol
 										v-if='peerStacks[index] === "ipv6" || peerStacks[index] === "both"'
 										:md='peerStacks[index] === "ipv6" ? 12 : 6'
 									>
-										<legend>{{ $t('network.wireguard.tunnels.form.allowedIPv6Addrs') }}</legend>
 										<div
 											v-for='(ip, ipIndex) of peer.allowedIPs.ipv6'
 											:key='ipIndex + "b"'
 										>
+											<hr v-if='ipIndex > 0'>
 											<ValidationProvider
 												v-slot='{errors, touched, valid}'
 												rules='required|ipv6'
@@ -370,26 +370,33 @@
 												@click='addIPv6(index)'
 											>
 												{{ $t('network.connection.ipv6.addresses.add') }}
-											</CButton><hr>
+											</CButton>
 										</div>
 									</CCol>
 								</CRow>
-								<CButton
-									v-if='tunnel.peers.length !== 1'
-									color='danger'
-									@click='removePeer(index)'
-								>
-									{{ $t('network.wireguard.tunnels.form.removePeer') }}
-								</CButton> <CButton
-									v-if='index === (tunnel.peers.length - 1)'
-									color='success'
-									@click='addPeer'
-								>
-									{{ $t('network.wireguard.tunnels.form.addPeer') }}
-								</CButton>
-							</div>
-						</CCol>
-					</CRow>
+							</CCol>
+						</CRow>
+						<CButton
+							v-if='tunnel.peers.length !== 1'
+							color='danger'
+							@click='removePeer(index)'
+						>
+							{{ $t('network.wireguard.tunnels.form.removePeer') }}
+						</CButton> <CButton
+							v-if='index === (tunnel.peers.length - 1)'
+							color='success'
+							@click='addPeer'
+						>
+							{{ $t('network.wireguard.tunnels.form.addPeer') }}
+						</CButton>
+					</div>
+					<CButton
+						color='primary'
+						type='submit'
+						:disabled='invalid'
+					>
+						{{ $t('forms.save') }}
+					</CButton>
 				</CForm>
 			</ValidationObserver>
 		</CCard>
