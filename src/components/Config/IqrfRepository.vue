@@ -28,7 +28,22 @@
 							:invalid-feedback='$t(errors[0])'
 						/>
 					</ValidationProvider>
+					<div class='form-group'>
+						<label for='checkEnableSwitch'>
+							{{ $t("config.daemon.misc.iqrfRepository.form.enableCheck") }}
+						</label><br>
+						<CSwitch
+							id='checkEnableSwitch'
+							color='primary'
+							size='lg'
+							shape='pill'
+							label-on='ON'
+							label-off='OFF'
+							:checked.sync='checkEnabled'
+						/>
+					</div>
 					<ValidationProvider
+						v-if='checkEnabled'
 						v-slot='{ errors, touched, valid }'
 						rules='integer|required|min:0'
 						:custom-messages='{
@@ -63,7 +78,7 @@
 <script lang='ts'>
 import {Component, Vue, Watch} from 'vue-property-decorator';
 import {AxiosError, AxiosResponse} from 'axios';
-import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput, CInputCheckbox} from '@coreui/vue/src';
+import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput, CInputCheckbox, CSwitch} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import {integer, min_value, required} from 'vee-validate/dist/rules';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
@@ -81,6 +96,7 @@ import {mapGetters} from 'vuex';
 		CForm,
 		CInput,
 		CInputCheckbox,
+		CSwitch,
 		ValidationObserver,
 		ValidationProvider,
 	},
@@ -95,6 +111,12 @@ import {mapGetters} from 'vuex';
  * IQRF Repository component configuration
  */
 export default class IqrfRepository extends Vue {
+
+	/**
+	 * @var {boolean} checkEnabled Enable periodical update check
+	 */
+	private checkEnabled = false
+
 	/**
 	 * @var {number} checkPeriodInMinutes Check period in minutes
 	 */
@@ -168,9 +190,9 @@ export default class IqrfRepository extends Vue {
 	/**
 	 * Retrieves configuration of IQRF Repository component
 	 */
-	private getConfig(): void {
+	private getConfig(): Promise<void> {
 		this.$store.commit('spinner/SHOW');
-		DaemonConfigurationService.getComponent(this.componentName)
+		return DaemonConfigurationService.getComponent(this.componentName)
 			.then((response: AxiosResponse) => {
 				this.$store.commit('spinner/HIDE');
 				if (response.data.instances.length > 0) {
@@ -188,6 +210,9 @@ export default class IqrfRepository extends Vue {
 		this.instance = this.componentInstance = response.instance;
 		this.urlRepo = response.urlRepo;
 		this.checkPeriodInMinutes = response.checkPeriodInMinutes;
+		if (this.checkPeriodInMinutes > 0) {
+			this.checkEnabled = true;
+		}
 		if (!this.daemon230) {
 			return;
 		}
@@ -204,7 +229,7 @@ export default class IqrfRepository extends Vue {
 			component: this.componentName,
 			instance: this.componentInstance,
 			urlRepo: this.urlRepo,
-			checkPeriodInMinutes: this.checkPeriodInMinutes,
+			checkPeriodInMinutes: this.checkEnabled ? this.checkPeriodInMinutes : 0,
 		};
 		if (this.daemon230) {
 			Object.assign(configuration, {downloadIfRepoCacheEmpty: this.downloadIfRepoCacheEmpty});
@@ -232,8 +257,7 @@ export default class IqrfRepository extends Vue {
 	 * Handles successful REST API response
 	 */
 	private successfulSave(): void {
-		this.$store.commit('spinner/HIDE');
-		this.$toast.success(this.$t('config.success').toString());
+		this.getConfig().then(() => this.$toast.success(this.$t('config.success').toString()));
 	}
 
 }

@@ -8,12 +8,14 @@
 		</h1>
 		<CCard>
 			<CCardBody>
-				<ValidationObserver v-slot='{ invalid }'>
+				<ValidationObserver v-slot='{invalid}'>
 					<CForm @submit.prevent='saveInstance'>
 						<ValidationProvider
-							v-slot='{ errors, touched, valid }'
+							v-slot='{errors, touched, valid}'
 							rules='required'
-							:custom-messages='{required: "config.daemon.messagings.websocket.errors.messagingInstance"}'
+							:custom-messages='{
+								required: "config.daemon.messagings.websocket.errors.messagingInstance"
+							}'
 						>
 							<CInput
 								v-model='configuration.instance'
@@ -33,9 +35,11 @@
 							class='form-group'
 						>
 							<ValidationProvider
-								v-slot='{ errors, touched, valid }'
+								v-slot='{errors, touched, valid}'
 								rules='required'
-								:custom-messages='{required: "config.daemon.messagings.websocket.errors.interfaceName"}'
+								:custom-messages='{
+									required: "config.daemon.messagings.websocket.errors.interfaceName"
+								}'
 							>
 								<CSelect
 									:value.sync='iface.name'
@@ -49,9 +53,11 @@
 								/>
 							</ValidationProvider>
 							<ValidationProvider
-								v-slot='{ errors, touched, valid }'
+								v-slot='{errors, touched, valid}'
 								rules='required'
-								:custom-messages='{required: "config.daemon.messagings.websocket.errors.interfaceName"}'
+								:custom-messages='{
+									required: "config.daemon.messagings.websocket.errors.interfaceName"
+								}'
 							>
 								<CSelect
 									:value.sync='iface.instance'
@@ -90,7 +96,7 @@
 
 <script lang='ts'>
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput, CInputCheckbox, CSelect} from '@coreui/vue/src';
+import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput, CInputCheckbox, CSelect, CSwitch} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
 import FormErrorHandler from '../../helpers/FormErrorHandler';
@@ -127,6 +133,7 @@ interface LocalWsMessaging {
 		CInput,
 		CInputCheckbox,
 		CSelect,
+		CSwitch,
 		ValidationObserver,
 		ValidationProvider,
 	},

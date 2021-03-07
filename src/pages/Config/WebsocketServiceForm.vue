@@ -8,100 +8,118 @@
 		</h1>
 		<CCard>
 			<CCardBody>
-				<ValidationObserver v-slot='{ invalid }'>
+				<ValidationObserver v-slot='{invalid}'>
 					<CForm @submit.prevent='saveInstance'>
-						<ValidationProvider
-							v-slot='{ errors, touched, valid }'
-							rules='required'
-							:custom-messages='{required: "config.daemon.messagings.websocket.errors.serviceInstance"}'
-						>
-							<CInput
-								v-model='componentInstance'
-								:label='$t("forms.fields.instanceName")'
-								:is-valid='touched ? valid : null'
-								:invalid-feedback='$t(errors[0])'
-							/>
-						</ValidationProvider>
-						<ValidationProvider
-							v-slot='{ errors, touched, valid }'
-							rules='integer|between:1,65535|required'
-							:custom-messages='{
-								between: "config.daemon.messagings.websocket.errors.WebsocketPortRange",
-								required: "config.daemon.messagings.websocket.errors.WebsocketPort",
-								integer: "forms.errors.integer",
-							}'
-						>
-							<CInput
-								v-model.number='WebsocketPort'
-								type='number'
-								:label='$t("config.daemon.messagings.websocket.form.WebsocketPort")'
-								:is-valid='touched ? valid : null'
-								:invalid-feedback='$t(errors[0])'
-							/>
-						</ValidationProvider>
-						<CInputCheckbox
-							:checked.sync='acceptOnlyLocalhost'
-							:label='$t("config.daemon.messagings.websocket.form.acceptOnlyLocalhost")'
-						/>
-						<div v-if='daemon230'>
-							<CInputCheckbox
-								:checked.sync='tlsEnabled'
-								:label='$t("config.daemon.messagings.websocket.form.tlsEnabled")'
-							/>
-							<ValidationProvider
-								v-slot='{ errors, touched, valid }'
-								:rules='tlsEnabled ? "required" : ""'
-								:custom-messages='{
-									required: "config.daemon.messagings.websocket.errors.tlsMode",
-								}'
-							>
-								<CSelect
-									:value.sync='tlsMode'
-									:label='$t("config.daemon.messagings.websocket.form.tlsMode")'
-									:options='tlsModeOptions'
-									:placeholder='$t("config.daemon.messagings.websocket.errors.tlsMode")'
-									:disabled='!tlsEnabled'
-									:is-valid='touched && tlsEnabled ? valid : null'
-									:invalid-feedback='$t(errors[0])'
-								/>
-								<p
-									v-if='tlsMode !== "" && tlsMode !== undefined'
-									:class='!tlsEnabled ? "text-secondary" : ""'
+						<CRow>
+							<CCol md='6'>
+								<legend>{{ $t('config.daemon.messagings.websocket.service.legend') }}</legend>
+								<ValidationProvider
+									v-slot='{errors, touched, valid}'
+									rules='required'
+									:custom-messages='{required: "config.daemon.messagings.websocket.errors.serviceInstance"}'
 								>
-									{{ $t('config.daemon.messagings.websocket.form.tlsModes.descriptions.' + tlsMode) }}
-								</p>
-							</ValidationProvider>
-							<ValidationProvider
-								v-slot='{ errors, touched, valid }'
-								:rules='tlsEnabled ? "required" : ""'
-								:custom-messages='{
-									required: "config.daemon.messagings.websocket.errors.certificate",
-								}'
-							>
-								<CInput
-									v-model='certificate'
-									:label='$t("forms.fields.certificate")'
-									:disabled='!tlsEnabled'
-									:is-valid='touched && tlsEnabled ? valid : null'
-									:invalid-feedback='$t(errors[0])'
+									<CInput
+										v-model='componentInstance'
+										:label='$t("forms.fields.instanceName")'
+										:is-valid='touched ? valid : null'
+										:invalid-feedback='$t(errors[0])'
+									/>
+								</ValidationProvider>
+								<ValidationProvider
+									v-slot='{errors, touched, valid}'
+									rules='integer|between:1,65535|required'
+									:custom-messages='{
+										between: "config.daemon.messagings.websocket.errors.WebsocketPortRange",
+										required: "config.daemon.messagings.websocket.errors.WebsocketPort",
+										integer: "forms.errors.integer",
+									}'
+								>
+									<CInput
+										v-model.number='WebsocketPort'
+										type='number'
+										:label='$t("config.daemon.messagings.websocket.form.WebsocketPort")'
+										:is-valid='touched ? valid : null'
+										:invalid-feedback='$t(errors[0])'
+									/>
+								</ValidationProvider>
+								<CInputCheckbox
+									:checked.sync='acceptOnlyLocalhost'
+									:label='$t("config.daemon.messagings.websocket.form.acceptOnlyLocalhost")'
 								/>
-							</ValidationProvider>
-							<ValidationProvider
-								v-slot='{ errors, touched, valid }'
-								:rules='tlsEnabled ? "required" : ""'
-								:custom-messages='{
-									required: "config.daemon.messagings.websocket.errors.privateKey",
-								}'
-							>
-								<CInput
-									v-model='privateKey'
-									:label='$t("forms.fields.privateKey")'
-									:disabled='!tlsEnabled'
-									:is-valid='touched && tlsEnabled ? valid : null'
-									:invalid-feedback='$t(errors[0])'
-								/>
-							</ValidationProvider>
-						</div>
+							</CCol>
+							<CCol md='6'>
+								<div v-if='daemon230'>
+									<label style='font-size: 1.5rem'>
+										{{ $t('config.daemon.messagings.websocket.form.tlsEnabled') }}
+									</label>
+									<CSwitch
+										color='primary'
+										size='lg'
+										shape='pill'
+										label-on='ON'
+										label-off='OFF'
+										:checked.sync='tlsEnabled'
+										style='float: right;'
+									/>
+									<ValidationProvider
+										v-if='tlsEnabled'
+										v-slot='{errors, touched, valid}'
+										rules='required'
+										:custom-messages='{
+											required: "config.daemon.messagings.websocket.errors.tlsMode",
+										}'
+									>
+										<CSelect
+											:value.sync='tlsMode'
+											:label='$t("config.daemon.messagings.websocket.form.tlsMode")'
+											:options='tlsModeOptions'
+											:placeholder='$t("config.daemon.messagings.websocket.errors.tlsMode")'
+											:disabled='!tlsEnabled'
+											:is-valid='touched && tlsEnabled ? valid : null'
+											:invalid-feedback='$t(errors[0])'
+										/>
+										<p
+											v-if='tlsMode !== "" && tlsMode !== undefined'
+											:class='!tlsEnabled ? "text-secondary" : ""'
+										>
+											{{ $t('config.daemon.messagings.websocket.form.tlsModes.descriptions.' + tlsMode) }}
+										</p>
+									</ValidationProvider>
+									<ValidationProvider
+										v-if='tlsEnabled'
+										v-slot='{errors, touched, valid}'
+										rules='required'
+										:custom-messages='{
+											required: "config.daemon.messagings.websocket.errors.certificate",
+										}'
+									>
+										<CInput
+											v-model='certificate'
+											:label='$t("forms.fields.certificate")'
+											:disabled='!tlsEnabled'
+											:is-valid='touched && tlsEnabled ? valid : null'
+											:invalid-feedback='$t(errors[0])'
+										/>
+									</ValidationProvider>
+									<ValidationProvider
+										v-if='tlsEnabled'
+										v-slot='{errors, touched, valid}'
+										rules='required'
+										:custom-messages='{
+											required: "config.daemon.messagings.websocket.errors.privateKey",
+										}'
+									>
+										<CInput
+											v-model='privateKey'
+											:label='$t("forms.fields.privateKey")'
+											:disabled='!tlsEnabled'
+											:is-valid='touched && tlsEnabled ? valid : null'
+											:invalid-feedback='$t(errors[0])'
+										/>
+									</ValidationProvider>
+								</div>
+							</CCol>
+						</CRow>
 						<CButton type='submit' color='primary' :disabled='invalid'>
 							{{ submitButton }}
 						</CButton>
@@ -114,7 +132,7 @@
 
 <script lang='ts'>
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
-import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput, CInputCheckbox, CSelect} from '@coreui/vue/src';
+import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput, CInputCheckbox, CSelect, CSwitch} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import {between, integer, required} from 'vee-validate/dist/rules';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
@@ -136,6 +154,7 @@ import {mapGetters} from 'vuex';
 		CInput,
 		CInputCheckbox,
 		CSelect,
+		CSwitch,
 		ValidationObserver,
 		ValidationProvider,
 	},

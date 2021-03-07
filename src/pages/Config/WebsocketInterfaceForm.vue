@@ -6,112 +6,128 @@
 		<h1 v-else>
 			{{ $t('config.daemon.messagings.websocket.interface.edit') }}
 		</h1>
-		<CCard>
-			<CCardBody>
-				<ValidationObserver v-slot='{ invalid }'>
-					<CForm @submit.prevent='saveConfig'>
-						<ValidationProvider
-							v-slot='{ errors, touched, valid }'
-							rules='required'
-							:custom-messages='{required: "config.daemon.messagings.websocket.errors.instance"}'
-						>
-							<CInput
-								v-model='messaging.instance'
-								:label='$t("forms.fields.instanceName")'
-								:is-valid='touched ? valid : null'
-								:invalid-feedback='$t(errors[0])'
-							/>
-						</ValidationProvider>
-						<ValidationProvider
-							v-slot='{ errors, touched, valid }'
-							rules='integer|between:1,65535|required'
-							:custom-messages='{
-								between: "config.daemon.messagings.websocket.errors.WebsocketPortRange",
-								required: "config.daemon.messagings.websocket.errors.WebsocketPort",
-								integer: "forms.errors.integer"
-							}'
-						>
-							<CInput
-								v-model.number='service.WebsocketPort'
-								type='number'
-								:label='$t("config.daemon.messagings.websocket.form.WebsocketPort")'
-								:is-valid='touched ? valid : null'
-								:invalid-feedback='$t(errors[0])'
-							/>
-						</ValidationProvider>
-						<CInputCheckbox
-							:checked.sync='messaging.acceptAsyncMsg'
-							:label='$t("config.daemon.messagings.acceptAsyncMsg")'
-						/>
-						<CInputCheckbox
-							:checked.sync='service.acceptOnlyLocalhost'
-							:label='$t("config.daemon.messagings.websocket.form.acceptOnlyLocalhost")'
-						/>
-						<div v-if='daemon230'>
+		<CCard body-wrapper>
+			<ValidationObserver v-slot='{invalid}'>
+				<CForm @submit.prevent='saveConfig'>
+					<CRow>
+						<CCol md='6'>
+							<legend>{{ $t('config.daemon.messagings.websocket.interface.legend') }}</legend>
+							<ValidationProvider
+								v-slot='{errors, touched, valid}'
+								rules='required'
+								:custom-messages='{required: "config.daemon.messagings.websocket.errors.instance"}'
+							>
+								<CInput
+									v-model='messaging.instance'
+									:label='$t("forms.fields.instanceName")'
+									:is-valid='touched ? valid : null'
+									:invalid-feedback='$t(errors[0])'
+								/>
+							</ValidationProvider>
+							<ValidationProvider
+								v-slot='{errors, touched, valid}'
+								rules='integer|between:1,65535|required'
+								:custom-messages='{
+									between: "config.daemon.messagings.websocket.errors.WebsocketPortRange",
+									required: "config.daemon.messagings.websocket.errors.WebsocketPort",
+									integer: "forms.errors.integer"
+								}'
+							>
+								<CInput
+									v-model.number='service.WebsocketPort'
+									type='number'
+									:label='$t("config.daemon.messagings.websocket.form.WebsocketPort")'
+									:is-valid='touched ? valid : null'
+									:invalid-feedback='$t(errors[0])'
+								/>
+							</ValidationProvider>
 							<CInputCheckbox
-								:checked.sync='service.tlsEnabled'
-								:label='$t("config.daemon.messagings.websocket.form.tlsEnabled")'
+								:checked.sync='messaging.acceptAsyncMsg'
+								:label='$t("config.daemon.messagings.acceptAsyncMsg")'
 							/>
-							<ValidationProvider
-								v-slot='{ errors, touched, valid }'
-								:rules='service.tlsEnabled ? "required" : ""'
-								:custom-messages='{
-									required: "config.daemon.messagings.websocket.errors.tlsMode",
-								}'
-							>
-								<CSelect
-									:value.sync='service.tlsMode'
-									:label='$t("config.daemon.messagings.websocket.form.tlsMode")'
-									:options='tlsModeOptions'
-									:placeholder='$t("config.daemon.messagings.websocket.errors.tlsMode")'
-									:disabled='!service.tlsEnabled'
-									:is-valid='touched && service.tlsEnabled ? valid : null'
-									:invalid-feedback='$t(errors[0])'
+							<CInputCheckbox
+								:checked.sync='service.acceptOnlyLocalhost'
+								:label='$t("config.daemon.messagings.websocket.form.acceptOnlyLocalhost")'
+							/>
+						</CCol>
+						<CCol>
+							<div v-if='daemon230'>
+								<label style='font-size: 1.5rem'>
+									{{ $t('config.daemon.messagings.websocket.form.tlsEnabled') }}
+								</label>
+								<CSwitch
+									color='primary'
+									size='lg'
+									shape='pill'
+									label-on='ON'
+									label-off='OFF'
+									:checked.sync='service.tlsEnabled'
+									style='float: right;'
 								/>
-								<p
-									v-if='service.tlsMode !== "" && service.tlsMode !== undefined'
-									:class='!service.tlsEnabled ? "text-secondary" : ""'
+								<ValidationProvider
+									v-if='service.tlsEnabled'
+									v-slot='{errors, touched, valid}'
+									rules='required'
+									:custom-messages='{
+										required: "config.daemon.messagings.websocket.errors.tlsMode",
+									}'
 								>
-									{{ $t('config.daemon.messagings.websocket.form.tlsModes.descriptions.' + service.tlsMode) }}
-								</p>
-							</ValidationProvider>
-							<ValidationProvider
-								v-slot='{ errors, touched, valid }'
-								:rules='service.tlsEnabled ? "required" : ""'
-								:custom-messages='{
-									required: "config.daemon.messagings.websocket.errors.certificate",
-								}'
-							>
-								<CInput
-									v-model='service.certificate'
-									:label='$t("forms.fields.certificate")'
-									:disabled='!service.tlsEnabled'
-									:is-valid='touched && service.tlsEnabled ? valid : null'
-									:invalid-feedback='$t(errors[0])'
-								/>
-							</ValidationProvider>
-							<ValidationProvider
-								v-slot='{ errors, touched, valid }'
-								:rules='service.tlsEnabled ? "required" : ""'
-								:custom-messages='{
-									required: "config.daemon.messagings.websocket.errors.privateKey",
-								}'
-							>
-								<CInput
-									v-model='service.privateKey'
-									:label='$t("forms.fields.privateKey")'
-									:disabled='!service.tlsEnabled'
-									:is-valid='touched && service.tlsEnabled ? valid : null'
-									:invalid-feedback='$t(errors[0])'
-								/>
-							</ValidationProvider>
-						</div>
-						<CButton type='submit' color='primary' :disabled='invalid'>
-							{{ submitButton }}
-						</CButton>
-					</CForm>
-				</ValidationObserver>
-			</CCardBody>
+									<CSelect
+										:value.sync='service.tlsMode'
+										:label='$t("config.daemon.messagings.websocket.form.tlsMode")'
+										:options='tlsModeOptions'
+										:placeholder='$t("config.daemon.messagings.websocket.errors.tlsMode")'
+										:disabled='!service.tlsEnabled'
+										:is-valid='touched && service.tlsEnabled ? valid : null'
+										:invalid-feedback='$t(errors[0])'
+									/>
+									<p
+										v-if='service.tlsMode !== "" && service.tlsMode !== undefined'
+										:class='!service.tlsEnabled ? "text-secondary" : ""'
+									>
+										{{ $t('config.daemon.messagings.websocket.form.tlsModes.descriptions.' + service.tlsMode) }}
+									</p>
+								</ValidationProvider>
+								<ValidationProvider
+									v-if='service.tlsEnabled'
+									v-slot='{errors, touched, valid}'
+									rules='required'
+									:custom-messages='{
+										required: "config.daemon.messagings.websocket.errors.certificate",
+									}'
+								>
+									<CInput
+										v-model='service.certificate'
+										:label='$t("forms.fields.certificate")'
+										:disabled='!service.tlsEnabled'
+										:is-valid='touched && service.tlsEnabled ? valid : null'
+										:invalid-feedback='$t(errors[0])'
+									/>
+								</ValidationProvider>
+								<ValidationProvider
+									v-if='service.tlsEnabled'
+									v-slot='{errors, touched, valid}'
+									rules='required'
+									:custom-messages='{
+										required: "config.daemon.messagings.websocket.errors.privateKey",
+									}'
+								>
+									<CInput
+										v-model='service.privateKey'
+										:label='$t("forms.fields.privateKey")'
+										:disabled='!service.tlsEnabled'
+										:is-valid='touched && service.tlsEnabled ? valid : null'
+										:invalid-feedback='$t(errors[0])'
+									/>
+								</ValidationProvider>
+							</div>
+						</CCol>
+					</CRow>
+					<CButton type='submit' color='primary' :disabled='invalid'>
+						{{ submitButton }}
+					</CButton>
+				</CForm>
+			</ValidationObserver>
 		</CCard>
 	</div>
 </template>

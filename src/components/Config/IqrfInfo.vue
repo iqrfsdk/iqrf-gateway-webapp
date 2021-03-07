@@ -1,11 +1,11 @@
 <template>
 	<CCard class='border-0'>
 		<CCardBody>
-			<ValidationObserver v-slot='{ invalid }'>
+			<ValidationObserver v-slot='{invalid}'>
 				<CForm @submit.prevent='saveConfig'>
 					<ValidationProvider
 						v-if='powerUser'
-						v-slot='{ errors, touched, valid }'
+						v-slot='{errors, touched, valid}'
 						rules='required'
 						:custom-messages='{required: "config.daemon.misc.iqrfInfo.errors.instance"}'
 					>
@@ -16,10 +16,24 @@
 							:invalid-feedback='$t(errors[0])'
 						/>
 					</ValidationProvider>
+					<div class='form-group'>
+						<label for='enumPeriodicEnable'>
+							{{ $t("config.daemon.misc.iqrfInfo.form.enablePeriodic") }}
+						</label><br>
+						<CSwitch
+							id='enumPeriodicEnable'
+							color='primary'
+							size='lg'
+							shape='pill'
+							label-on='ON'
+							label-off='OFF'
+							:checked.sync='enumPeriodic'
+						/>
+					</div>
 					<ValidationProvider
-						v-if='daemon230'
-						v-slot='{ errors, touched, valid }'
-						:rules='enumAtStartUp ? "integer|min:0|required": ""'
+						v-if='daemon230 && enumPeriodic'
+						v-slot='{errors, touched, valid}'
+						rules='integer|min:0|required'
 						:custom-messages='{
 							required: "config.daemon.misc.iqrfInfo.errors.enumPeriod",
 							min: "config.daemon.misc.iqrfInfo.errors.enumPeriod",
@@ -56,7 +70,7 @@
 <script lang='ts'>
 import {Component, Vue, Watch} from 'vue-property-decorator';
 import {AxiosError, AxiosResponse} from 'axios';
-import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput, CInputCheckbox} from '@coreui/vue/src';
+import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput, CInputCheckbox, CSwitch} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import {integer, min_value, required} from 'vee-validate/dist/rules';
 import DaemonConfigurationService from '../../services/DaemonConfigurationService';
@@ -74,6 +88,7 @@ import {versionHigherEqual} from '../../helpers/versionChecker';
 		CForm,
 		CInput,
 		CInputCheckbox,
+		CSwitch,
 		ValidationObserver,
 		ValidationProvider,
 	},
@@ -107,6 +122,11 @@ export default class IqrfInfo extends Vue {
 	 * @var {boolean} enumAtStartUp Enumerate network after startup?
 	 */
 	private enumAtStartUp = false
+
+	/**
+	 * @var {boolean} enumPeriodic Enumerate network periodically?
+	 */
+	private enumPeriodic = false
 
 	/**
 	 * @var {number} enumPeriod Enumeration period in minutes
@@ -161,9 +181,9 @@ export default class IqrfInfo extends Vue {
 	/**
 	 * Retrieves configuration of IQRF Info component
 	 */
-	private getConfig(): void {
+	private getConfig(): Promise<void> {
 		this.$store.commit('spinner/SHOW');
-		DaemonConfigurationService.getComponent(this.componentName)
+		return DaemonConfigurationService.getComponent(this.componentName)
 			.then((response: AxiosResponse) => {
 				this.$store.commit('spinner/HIDE');
 				if (response.data.instances.length > 0) {
@@ -185,6 +205,7 @@ export default class IqrfInfo extends Vue {
 		}
 		if (response.enumPeriod !== undefined) {
 			this.enumPeriod = response.enumPeriod;
+			this.enumPeriodic = (this.enumPeriod > 0);
 		}
 		if (response.enumUniformDpaVer !== undefined) {
 			this.enumUniformDpaVer = response.enumUniformDpaVer;
@@ -202,7 +223,7 @@ export default class IqrfInfo extends Vue {
 			enumAtStartUp: this.enumAtStartUp
 		};
 		if (this.daemon230) {
-			Object.assign(configuration, {enumPeriod: this.enumPeriod, enumUniformDpaVer: this.enumUniformDpaVer});
+			Object.assign(configuration, {enumPeriod: this.enumPeriodic ? this.enumPeriod : 0, enumUniformDpaVer: this.enumUniformDpaVer});
 		}
 		return configuration;
 	}
@@ -227,8 +248,7 @@ export default class IqrfInfo extends Vue {
 	 * Handles successful REST API response
 	 */
 	private successfulSave(): void {
-		this.$store.commit('spinner/HIDE');
-		this.$toast.success(this.$t('config.success').toString());
+		this.getConfig().then(() => this.$toast.success(this.$t('config.success').toString()));
 	}
 }
 </script>

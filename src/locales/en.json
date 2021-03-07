@@ -370,21 +370,28 @@
 				}
 			},
 			"messagings": {
+				"tlsTitle": "TLS",
 				"title": "Messagings",
 				"description": "Configuration of messagings.",
 				"mqtt": {
 					"title": "MQTT interface",
 					"description": "MQTT interface settings.",
+					"legend": "MQTT interface instance",
 					"add": "Add MQTT interface",
 					"edit": "Edit MQTT interface",
 					"form": {
 						"BrokerAddr": "Broker address",
 						"Persistence": "Persistence",
+						"Persistences": {
+							"0": "In-memory - State of in-flight messages is lost upon failure",
+							"1": "File system-based - State of in-flight messages is held in persistent storage",
+							"2": "Application-specific - Persistence control is delegated to the application"
+						},
 						"QoS": "QoS",
 						"QoSes": {
-							"0": "QoS 0 - At most once",
-							"1": "QoS 1 - At least once",
-							"2": "QoS 2 - Exactly once"
+							"0": "QoS 0 - Message delivery is not guaranteed, fastest",
+							"1": "QoS 1 - Message is guaranteed to be delivered at least once",
+							"2": "QoS 2 - Message is guaranteed to be delivered exactly once, slowest"
 						},
 						"User": "User",
 						"EnabledSSL": "Enabled TLS",
@@ -421,7 +428,7 @@
 					"form": {
 						"WebsocketPort": "WebSocket port",
 						"acceptOnlyLocalhost": "Accept only connection from localhost",
-						"tlsEnabled": "Enable TLS",
+						"tlsEnabled": "TLS",
 						"tlsMode": "TLS mode",
 						"tlsModes": {
 							"intermediate": "Intermediate",
@@ -442,7 +449,8 @@
 						}
 					},
 					"interface": {
-						"title": "Websocket interfaces",
+						"title": "WebSocket interfaces",
+						"legend": "WebSocket interface instance",
 						"add": "Add WebSocket interface",
 						"edit": "Edit WebSocket interface"
 					},
@@ -460,6 +468,7 @@
 					},
 					"service": {
 						"title": "WebSocket services",
+						"legend": "WebSocket service instance",
 						"add": "Add WebSocket service",
 						"edit": "Edit WebSocket service",
 						"messages": {
@@ -654,6 +663,7 @@
 					"description": "Manage IQRF Repository's settings.",
 					"form": {
 						"urlRepo": "IQRF Repository URL",
+						"enableCheck": "Check for updates periodically",
 						"checkPeriod": "Check period in minutes",
 						"downloadIfEmpty": "Download if repository cache is empty"
 					},
@@ -667,9 +677,10 @@
 					"title": "Lite DB",
 					"description": "IQRF Info database settings.",
 					"form": {
-						"enumAtStartUp": "Initialize network full enumeration just after startup",
-						"enumPeriod": "Enumeration check period in minutes",
-						"enumUniformDpaVer": "Obtain only HWPID and HWPID version from nodes"
+						"enumAtStartUp": "Enumerate network on startup",
+						"enablePeriodic": "Enumerate network periodically",
+						"enumPeriod": "Enumeration period in minutes",
+						"enumUniformDpaVer": "Read only HWPID and HWPID version from nodes"
 					},
 					"errors": {
 						"instance": "Please enter name of IQRF Info instance.",
@@ -696,6 +707,7 @@
 					"add": "Add a new monitoring service",
 					"edit": "Edit the monitoring service",
 					"form": {
+						"title": "Monitoring instance",
 						"reportPeriod": "Reporting period in seconds",
 						"WebsocketPort": "WebSocket server port",
 						"acceptOnlyLocalhost": "Accept only connection from localhost"
@@ -719,14 +731,15 @@
 					"add": "Add logging service configuration",
 					"edit": "Edit logging service configuration",
 					"form": {
+						"title": "Logging instance",
 						"path": "Path to directory with logs",
 						"filename": "File name",
 						"maxSize": "Maximum size in bytes",
 						"maxAgeMinutes": "Maximum lifespan of timestamped files in minutes",
 						"maxNumber": "Maximum number of timestamped files",
-						"timestampFiles": "Enable timestamp files",
+						"timestampFiles": "Enable timestamps in files",
 						"verbosityLevels": {
-							"title": "Verbosity levels",
+							"title": "Logging verbosity",
 							"add": "Add verbosity level",
 							"remove": "Remove verbosity level"
 						},
