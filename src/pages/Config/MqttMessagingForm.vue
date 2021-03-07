@@ -41,6 +41,24 @@
 										:invalid-feedback='$t(errors[0])'
 									/>
 								</ValidationProvider>
+							</CCol>
+							<CCol md='6'>
+								<ValidationProvider
+									v-slot='{errors, touched, valid}'
+									rules='required'
+									:custom-messages='{
+										required: "forms.errors.clientId"
+									}'
+								>
+									<CInput
+										v-model='configuration.ClientId'
+										:label='$t("forms.fields.clientId")'
+										:is-valid='touched ? valid : null'
+										:invalid-feedback='$t(errors[0])'
+									/>
+								</ValidationProvider>
+							</CCol>
+							<CCol md='6'>
 								<ValidationProvider
 									v-slot='{errors, touched, valid}'
 									rules='required'
@@ -55,10 +73,36 @@
 										:invalid-feedback='$t(errors[0])'
 									/>
 								</ValidationProvider>
+							</CCol>
+							<CCol md='6'>
+								<ValidationProvider
+									v-slot='{errors, touched, valid}'
+									rules='required'
+									:custom-messages='{
+										required: "forms.errors.responseTopic"
+									}'
+								>
+									<CInput
+										v-model='configuration.TopicResponse'
+										:label='$t("forms.fields.responseTopic")'
+										:is-valid='touched ? valid : null'
+										:invalid-feedback='$t(errors[0])'
+									/>
+								</ValidationProvider>
+							</CCol>
+							<CCol md='6'>
 								<CInput
 									v-model='configuration.User'
 									:label='$t("config.daemon.messagings.mqtt.form.User")'
 								/>
+							</CCol>
+							<CCol md='6'>
+								<CInput
+									v-model='configuration.Password'
+									:label='$t("forms.fields.password")'
+								/>
+							</CCol>
+							<CCol md='6'>
 								<ValidationProvider
 									v-slot='{valid, touched, errors}'
 									rules='required'
@@ -75,6 +119,26 @@
 										:options='qosOptions'
 									/>
 								</ValidationProvider>
+							</CCol>
+							<CCol md='6'>
+								<ValidationProvider
+									v-slot='{errors, touched, valid}'
+									rules='required'
+									:custom-messages='{
+										required: "config.daemon.messagings.mqtt.errors.Persistence",
+									}'
+								>
+									<CSelect
+										:value.sync='configuration.Persistence'
+										:label='$t("config.daemon.messagings.mqtt.form.Persistence")'
+										:is-valid='touched ? valid : null'
+										:invalid-feedback='$t(errors[0])'
+										:placeholder='$t("config.daemon.messagings.mqtt.form.Persistence")'
+										:options='persistenceOptions'
+									/>
+								</ValidationProvider>
+							</CCol>
+							<CCol md='6'>
 								<ValidationProvider
 									v-slot='{errors, touched, valid}'
 									rules='integer|min:0'
@@ -92,6 +156,27 @@
 										min='0'
 									/>
 								</ValidationProvider>
+							</CCol>
+							<CCol md='6'>
+								<ValidationProvider
+									v-slot='{errors, touched, valid}'
+									rules='integer|min:0'
+									:custom-messages='{
+										integer: "config.daemon.messagings.mqtt.errors.ConnectTimeout",
+										min: "config.daemon.messagings.mqtt.errors.ConnectTimeout",
+									}'
+								>
+									<CInput
+										v-model.number='configuration.ConnectTimeout'
+										:label='$t("config.daemon.messagings.mqtt.form.ConnectTimeout")'
+										:is-valid='touched ? valid : null'
+										:invalid-feedback='$t(errors[0])'
+										type='number'
+										min='0'
+									/>
+								</ValidationProvider>
+							</CCol>
+							<CCol md='6'>
 								<ValidationProvider
 									v-slot='{errors, touched, valid}'
 									:rules='"integer|between:0," + configuration.MaxReconnect'
@@ -110,77 +195,8 @@
 										min='0'
 									/>
 								</ValidationProvider>
-								<CInputCheckbox
-									:checked.sync='configuration.acceptAsyncMsg'
-									:label='$t("config.daemon.messagings.acceptAsyncMsg")'
-								/>
 							</CCol>
 							<CCol md='6'>
-								<ValidationProvider
-									v-slot='{errors, touched, valid}'
-									rules='required'
-									:custom-messages='{
-										required: "forms.errors.clientId"
-									}'
-								>
-									<CInput
-										v-model='configuration.ClientId'
-										:label='$t("forms.fields.clientId")'
-										:is-valid='touched ? valid : null'
-										:invalid-feedback='$t(errors[0])'
-									/>
-								</ValidationProvider>
-								<ValidationProvider
-									v-slot='{errors, touched, valid}'
-									rules='required'
-									:custom-messages='{
-										required: "forms.errors.responseTopic"
-									}'
-								>
-									<CInput
-										v-model='configuration.TopicResponse'
-										:label='$t("forms.fields.responseTopic")'
-										:is-valid='touched ? valid : null'
-										:invalid-feedback='$t(errors[0])'
-									/>
-								</ValidationProvider>
-								<CInput
-									v-model='configuration.Password'
-									:label='$t("forms.fields.password")'
-								/>
-								<ValidationProvider
-									v-slot='{errors, touched, valid}'
-									rules='required'
-									:custom-messages='{
-										required: "config.daemon.messagings.mqtt.errors.Persistence",
-									}'
-								>
-									<CSelect
-										:value.sync='configuration.Persistence'
-										:label='$t("config.daemon.messagings.mqtt.form.Persistence")'
-										:is-valid='touched ? valid : null'
-										:invalid-feedback='$t(errors[0])'
-										:placeholder='$t("config.daemon.messagings.mqtt.form.Persistence")'
-										:options='persistenceOptions'
-									/>
-								</ValidationProvider>
-								<ValidationProvider
-									v-slot='{errors, touched, valid}'
-									rules='integer|min:0'
-									:custom-messages='{
-										integer: "config.daemon.messagings.mqtt.errors.ConnectTimeout",
-										min: "config.daemon.messagings.mqtt.errors.ConnectTimeout",
-									}'
-								>
-									<CInput
-										v-model.number='configuration.ConnectTimeout'
-										:label='$t("config.daemon.messagings.mqtt.form.ConnectTimeout")'
-										:is-valid='touched ? valid : null'
-										:invalid-feedback='$t(errors[0])'
-										type='number'
-										min='0'
-									/>
-								</ValidationProvider>
 								<ValidationProvider
 									v-slot='{errors, touched, valid}'
 									:rules='"integer|min:" + configuration.MinReconnect'
@@ -198,6 +214,12 @@
 										:min='configuration.MinReconnect'
 									/>
 								</ValidationProvider>
+							</CCol>
+							<CCol md='6'>
+								<CInputCheckbox
+									:checked.sync='configuration.acceptAsyncMsg'
+									:label='$t("config.daemon.messagings.acceptAsyncMsg")'
+								/>
 							</CCol>
 						</CRow>
 						<CRow>
@@ -222,24 +244,32 @@
 									v-model='configuration.TrustStore'
 									:label='$t("config.daemon.messagings.mqtt.form.TrustStore")'
 								/>
-								<CInput
-									v-model='configuration.PrivateKey'
-									:label='$t("forms.fields.privateKey")'
-								/>
-								<CInput
-									v-model='configuration.EnabledCipherSuites'
-									:label='$t("config.daemon.messagings.mqtt.form.EnabledCipherSuites")'
-								/>
 							</CCol>
 							<CCol md='6'>
 								<CInput
 									v-model='configuration.KeyStore'
 									:label='$t("forms.fields.certificate")'
 								/>
+							</CCol>
+							<CCol md='6'>
+								<CInput
+									v-model='configuration.PrivateKey'
+									:label='$t("forms.fields.privateKey")'
+								/>
+							</CCol>
+							<CCol md='6'>
 								<CInput
 									v-model='configuration.PrivateKeyPassword'
 									:label='$t("config.daemon.messagings.mqtt.form.PrivateKeyPassword")'
 								/>
+							</CCol>
+							<CCol md='6'>
+								<CInput
+									v-model='configuration.EnabledCipherSuites'
+									:label='$t("config.daemon.messagings.mqtt.form.EnabledCipherSuites")'
+								/>
+							</CCol>
+							<CCol md='6'>
 								<CInputCheckbox
 									:checked.sync='configuration.EnableServerCertAuth'
 									:label='$t("config.daemon.messagings.mqtt.form.EnableServerCertAuth")'
