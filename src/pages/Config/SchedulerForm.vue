@@ -52,8 +52,12 @@
 							class='form-group'
 						>
 							<ValidationProvider
-								v-slot='{touched, valid}'
-								rules='cron'
+								v-slot='{errors, touched, valid}'
+								rules='cron|required'
+								:custom-messages='{
+									cron: "config.daemon.scheduler.errors.cron",
+									required: "config.daemon.scheduler.errors.cron"
+								}'
 							>
 								<label for='cronTime'>
 									{{ $t("config.daemon.scheduler.form.task.cronTime") }}
@@ -64,6 +68,7 @@
 									id='cronTime'
 									v-model='timeSpec.cronTime'
 									:is-valid='touched ? valid : null'
+									:invalid-feedback='$t(errors[0])'
 									@input='cronMessage = null'
 								/>
 							</ValidationProvider>
@@ -241,7 +246,7 @@ export default class SchedulerForm extends Vue {
 	/**
 	 * @var {string} clientId Scheduler task client id
 	 */
-	private clientId = ''
+	private clientId = 'SchedulerMessaging'
 
 	/**
 	 * @constant {Dictionary<string>} components Names of messaging components
@@ -655,7 +660,7 @@ export default class SchedulerForm extends Vue {
 		if (!isNaN(cronDay)) {
 			cronArray[5] = (cronDay + 1).toString();
 		}
-		return cronArray.join(' ');
+		return cronArray.join(' ').trim();
 	}
 
 	/**

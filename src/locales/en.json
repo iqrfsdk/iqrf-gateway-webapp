@@ -549,7 +549,7 @@
 				"form": {
 					"task": {
 						"taskId": "Task ID",
-						"timeSpec": "Start time type",
+						"timeSpec": "Task execution",
 						"timeSpecTypes": {
 							"exact": "Oneshot - execute task once at specified time",
 							"periodic": "Periodic - frequency of task execution in seconds",
@@ -575,7 +575,8 @@
 					"service": "Please select service.",
 					"messaging": "Please select messaging.",
 					"message": "Please enter a message.",
-					"period": "Period should be an integer greater than 0."
+					"period": "Period should be an integer greater than 0.",
+					"cron": "Please enter a valid 7 field cron time expression."
 				},
 				"import": {
 					"title": "Import task(s)",
