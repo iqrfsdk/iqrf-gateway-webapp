@@ -49,7 +49,7 @@
 <script lang='ts'>
 import {Component, Vue} from 'vue-property-decorator';
 import {AxiosError, AxiosResponse} from 'axios';
-import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput} from '@coreui/vue/src';
+import {CButton, CCard, CCardBody, CCardHeader, CForm, CInput, CSpinner} from '@coreui/vue/src';
 import {extend, ValidationObserver, ValidationProvider} from 'vee-validate';
 import {required} from 'vee-validate/dist/rules';
 import InterfacePorts from '../../components/Config/InterfacePorts.vue';
@@ -65,6 +65,7 @@ import {IIqrfCdc} from '../../interfaces/iqrfInterfaces';
 		CCardHeader,
 		CForm,
 		CInput,
+		CSpinner,
 		InterfacePorts,
 		ValidationObserver,
 		ValidationProvider,
@@ -98,6 +99,11 @@ export default class IqrfCdc extends Vue {
 	 * @var {boolean} powerUser Indicates whether user role is power user
 	 */
 	private powerUser = false
+
+	/**
+	 * @var {boolean} loaded Indicates that configuration has been loaded
+	 */
+	private loaded = false;
 
 	/**
 	 * Vue lifecycle hook created

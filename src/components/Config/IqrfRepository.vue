@@ -191,13 +191,12 @@ export default class IqrfRepository extends Vue {
 	 * Retrieves configuration of IQRF Repository component
 	 */
 	private getConfig(): Promise<void> {
-		this.$store.commit('spinner/SHOW');
 		return DaemonConfigurationService.getComponent(this.componentName)
 			.then((response: AxiosResponse) => {
-				this.$store.commit('spinner/HIDE');
 				if (response.data.instances.length > 0) {
 					this.parseConfiguration(response.data.instances[0]);
 				}
+				this.$emit('fetched', 'repository');
 			})
 			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}

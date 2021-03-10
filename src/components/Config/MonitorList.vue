@@ -218,7 +218,6 @@ export default class MonitorList extends Vue {
 	 */
 	mounted(): void {
 		this.updateTable();
-		this.$store.commit('spinner/SHOW');
 		this.getConfig();
 	}
 
@@ -260,7 +259,7 @@ export default class MonitorList extends Vue {
 					}
 				}
 				this.instances = instances;
-				this.$store.commit('spinner/HIDE');
+				this.$emit('fetched', 'monitor');
 			})
 			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}

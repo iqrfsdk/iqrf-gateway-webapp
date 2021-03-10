@@ -27,7 +27,6 @@ export default class App extends Vue {
 	 * Vue lifecycle hook before created
 	 */
 	beforeCreate(): void {
-		this.$store.commit('spinner/SHOW');
 		InstallationService.check()
 			.then((check: InstallationCheck) => {
 				const installUrl: boolean = this.$route.path.startsWith('/install/');
@@ -55,10 +54,8 @@ export default class App extends Vue {
 				} else if (check.hasUsers && installUrl) {
 					this.$router.push('/sign/in/');
 				}
-				this.$store.commit('spinner/HIDE');
 			})
 			.catch((error: AxiosError) => {
-				this.$store.commit('spinner/HIDE');
 				console.error(error);
 			});
 	}

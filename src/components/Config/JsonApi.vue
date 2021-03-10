@@ -135,14 +135,12 @@ export default class JsonApi extends Vue {
 	 * Retrieves configuration of JSON API components
 	 */
 	private getConfig(): Promise<void> {
-		this.$store.commit('spinner/SHOW');
 		return Promise.all([
 			DaemonConfigurationService.getComponent(this.componentNames.metaData),
 			DaemonConfigurationService.getComponent(this.componentNames.rawApi),
 			DaemonConfigurationService.getComponent(this.componentNames.splitter),
 		])
 			.then((responses: Array<AxiosResponse>) => {
-				this.$store.commit('spinner/HIDE');
 				this.metaData = responses[0].data.instances[0];
 				this.metaDataToMessages = responses[0].data.instances[0].metaDataToMessages;
 				this.rawApi = responses[1].data.instances[0];
@@ -150,6 +148,7 @@ export default class JsonApi extends Vue {
 				this.splitter = responses[2].data.instances[0];
 				this.insId = responses[2].data.instances[0].insId;
 				this.validateJsonResponse = responses[2].data.instances[0].validateJsonResponse;
+				this.$emit('fetched', 'jsonApi');
 			})
 			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}

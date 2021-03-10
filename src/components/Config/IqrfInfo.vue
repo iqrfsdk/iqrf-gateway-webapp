@@ -182,13 +182,12 @@ export default class IqrfInfo extends Vue {
 	 * Retrieves configuration of IQRF Info component
 	 */
 	private getConfig(): Promise<void> {
-		this.$store.commit('spinner/SHOW');
 		return DaemonConfigurationService.getComponent(this.componentName)
 			.then((response: AxiosResponse) => {
-				this.$store.commit('spinner/HIDE');
 				if (response.data.instances.length > 0) {
 					this.parseConfiguration(response.data.instances[0]);
-				}	
+				}
+				this.$emit('fetched', 'info');
 			})
 			.catch((error: AxiosError) => FormErrorHandler.configError(error));
 	}

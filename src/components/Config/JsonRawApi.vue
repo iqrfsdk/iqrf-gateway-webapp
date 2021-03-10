@@ -95,10 +95,8 @@ export default class JsonRawApi extends Vue {
 	 * Retrieves configuration of JSON RawApi component
 	 */
 	private getConfig(): void {
-		this.$store.commit('spinner/SHOW');
 		DaemonConfigurationService.getComponent(this.componentName)
 			.then((response: AxiosResponse) => {
-				this.$store.commit('spinner/HIDE');
 				if (response.data.instances.length > 0) {
 					this.configuration = response.data.instances[0];
 					this.instance = this.configuration.instance;
@@ -111,7 +109,6 @@ export default class JsonRawApi extends Vue {
 	 * Saves new or updates existing configuration of JSON RawApi component instance
 	 */
 	private saveConfig(): void {
-		this.$store.commit('spinner/SHOW');
 		if (this.instance !== '') {
 			DaemonConfigurationService.updateInstance(this.componentName, this.instance, this.configuration)
 				.then(() => this.successfulSave())
@@ -127,7 +124,6 @@ export default class JsonRawApi extends Vue {
 	 * Handles successful REST API response
 	 */
 	private successfulSave(): void {
-		this.$store.commit('spinner/HIDE');
 		this.$toast.success(this.$t('config.success').toString());
 	}
 }

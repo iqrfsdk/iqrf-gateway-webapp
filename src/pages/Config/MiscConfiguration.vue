@@ -4,25 +4,30 @@
 		<CCard>
 			<CTabs variant='tabs' :active-tab='activeTab'>
 				<CTab :title='$t("config.daemon.misc.jsonApi.title")'>
-					<JsonApi v-if='!powerUser' />
-					<JsonMngMetaDataApi v-if='powerUser' />
-					<JsonRawApi v-if='powerUser' />
-					<JsonSplitter v-if='powerUser' />
+					<JsonApi 
+						v-if='!powerUser'
+						@fetched='configFetched'
+					/>
+					<div v-else>
+						<JsonMngMetaDataApi @fetched='configFetched' />
+						<JsonRawApi @fetched='configFetched' />
+						<JsonSplitter @fetched='configFetched' />
+					</div>
 				</CTab>
 				<CTab :title='$t("config.daemon.misc.iqrfRepository.title")'>
-					<IqrfRepository />
+					<IqrfRepository @fetched='configFetched' />
 				</CTab>
 				<CTab :title='$t("config.daemon.misc.iqrfInfo.title")'>
-					<IqrfInfo />
+					<IqrfInfo @fetched='configFetched' />
 				</CTab>
 				<CTab v-if='powerUser' :title='$t("config.daemon.misc.iqmesh.title")'>
-					<IqmeshServices />
+					<IqmeshServices @fetched='configFetched' />
 				</CTab>
 				<CTab :title='$t("config.daemon.misc.monitor.title")'>
-					<MonitorList />
+					<MonitorList @fetched='configFetched' />
 				</CTab>
 				<CTab :title='$t("config.daemon.misc.tracer.title")'>
-					<TracerList />
+					<TracerList @fetched='configFetched' />
 				</CTab>
 			</CTabs>
 		</CCard>
@@ -32,15 +37,15 @@
 <script lang='ts'>
 import {Component, Vue} from 'vue-property-decorator';
 import {CCard, CCardBody, CCardHeader, CTab, CTabs} from '@coreui/vue/src';
-import JsonRawApi from '../../components/Config/JsonRawApi.vue';
-import JsonMngMetaDataApi from '../../components/Config/JsonMngMetaDataApi.vue';
-import JsonSplitter from '../../components/Config/JsonSplitter.vue';
-import JsonApi from '../../components/Config/JsonApi.vue';
-import TracerList from '../../components/Config/TracerList.vue';
-import MonitorList from '../../components/Config/MonitorList.vue';
-import IqrfRepository from '../../components/Config/IqrfRepository.vue';
 import IqrfInfo from '../../components/Config/IqrfInfo.vue';
+import IqrfRepository from '../../components/Config/IqrfRepository.vue';
 import IqmeshServices from '../../components/Config/IqmeshServices.vue';
+import JsonApi from '../../components/Config/JsonApi.vue';
+import JsonMngMetaDataApi from '../../components/Config/JsonMngMetaDataApi.vue';
+import JsonRawApi from '../../components/Config/JsonRawApi.vue';
+import JsonSplitter from '../../components/Config/JsonSplitter.vue';
+import MonitorList from '../../components/Config/MonitorList.vue';
+import TracerList from '../../components/Config/TracerList.vue';
 
 @Component({
 	components: {
@@ -90,11 +95,24 @@ export default class MiscConfiguration extends Vue {
 	private powerUser = false;
 
 	/**
+	 * @var {Array<string>} childrenLoading Children components
+	 */
+	private childrenLoading = [
+		'repository',
+		'info',
+		'monitor',
+		'tracer',
+	]
+
+	/**
 	 * Vue lifecycle hook created
 	 */
 	created(): void {
 		if (this.$store.getters['user/getRole'] === 'power') {
 			this.powerUser = true;
+			this.childrenLoading.unshift('jsonMng', 'jsonRaw', 'jsonSplitter');
+		} else {
+			this.childrenLoading.unshift('jsonApi');
 		}
 	}
 
@@ -107,6 +125,20 @@ export default class MiscConfiguration extends Vue {
 		}
 		if (this.$attrs.tabName !== undefined) {
 			this.activeTab = this.endpoints.indexOf(this.$attrs.tabName);
+		}
+		this.$store.commit('spinner/SHOW');
+	}
+
+	/**
+	 * Handles successful child component config fetch event
+	 * @param {string} name Component name
+	 */
+	private configFetched(name: string): void {
+		this.childrenLoading = this.childrenLoading.filter((item: string) => {
+			return item !== name;
+		});
+		if (this.childrenLoading.length === 0) {
+			this.$store.commit('spinner/HIDE');
 		}
 	}
 }
