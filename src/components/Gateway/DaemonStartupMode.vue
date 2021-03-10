@@ -146,13 +146,3 @@ export default class DaemonStartupMode extends Vue {
 
 }
 </script>
-
-<style scoped>
-
-.loading-spinner-centered {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-</style>
