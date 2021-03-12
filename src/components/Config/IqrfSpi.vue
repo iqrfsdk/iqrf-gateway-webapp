@@ -108,11 +108,11 @@
 								:label='$t("config.daemon.interfaces.interfaceMapping.form.uartPin")'
 								:disabled='true'
 							/>
+							<div v-if='i2cEnableGpioPin !== null || spiEnableGpioPin !== null || uartEnableGpioPin !== null'>
+								<i>{{ $t('config.daemon.interfaces.interfaceMapping.form.gwOnly') }}</i>
+							</div><br v-if='i2cEnableGpioPin !== null || spiEnableGpioPin !== null || uartEnableGpioPin !== null'>
 						</CCol>
 					</CRow>
-					<div v-if='i2cEnableGpioPin !== null || spiEnableGpioPin !== null || uartEnableGpioPin !== null'>
-						<i>{{ $t('config.daemon.interfaces.interfaceMapping.form.gwOnly') }}</i>
-					</div><br v-if='i2cEnableGpioPin !== null || spiEnableGpioPin !== null || uartEnableGpioPin !== null'>
 					<CButton type='submit' color='primary' :disabled='invalid'>
 						{{ $t('forms.save') }}
 					</CButton>
